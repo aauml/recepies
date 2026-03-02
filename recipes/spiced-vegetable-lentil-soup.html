@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiced Vegetable Lentil Soup — Thermomix® TM6</title>
+<style>
+  :root {
+    --warm: #f5f0e8;
+    --card: #fffdf8;
+    --accent: #b8622e;
+    --accent-light: #e8d5c4;
+    --text: #2c2420;
+    --text-light: #6b5e56;
+    --border: #e0d6ca;
+    --step-bg: #faf7f2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--warm);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px 16px;
+  }
+
+  .back-link {
+    display: inline-block;
+    max-width: 720px;
+    margin: 0 auto 12px;
+    font-size: 0.9em;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  .recipe-card {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .recipe-header {
+    background: var(--accent);
+    color: white;
+    padding: 32px 32px 24px;
+  }
+
+  .recipe-header h1 {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .recipe-header .subtitle {
+    font-style: italic;
+    opacity: 0.9;
+    font-size: 0.95em;
+  }
+
+  .meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 32px;
+    background: var(--accent-light);
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+  }
+
+  .meta-item .label {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-light);
+  }
+
+  .meta-item .value {
+    font-weight: 700;
+    font-size: 1.05em;
+  }
+
+  .recipe-body {
+    padding: 28px 32px;
+  }
+
+  h2 {
+    font-size: 1.15em;
+    color: var(--accent);
+    margin: 24px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent-light);
+  }
+
+  h2:first-of-type { margin-top: 0; }
+
+  .ingredients-list {
+    list-style: none;
+    columns: 2;
+    column-gap: 24px;
+  }
+
+  .ingredients-list li {
+    padding: 4px 0;
+    break-inside: avoid;
+    font-size: 0.95em;
+  }
+
+  .ingredients-list li .qty {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .steps-list {
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps-list li {
+    counter-increment: step;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: var(--step-bg);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent);
+    font-size: 0.93em;
+  }
+
+  .steps-list li::before {
+    content: counter(step);
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 26px;
+    font-size: 0.82em;
+    font-weight: 700;
+    margin-right: 10px;
+    font-family: sans-serif;
+  }
+
+  .steps-list .setting {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--text);
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin: 0 2px;
+  }
+
+  .tips {
+    background: var(--step-bg);
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 0.92em;
+  }
+
+  .tips ul {
+    list-style: disc;
+    padding-left: 20px;
+  }
+
+  .tips li {
+    padding: 3px 0;
+  }
+
+  .below-card {
+    max-width: 720px;
+    margin: 24px auto 0;
+    padding: 0 8px;
+  }
+
+  .below-card h3 {
+    font-size: 1em;
+    color: var(--accent);
+    margin: 20px 0 8px;
+  }
+
+  .below-card p, .below-card ul {
+    font-size: 0.9em;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .below-card ul {
+    list-style: disc;
+    padding-left: 20px;
+  }
+
+  .below-card a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .below-card a:hover { text-decoration: underline; }
+
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+  }
+
+  .nutrition-box {
+    text-align: center;
+    padding: 10px 8px;
+    background: var(--card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .nutrition-box .n-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .nutrition-box .n-label {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+
+  .insulin-badge {
+    display: inline-block;
+    background: var(--accent-light);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.9em;
+    margin: 4px 0 8px;
+  }
+
+  @media print {
+    body { padding: 0; background: white; }
+    .recipe-card { box-shadow: none; border-radius: 0; }
+    .back-link { display: none; }
+    .below-card { break-before: avoid; }
+  }
+
+  @media (max-width: 520px) {
+    .recipe-header { padding: 24px 20px 18px; }
+    .recipe-header h1 { font-size: 1.4em; }
+    .meta-bar { padding: 12px 20px; gap: 12px; }
+    .recipe-body { padding: 20px; }
+    .ingredients-list { columns: 1; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← Back to all recipes</a>
+
+<div class="recipe-card">
+  <div class="recipe-header">
+    <h1>Spiced Vegetable Lentil Soup</h1>
+    <div class="subtitle">Hearty, aromatic, and finished with lemon — a one-bowl Thermomix meal</div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="meta-item"><span class="label">Device</span><span class="value">TM6</span></div>
+    <div class="meta-item"><span class="label">Prep</span><span class="value">10 min</span></div>
+    <div class="meta-item"><span class="label">Cook</span><span class="value">35 min</span></div>
+    <div class="meta-item"><span class="label">Total</span><span class="value">45 min</span></div>
+    <div class="meta-item"><span class="label">Servings</span><span class="value">6</span></div>
+  </div>
+
+  <div class="recipe-body">
+    <h2>Ingredients</h2>
+    <ul class="ingredients-list">
+      <li><span class="qty">300 g</span> brown or green lentils, rinsed</li>
+      <li><span class="qty">200 g</span> onions (~1 large), quartered</li>
+      <li><span class="qty">150 g</span> carrots (~1 medium), in chunks</li>
+      <li><span class="qty">60 g</span> celery (~1 stalk), in chunks</li>
+      <li><span class="qty">15 g</span> garlic (~3 cloves)</li>
+      <li><span class="qty">40 g</span> olive oil</li>
+      <li><span class="qty">400 g</span> canned diced tomatoes (fire-roasted preferred)</li>
+      <li><span class="qty">800 g</span> vegetable stock</li>
+      <li><span class="qty">5 g</span> cumin, ground</li>
+      <li><span class="qty">3 g</span> smoked paprika</li>
+      <li><span class="qty">2 g</span> dried oregano</li>
+      <li><span class="qty">1 g</span> turmeric</li>
+      <li><span class="qty">1 g</span> black pepper</li>
+      <li><span class="qty">80 g</span> fresh kale or spinach, roughly torn</li>
+      <li><span class="qty">30 ml</span> lemon juice (~1 lemon)</li>
+      <li><span class="qty">7 g</span> salt (adjust to taste)</li>
+    </ul>
+
+    <h2>Preparation</h2>
+    <ol class="steps-list">
+      <li>Place onions, carrots, celery, and garlic into mixing bowl. Chop <span class="setting">5 sec / speed 5</span>. Scrape down sides with spatula.</li>
+      <li>Add olive oil. Sauté <span class="setting">3 min / 120°C / speed 1</span>.</li>
+      <li>Add cumin, smoked paprika, oregano, turmeric, and black pepper. Cook <span class="setting">1 min / 120°C / speed 1</span> until fragrant.</li>
+      <li>Add diced tomatoes. Cook <span class="setting">2 min / 100°C / speed 1</span>, stirring to concentrate flavors.</li>
+      <li>Add lentils and vegetable stock. Cook <span class="setting">25 min / 100°C / reverse speed 1</span>. Place measuring cup on lid.</li>
+      <li>Check lentils for tenderness. If needed, cook <span class="setting">5 min / 100°C / reverse speed 1</span> more.</li>
+      <li>Add kale (or spinach), salt, and lemon juice. Cook <span class="setting">3 min / 100°C / reverse speed 1</span> until greens are wilted.</li>
+      <li>For a partially creamy texture: ladle approximately 400 g of soup into a separate bowl. Blend remaining soup <span class="setting">10 sec / speed 6</span>. Return reserved portion and stir <span class="setting">10 sec / reverse speed 1</span>.</li>
+    </ol>
+
+    <h2>Tips & Tricks</h2>
+    <div class="tips">
+      <ul>
+        <li>Toasting spices in the hot oil (step 3) before adding liquid unlocks their full aroma — a technique used across Indian, Middle Eastern, and Mexican cuisines.</li>
+        <li>Reverse mode in step 5 is critical: it stirs the lentils without breaking them apart, so you get distinct texture rather than mush.</li>
+        <li>The half-blend in step 8 is optional but highly recommended — it creates a creamy body while keeping chunks. Skip it if you prefer fully rustic or go full blend for a smooth soup.</li>
+        <li>This soup improves overnight. Make extra and store in the fridge for up to 4 days or freeze for up to 3 months.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="below-card">
+  <h3>Sources & References</h3>
+  <ul>
+    <li><a href="https://cookieandkate.com/best-lentil-soup-recipe/" target="_blank">Cookie and Kate — Best Lentil Soup</a> (half-blend technique, cumin/curry base)</li>
+    <li><a href="https://www.noracooks.com/vegan-lentil-soup/" target="_blank">Nora Cooks — Vegan Lentil Soup</a> (smoked paprika + coriander combo)</li>
+    <li><a href="https://downshiftology.com/recipes/very-best-lentil-soup/" target="_blank">Downshiftology — Mediterranean Lentil Soup</a> (fire-roasted tomato approach, kale addition)</li>
+    <li><a href="https://www.healthyseasonalrecipes.com/vegetarian-lentil-soup/" target="_blank">Healthy Seasonal Recipes — Vegetarian Lentil Soup</a> (toasted whole spices, salt timing)</li>
+    <li><a href="https://www.acouplecooks.com/lentil-soup/" target="_blank">A Couple Cooks — 7 Ingredient Lentil Soup</a> (minimal base, cumin focus)</li>
+  </ul>
+
+  <h3>Nutrition Estimate (per serving, ~6 servings)</h3>
+  <div class="nutrition-grid">
+    <div class="nutrition-box"><div class="n-value">~280</div><div class="n-label">Calories</div></div>
+    <div class="nutrition-box"><div class="n-value">~40 g</div><div class="n-label">Carbs</div></div>
+    <div class="nutrition-box"><div class="n-value">~12 g</div><div class="n-label">Fiber</div></div>
+    <div class="nutrition-box"><div class="n-value">~16 g</div><div class="n-label">Protein</div></div>
+    <div class="nutrition-box"><div class="n-value">~7 g</div><div class="n-label">Fat</div></div>
+  </div>
+  <div class="insulin-badge">Estimated Insulin Load: 2 / 5</div>
+  <p>Moderate-low insulin response. Lentils are the primary carbohydrate source (~40 g/serving) but their high fiber content (~12 g) significantly slows glucose absorption. The fat from olive oil further moderates the glycemic impact. No refined sugars or starches are present. The tomatoes contribute a small amount of natural sugar. Overall, this is a favorable glycemic profile for a legume-based meal. These are rough estimates from common nutritional data, not precise lab values.</p>
+</div>
+
+</body>
+</html>
