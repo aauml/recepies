@@ -71,7 +71,7 @@
   .bowl-label.sw { background: var(--swap-text); }
   .bowl-label svg { flex-shrink: 0; }
 
-  .timeline-bar { display: flex; gap: 0; border-radius: 6px; overflow: hidden; margin: 12px 0 16px; font-family: sans-serif; font-size: 0.72em; font-weight: 600; height: 30px; }
+  .timeline-bar { display: flex; gap: 0; border-radius: 6px; overflow: hidden; margin: 12px 0 16px; font-family: sans-serif; font-size: 0.85em; font-weight: 600; height: 34px; }
   .timeline-bar .tl-seg { display: flex; align-items: center; justify-content: center; color: white; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tl-b1 { background: var(--bowl1); }
   .tl-b2 { background: var(--bowl2); }
@@ -110,7 +110,7 @@
   .insulin-badge { display: inline-block; background: var(--accent-light); padding: 4px 12px; border-radius: 20px; font-weight: 700; color: var(--accent); font-size: 0.9em; margin: 4px 0 8px; }
 
   @media print { body { padding: 0; background: white; } .recipe-card { box-shadow: none; border-radius: 0; } .back-link, .bowl-toggle { display: none; } }
-  @media (max-width: 520px) { .recipe-header { padding: 24px 20px 18px; } .recipe-header h1 { font-size: 1.4em; } .meta-bar { padding: 12px 20px; gap: 12px; } .recipe-body { padding: 20px; } .ingredients-list, body.mode-1 ul[data-bowls="1"], body.mode-2 ul[data-bowls="2"] { columns: 1; } .timeline-bar { font-size: 0.6em; height: 26px; } }
+  @media (max-width: 520px) { .recipe-header { padding: 24px 20px 18px; } .recipe-header h1 { font-size: 1.4em; } .meta-bar { padding: 12px 20px; gap: 12px; } .recipe-body { padding: 20px; } .ingredients-list, body.mode-1 ul[data-bowls="1"], body.mode-2 ul[data-bowls="2"] { columns: 1; } .timeline-bar { font-size: 0.75em; height: 30px; } }
 </style>
 </head>
 <body class="mode-1">
@@ -233,16 +233,9 @@
       <p style="font-size:0.82em; color:var(--text-light); margin-bottom:12px;"><strong>Time saved vs two separate cooks:</strong> ~20 min (single chop session, condiments done during dead time, immediate Bowl 2 start).</p>
 
       <div class="timeline-bar">
-        <div class="tl-seg tl-b1" style="flex:2;">Chop all</div>
-        <div class="tl-seg tl-b1" style="flex:12;">B1 onion saut&eacute;</div>
-        <div class="tl-seg tl-b1" style="flex:6;">B1 aromatics</div>
-        <div class="tl-seg tl-b1" style="flex:22;">B1 simmer 22 min</div>
-        <div class="tl-seg tl-b1" style="flex:3;">B1 finish</div>
+        <div class="tl-seg tl-b1" style="flex:45;">Bowl 1 &middot; ~45 min</div>
         <div class="tl-seg tl-sw" style="flex:1;">&#8644;</div>
-        <div class="tl-seg tl-b2" style="flex:12;">B2 onion saut&eacute;</div>
-        <div class="tl-seg tl-b2" style="flex:6;">B2 aromatics</div>
-        <div class="tl-seg tl-b2" style="flex:22;">B2 simmer 22 min</div>
-        <div class="tl-seg tl-b2" style="flex:3;">B2 finish</div>
+        <div class="tl-seg tl-b2" style="flex:43;">Bowl 2 &middot; ~43 min</div>
       </div>
 
       <ol class="steps-list">
