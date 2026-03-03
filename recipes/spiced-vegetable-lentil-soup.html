@@ -10,6 +10,7 @@
     --card: #fffdf8;
     --accent: #b8622e;
     --accent-light: #e8d5c4;
+    --accent-dark: #8a4a1e;
     --text: #2c2420;
     --text-light: #6b5e56;
     --border: #e0d6ca;
@@ -64,6 +65,39 @@
     font-size: 0.95em;
   }
 
+  .bowl-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 14px 32px;
+    background: var(--accent-dark);
+  }
+
+  .bowl-btn {
+    padding: 8px 24px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    font-family: inherit;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .bowl-btn:first-child { border-radius: 20px 0 0 20px; border-right: none; }
+  .bowl-btn:last-child { border-radius: 0 20px 20px 0; }
+
+  .bowl-btn.active {
+    background: white;
+    color: var(--accent-dark);
+    border-color: white;
+  }
+
+  .bowl-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.15);
+  }
+
   .meta-bar {
     display: flex;
     flex-wrap: wrap;
@@ -93,9 +127,7 @@
     font-size: 1.05em;
   }
 
-  .recipe-body {
-    padding: 28px 32px;
-  }
+  .recipe-body { padding: 28px 32px; }
 
   h2 {
     font-size: 1.15em;
@@ -167,6 +199,18 @@
     margin: 0 2px;
   }
 
+  .steps-list .bowl-label {
+    display: inline-block;
+    background: var(--accent-dark);
+    color: white;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-family: sans-serif;
+    font-size: 0.8em;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+
   .tips {
     background: var(--step-bg);
     padding: 16px 20px;
@@ -174,14 +218,23 @@
     font-size: 0.92em;
   }
 
-  .tips ul {
-    list-style: disc;
-    padding-left: 20px;
-  }
+  .tips ul { list-style: disc; padding-left: 20px; }
+  .tips li { padding: 3px 0; }
 
-  .tips li {
-    padding: 3px 0;
-  }
+  /* Bowl mode visibility */
+  [data-bowls="1"], [data-bowls="2"] { display: none; }
+  body.mode-1 [data-bowls="1"] { display: block; }
+  body.mode-2 [data-bowls="2"] { display: block; }
+  body.mode-1 span[data-bowls="1"] { display: inline; }
+  body.mode-2 span[data-bowls="2"] { display: inline; }
+  body.mode-1 li[data-bowls="1"] { display: list-item; }
+  body.mode-2 li[data-bowls="2"] { display: list-item; }
+  body.mode-1 ul[data-bowls="1"] { display: block; columns: 2; column-gap: 24px; }
+  body.mode-2 ul[data-bowls="2"] { display: block; columns: 2; column-gap: 24px; }
+  body.mode-1 ol[data-bowls="1"] { display: block; }
+  body.mode-2 ol[data-bowls="2"] { display: block; }
+  body.mode-1 p[data-bowls="1"] { display: block; }
+  body.mode-2 p[data-bowls="2"] { display: block; }
 
   .below-card {
     max-width: 720px;
@@ -201,16 +254,9 @@
     line-height: 1.6;
   }
 
-  .below-card ul {
-    list-style: disc;
-    padding-left: 20px;
-  }
+  .below-card ul { list-style: disc; padding-left: 20px; }
 
-  .below-card a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-
+  .below-card a { color: var(--accent); text-decoration: none; }
   .below-card a:hover { text-decoration: underline; }
 
   .nutrition-grid {
@@ -228,17 +274,8 @@
     border: 1px solid var(--border);
   }
 
-  .nutrition-box .n-value {
-    font-size: 1.2em;
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  .nutrition-box .n-label {
-    font-size: 0.75em;
-    text-transform: uppercase;
-    color: var(--text-light);
-  }
+  .nutrition-box .n-value { font-size: 1.2em; font-weight: 700; color: var(--accent); }
+  .nutrition-box .n-label { font-size: 0.75em; text-transform: uppercase; color: var(--text-light); }
 
   .insulin-badge {
     display: inline-block;
@@ -254,8 +291,7 @@
   @media print {
     body { padding: 0; background: white; }
     .recipe-card { box-shadow: none; border-radius: 0; }
-    .back-link { display: none; }
-    .below-card { break-before: avoid; }
+    .back-link, .bowl-toggle { display: none; }
   }
 
   @media (max-width: 520px) {
@@ -263,84 +299,165 @@
     .recipe-header h1 { font-size: 1.4em; }
     .meta-bar { padding: 12px 20px; gap: 12px; }
     .recipe-body { padding: 20px; }
-    .ingredients-list { columns: 1; }
+    .ingredients-list,
+    body.mode-1 ul[data-bowls="1"],
+    body.mode-2 ul[data-bowls="2"] { columns: 1; }
   }
 </style>
 </head>
-<body>
+<body class="mode-1">
 
-<a class="back-link" href="../index.html">← Back to all recipes</a>
+<a class="back-link" href="../index.html">&larr; Back to all recipes</a>
 
 <div class="recipe-card">
   <div class="recipe-header">
     <h1>Spiced Vegetable Lentil Soup</h1>
-    <div class="subtitle">Hearty, aromatic, and finished with lemon — a one-bowl Thermomix meal</div>
+    <div class="subtitle">Hearty, aromatic, and finished with lemon &mdash; a Thermomix one-pot meal</div>
+  </div>
+
+  <div class="bowl-toggle">
+    <button class="bowl-btn active" onclick="setMode(1)">&#x1F963; 1 Bowl</button>
+    <button class="bowl-btn" onclick="setMode(2)">&#x1F963;&#x1F963; 2 Bowls</button>
   </div>
 
   <div class="meta-bar">
     <div class="meta-item"><span class="label">Device</span><span class="value">TM6</span></div>
     <div class="meta-item"><span class="label">Prep</span><span class="value">10 min</span></div>
-    <div class="meta-item"><span class="label">Cook</span><span class="value">35 min</span></div>
-    <div class="meta-item"><span class="label">Total</span><span class="value">45 min</span></div>
-    <div class="meta-item"><span class="label">Servings</span><span class="value">6</span></div>
+    <div class="meta-item">
+      <span class="label">Cook</span>
+      <span class="value" data-bowls="1">35 min</span>
+      <span class="value" data-bowls="2">~40 min</span>
+    </div>
+    <div class="meta-item">
+      <span class="label">Total</span>
+      <span class="value" data-bowls="1">45 min</span>
+      <span class="value" data-bowls="2">~50 min</span>
+    </div>
+    <div class="meta-item">
+      <span class="label">Servings</span>
+      <span class="value" data-bowls="1">6</span>
+      <span class="value" data-bowls="2">10&ndash;12</span>
+    </div>
   </div>
 
   <div class="recipe-body">
-    <h2>Ingredients</h2>
-    <ul class="ingredients-list">
-      <li><span class="qty">300 g</span> brown or green lentils, rinsed</li>
-      <li><span class="qty">200 g</span> onions (~1 large), quartered</li>
-      <li><span class="qty">150 g</span> carrots (~1 medium), in chunks</li>
-      <li><span class="qty">60 g</span> celery (~1 stalk), in chunks</li>
-      <li><span class="qty">15 g</span> garlic (~3 cloves)</li>
-      <li><span class="qty">40 g</span> olive oil</li>
-      <li><span class="qty">400 g</span> canned diced tomatoes (fire-roasted preferred)</li>
-      <li><span class="qty">800 g</span> vegetable stock</li>
-      <li><span class="qty">5 g</span> cumin, ground</li>
-      <li><span class="qty">3 g</span> smoked paprika</li>
-      <li><span class="qty">2 g</span> dried oregano</li>
-      <li><span class="qty">1 g</span> turmeric</li>
-      <li><span class="qty">1 g</span> black pepper</li>
-      <li><span class="qty">80 g</span> fresh kale or spinach, roughly torn</li>
-      <li><span class="qty">30 ml</span> lemon juice (~1 lemon)</li>
-      <li><span class="qty">7 g</span> salt (adjust to taste)</li>
-    </ul>
 
-    <h2>Preparation</h2>
-    <ol class="steps-list">
-      <li>Place onions, carrots, celery, and garlic into mixing bowl. Chop <span class="setting">5 sec / speed 5</span>. Scrape down sides with spatula.</li>
-      <li>Add olive oil. Sauté <span class="setting">3 min / 120°C / speed 1</span>.</li>
-      <li>Add cumin, smoked paprika, oregano, turmeric, and black pepper. Cook <span class="setting">1 min / 120°C / speed 1</span> until fragrant.</li>
-      <li>Add diced tomatoes. Cook <span class="setting">2 min / 100°C / speed 1</span>, stirring to concentrate flavors.</li>
-      <li>Add lentils and vegetable stock. Cook <span class="setting">25 min / 100°C / reverse speed 1</span>. Place measuring cup on lid.</li>
-      <li>Check lentils for tenderness. If needed, cook <span class="setting">5 min / 100°C / reverse speed 1</span> more.</li>
-      <li>Add kale (or spinach), salt, and lemon juice. Cook <span class="setting">3 min / 100°C / reverse speed 1</span> until greens are wilted.</li>
-      <li>For a partially creamy texture: ladle approximately 400 g of soup into a separate bowl. Blend remaining soup <span class="setting">10 sec / speed 6</span>. Return reserved portion and stir <span class="setting">10 sec / reverse speed 1</span>.</li>
-    </ol>
+    <!-- ===== 1 BOWL INGREDIENTS ===== -->
+    <div data-bowls="1">
+      <h2>Ingredients</h2>
+      <ul class="ingredients-list">
+        <li><span class="qty">300 g</span> brown or green lentils, rinsed</li>
+        <li><span class="qty">200 g</span> onions (~1 large), quartered</li>
+        <li><span class="qty">150 g</span> carrots (~1 medium), in chunks</li>
+        <li><span class="qty">60 g</span> celery (~1 stalk), in chunks</li>
+        <li><span class="qty">15 g</span> garlic (~3 cloves)</li>
+        <li><span class="qty">40 g</span> olive oil</li>
+        <li><span class="qty">400 g</span> canned diced tomatoes (fire-roasted preferred)</li>
+        <li><span class="qty">800 g</span> vegetable stock</li>
+        <li><span class="qty">5 g</span> cumin, ground</li>
+        <li><span class="qty">3 g</span> smoked paprika</li>
+        <li><span class="qty">2 g</span> dried oregano</li>
+        <li><span class="qty">1 g</span> turmeric</li>
+        <li><span class="qty">1 g</span> black pepper</li>
+        <li><span class="qty">80 g</span> fresh kale or spinach, roughly torn</li>
+        <li><span class="qty">30 ml</span> lemon juice (~1 lemon)</li>
+        <li><span class="qty">7 g</span> salt (adjust to taste)</li>
+      </ul>
+    </div>
 
-    <h2>Tips & Tricks</h2>
+    <!-- ===== 2 BOWLS INGREDIENTS ===== -->
+    <div data-bowls="2">
+      <h2>Ingredients (doubled for 2 bowls)</h2>
+      <p style="font-size:0.88em; color:var(--text-light); margin-bottom:12px;">
+        Prep all ingredients, then split evenly between the two runs. Each bowl gets the same recipe at full capacity.
+      </p>
+      <ul class="ingredients-list">
+        <li><span class="qty">600 g</span> brown or green lentils, rinsed</li>
+        <li><span class="qty">400 g</span> onions (~2 large), quartered</li>
+        <li><span class="qty">300 g</span> carrots (~2 medium), in chunks</li>
+        <li><span class="qty">120 g</span> celery (~2 stalks), in chunks</li>
+        <li><span class="qty">30 g</span> garlic (~6 cloves)</li>
+        <li><span class="qty">80 g</span> olive oil</li>
+        <li><span class="qty">800 g</span> canned diced tomatoes</li>
+        <li><span class="qty">1600 g</span> vegetable stock</li>
+        <li><span class="qty">10 g</span> cumin, ground</li>
+        <li><span class="qty">6 g</span> smoked paprika</li>
+        <li><span class="qty">4 g</span> dried oregano</li>
+        <li><span class="qty">2 g</span> turmeric</li>
+        <li><span class="qty">2 g</span> black pepper</li>
+        <li><span class="qty">160 g</span> fresh kale or spinach, roughly torn</li>
+        <li><span class="qty">60 ml</span> lemon juice (~2 lemons)</li>
+        <li><span class="qty">14 g</span> salt (adjust to taste)</li>
+      </ul>
+    </div>
+
+    <!-- ===== 1 BOWL STEPS ===== -->
+    <div data-bowls="1">
+      <h2>Preparation</h2>
+      <ol class="steps-list">
+        <li>Place onions, carrots, celery, and garlic into mixing bowl. Chop <span class="setting">5 sec / speed 5</span>. Scrape down sides with spatula.</li>
+        <li>Add olive oil. Saut&eacute; <span class="setting">3 min / 120&deg;C / speed 1</span>.</li>
+        <li>Add cumin, smoked paprika, oregano, turmeric, and black pepper. Cook <span class="setting">1 min / 120&deg;C / speed 1</span> until fragrant.</li>
+        <li>Add diced tomatoes. Cook <span class="setting">2 min / 100&deg;C / speed 1</span>, stirring to concentrate flavors.</li>
+        <li>Add lentils and vegetable stock. Cook <span class="setting">25 min / 100&deg;C / reverse speed 1</span>. Place measuring cup on lid.</li>
+        <li>Check lentils for tenderness. If needed, cook <span class="setting">5 min / 100&deg;C / reverse speed 1</span> more.</li>
+        <li>Add kale (or spinach), salt, and lemon juice. Cook <span class="setting">3 min / 100&deg;C / reverse speed 1</span> until greens are wilted.</li>
+        <li>For a partially creamy texture: ladle approximately 400 g of soup into a separate bowl. Blend remaining soup <span class="setting">10 sec / speed 6</span>. Return reserved portion and stir <span class="setting">10 sec / reverse speed 1</span>.</li>
+      </ol>
+    </div>
+
+    <!-- ===== 2 BOWLS STEPS ===== -->
+    <div data-bowls="2">
+      <h2>Preparation (2 Bowls)</h2>
+      <p style="font-size:0.88em; color:var(--text-light); margin-bottom:12px;">
+        Chop all vegetables in one go using Bowl 1. Start cooking in Bowl 1, then use the simmer time to start Bowl 2.
+      </p>
+      <ol class="steps-list">
+        <li><span class="bowl-label">Bowl 1</span> Place half the onions, carrots, celery, and garlic into Bowl 1. Chop <span class="setting">5 sec / speed 5</span>. Scrape down. Transfer chopped vegetables to an external bowl and set aside.</li>
+        <li><span class="bowl-label">Bowl 1</span> Without cleaning, add the other half of onions, carrots, celery, and garlic. Chop <span class="setting">5 sec / speed 5</span>. Scrape down. Leave in bowl.</li>
+        <li><span class="bowl-label">Bowl 1</span> Add 40 g olive oil. Saut&eacute; <span class="setting">3 min / 120&deg;C / speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 1</span> Add 5 g cumin, 3 g paprika, 2 g oregano, 1 g turmeric, 1 g pepper. Cook <span class="setting">1 min / 120&deg;C / speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 1</span> Add 400 g diced tomatoes. Cook <span class="setting">2 min / 100&deg;C / speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 1</span> Add 300 g lentils and 800 g stock. Cook <span class="setting">25 min / 100&deg;C / reverse speed 1</span>. Place measuring cup on lid.</li>
+        <li><span class="bowl-label">Swap</span> While Bowl 1 simmers, place the reserved chopped vegetables into Bowl 2 (off base). Bowl 1 stays cooking.</li>
+        <li><span class="bowl-label">Bowl 1</span> When done, add 80 g kale, 7 g salt, 30 ml lemon juice. Cook <span class="setting">3 min / 100&deg;C / reverse speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 1</span> Optional partial blend: ladle 400 g out, blend <span class="setting">10 sec / speed 6</span>, return and stir <span class="setting">10 sec / reverse speed 1</span>. Pour finished soup into serving pot. Remove Bowl 1 from base.</li>
+        <li><span class="bowl-label">Bowl 2</span> Place Bowl 2 on base. Add 40 g olive oil. Saut&eacute; <span class="setting">3 min / 120&deg;C / speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 2</span> Add 5 g cumin, 3 g paprika, 2 g oregano, 1 g turmeric, 1 g pepper. Cook <span class="setting">1 min / 120&deg;C / speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 2</span> Add 400 g diced tomatoes. Cook <span class="setting">2 min / 100&deg;C / speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 2</span> Add 300 g lentils and 800 g stock. Cook <span class="setting">25 min / 100&deg;C / reverse speed 1</span>. Measuring cup on lid.</li>
+        <li><span class="bowl-label">Bowl 2</span> Add 80 g kale, 7 g salt, 30 ml lemon juice. Cook <span class="setting">3 min / 100&deg;C / reverse speed 1</span>.</li>
+        <li><span class="bowl-label">Bowl 2</span> Optional partial blend same as step 9. Combine with first batch.</li>
+      </ol>
+    </div>
+
+    <!-- ===== TIPS (shared) ===== -->
+    <h2>Tips &amp; Tricks</h2>
     <div class="tips">
       <ul>
-        <li>Toasting spices in the hot oil (step 3) before adding liquid unlocks their full aroma — a technique used across Indian, Middle Eastern, and Mexican cuisines.</li>
-        <li>Reverse mode in step 5 is critical: it stirs the lentils without breaking them apart, so you get distinct texture rather than mush.</li>
-        <li>The half-blend in step 8 is optional but highly recommended — it creates a creamy body while keeping chunks. Skip it if you prefer fully rustic or go full blend for a smooth soup.</li>
-        <li>This soup improves overnight. Make extra and store in the fridge for up to 4 days or freeze for up to 3 months.</li>
+        <li>Toasting spices in the hot oil before adding liquid unlocks their full aroma &mdash; a technique used across Indian, Middle Eastern, and Mexican cuisines.</li>
+        <li>Reverse mode is critical during simmering: it stirs the lentils without breaking them apart, giving you distinct texture rather than mush.</li>
+        <li>The half-blend at the end is optional but recommended &mdash; it creates a creamy body while keeping chunks. Skip for rustic, go full blend for smooth.</li>
+        <li>This soup improves overnight. Store in the fridge up to 4 days or freeze up to 3 months.</li>
+        <li data-bowls="2" style="font-weight:600;">2-bowl tip: Total wall-clock time is ~50 min for double the yield. You use Bowl 1's 25-min simmer as downtime &mdash; Bowl 2 is already prepped and waiting.</li>
       </ul>
     </div>
   </div>
 </div>
 
 <div class="below-card">
-  <h3>Sources & References</h3>
+  <h3>Sources &amp; References</h3>
   <ul>
-    <li><a href="https://cookieandkate.com/best-lentil-soup-recipe/" target="_blank">Cookie and Kate — Best Lentil Soup</a> (half-blend technique, cumin/curry base)</li>
-    <li><a href="https://www.noracooks.com/vegan-lentil-soup/" target="_blank">Nora Cooks — Vegan Lentil Soup</a> (smoked paprika + coriander combo)</li>
-    <li><a href="https://downshiftology.com/recipes/very-best-lentil-soup/" target="_blank">Downshiftology — Mediterranean Lentil Soup</a> (fire-roasted tomato approach, kale addition)</li>
-    <li><a href="https://www.healthyseasonalrecipes.com/vegetarian-lentil-soup/" target="_blank">Healthy Seasonal Recipes — Vegetarian Lentil Soup</a> (toasted whole spices, salt timing)</li>
-    <li><a href="https://www.acouplecooks.com/lentil-soup/" target="_blank">A Couple Cooks — 7 Ingredient Lentil Soup</a> (minimal base, cumin focus)</li>
+    <li><a href="https://cookieandkate.com/best-lentil-soup-recipe/" target="_blank">Cookie and Kate &mdash; Best Lentil Soup</a> (half-blend technique, cumin/curry base)</li>
+    <li><a href="https://www.noracooks.com/vegan-lentil-soup/" target="_blank">Nora Cooks &mdash; Vegan Lentil Soup</a> (smoked paprika + coriander combo)</li>
+    <li><a href="https://downshiftology.com/recipes/very-best-lentil-soup/" target="_blank">Downshiftology &mdash; Mediterranean Lentil Soup</a> (fire-roasted tomato, kale addition)</li>
+    <li><a href="https://www.healthyseasonalrecipes.com/vegetarian-lentil-soup/" target="_blank">Healthy Seasonal Recipes &mdash; Vegetarian Lentil Soup</a> (toasted whole spices, salt timing)</li>
+    <li><a href="https://www.acouplecooks.com/lentil-soup/" target="_blank">A Couple Cooks &mdash; 7 Ingredient Lentil Soup</a> (minimal base, cumin focus)</li>
   </ul>
 
-  <h3>Nutrition Estimate (per serving, ~6 servings)</h3>
+  <h3>Nutrition Estimate</h3>
+  <p data-bowls="1" style="font-size:0.85em; color:var(--text-light); margin-bottom:8px;">Per serving (~6 servings)</p>
+  <p data-bowls="2" style="font-size:0.85em; color:var(--text-light); margin-bottom:8px;">Per serving (~10&ndash;12 servings) &mdash; same per-serving values, double the total yield</p>
   <div class="nutrition-grid">
     <div class="nutrition-box"><div class="n-value">~280</div><div class="n-label">Calories</div></div>
     <div class="nutrition-box"><div class="n-value">~40 g</div><div class="n-label">Carbs</div></div>
@@ -349,8 +466,17 @@
     <div class="nutrition-box"><div class="n-value">~7 g</div><div class="n-label">Fat</div></div>
   </div>
   <div class="insulin-badge">Estimated Insulin Load: 2 / 5</div>
-  <p>Moderate-low insulin response. Lentils are the primary carbohydrate source (~40 g/serving) but their high fiber content (~12 g) significantly slows glucose absorption. The fat from olive oil further moderates the glycemic impact. No refined sugars or starches are present. The tomatoes contribute a small amount of natural sugar. Overall, this is a favorable glycemic profile for a legume-based meal. These are rough estimates from common nutritional data, not precise lab values.</p>
+  <p>Moderate-low insulin response. Lentils are the primary carb source (~40 g/serving) but high fiber (~12 g) significantly slows glucose absorption. Olive oil further moderates glycemic impact. No refined sugars or starches. Rough estimates from common nutritional data, not lab values.</p>
 </div>
+
+<script>
+function setMode(n) {
+  document.body.className = 'mode-' + n;
+  document.querySelectorAll('.bowl-btn').forEach(function(btn, i) {
+    btn.classList.toggle('active', i === n - 1);
+  });
+}
+</script>
 
 </body>
 </html>
