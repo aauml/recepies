@@ -3,452 +3,313 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vegetarian Phở Chay — Thermomix® TM6</title>
+<title>Vegetarian Ph&#7903; Chay &mdash; Thermomix&reg; TM6</title>
 <style>
   :root {
     --warm: #f5f0e8;
     --card: #fffdf8;
     --accent: #b8622e;
     --accent-light: #e8d5c4;
+    --accent-dark: #8a4a1e;
     --text: #2c2420;
     --text-light: #6b5e56;
     --border: #e0d6ca;
     --step-bg: #faf7f2;
+    --bowl1: #2e7d6f;
+    --bowl1-light: #d0ece7;
+    --bowl2: #c0562b;
+    --bowl2-light: #f5ddd1;
+    --swap-bg: #e8e3dc;
+    --swap-text: #6b5e56;
+    --swap-border: #b0a89e;
   }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    background: var(--warm);
-    color: var(--text);
-    line-height: 1.7;
-    padding: 1.5rem;
-  }
-
-  a { color: var(--accent); }
-
-  .back-link {
-    display: inline-block;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.9rem;
-    color: var(--accent);
-    text-decoration: none;
-    margin-bottom: 1rem;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: var(--warm); color: var(--text); line-height: 1.6; padding: 24px 16px; }
+  .back-link { display: inline-block; max-width: 720px; margin: 0 auto 12px; font-size: 0.9em; color: var(--accent); text-decoration: none; }
   .back-link:hover { text-decoration: underline; }
+  .recipe-card { max-width: 720px; margin: 0 auto; background: var(--card); border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .recipe-header { background: var(--accent); color: white; padding: 32px 32px 24px; }
+  .recipe-header h1 { font-size: 1.8em; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+  .recipe-header .subtitle { font-style: italic; opacity: 0.9; font-size: 0.95em; }
 
-  .recipe-card {
-    max-width: 720px;
-    margin: 0 auto 2rem;
-    background: var(--card);
-    border-radius: 16px;
-    box-shadow: 0 2px 20px rgba(44, 36, 32, 0.08);
-    overflow: hidden;
-  }
+  .bowl-toggle { display: flex; justify-content: center; gap: 0; padding: 12px 32px; background: #3d2e24; }
+  .bowl-btn { display: flex; align-items: center; gap: 6px; padding: 8px 22px; border: 2px solid rgba(255,255,255,0.25); background: transparent; color: rgba(255,255,255,0.65); font-family: inherit; font-size: 0.88em; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .bowl-btn:first-child { border-radius: 20px 0 0 20px; border-right: none; }
+  .bowl-btn:last-child { border-radius: 0 20px 20px 0; }
+  .bowl-btn.active { background: white; color: var(--accent-dark); border-color: white; }
+  .bowl-btn:hover:not(.active) { background: rgba(255,255,255,0.1); }
+  .bowl-btn svg { flex-shrink: 0; }
 
-  .recipe-header {
-    padding: 2.5rem 2rem 1.5rem;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-  }
+  .meta-bar { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px 32px; background: var(--accent-light); font-size: 0.88em; color: var(--text); }
+  .meta-item { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+  .meta-item .label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); }
+  .meta-item .value { font-weight: 700; font-size: 1.05em; }
 
-  .recipe-header h1 {
-    font-size: 2rem;
-    color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 0.3rem;
-    letter-spacing: -0.02em;
-  }
+  .recipe-body { padding: 28px 32px; }
+  h2 { font-size: 1.15em; color: var(--accent); margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--accent-light); }
+  h2:first-of-type { margin-top: 0; }
+  .ingredients-list { list-style: none; columns: 2; column-gap: 24px; }
+  .ingredients-list li { padding: 4px 0; break-inside: avoid; font-size: 0.95em; }
+  .ingredients-list li .qty { font-weight: 700; color: var(--accent); }
+  .ing-group { font-weight: 700; font-size: 0.85em; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 10px; padding-top: 6px; break-inside: avoid; column-span: all; }
 
-  .recipe-header .subtitle {
-    font-style: italic;
-    color: var(--text-light);
-    font-size: 1.05rem;
-  }
+  .steps-list { list-style: none; counter-reset: step; }
+  .steps-list li { counter-increment: step; padding: 12px 16px; margin-bottom: 8px; background: var(--step-bg); border-radius: 8px; border-left: 4px solid var(--accent); font-size: 0.93em; }
+  .steps-list li::before { content: counter(step); display: inline-block; width: 26px; height: 26px; background: var(--accent); color: white; border-radius: 50%; text-align: center; line-height: 26px; font-size: 0.82em; font-weight: 700; margin-right: 10px; font-family: sans-serif; }
+  .setting { display: inline-block; background: var(--accent-light); color: var(--text); padding: 1px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.9em; font-weight: 600; margin: 0 2px; }
 
-  .meta-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem 1.2rem;
-    padding: 1rem 1.5rem;
-    background: var(--accent-light);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.85rem;
-    color: var(--text);
-  }
+  .steps-list li.step-b1 { border-left-color: var(--bowl1); }
+  .steps-list li.step-b1::before { background: var(--bowl1); }
+  .steps-list li.step-b2 { border-left-color: var(--bowl2); }
+  .steps-list li.step-b2::before { background: var(--bowl2); }
+  .steps-list li.step-sw { border-left-color: var(--swap-border); background: var(--swap-bg); font-style: italic; }
+  .steps-list li.step-sw::before { background: var(--swap-text); }
 
-  .meta-bar span {
-    white-space: nowrap;
-  }
+  .bowl-label { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 4px; font-family: sans-serif; font-size: 0.8em; font-weight: 700; margin-right: 6px; vertical-align: middle; color: white; }
+  .bowl-label.b1 { background: var(--bowl1); }
+  .bowl-label.b2 { background: var(--bowl2); }
+  .bowl-label.sw { background: var(--swap-text); }
+  .bowl-label svg { flex-shrink: 0; }
 
-  .meta-bar strong {
-    color: var(--accent);
-  }
+  .timeline-bar { display: flex; gap: 0; border-radius: 6px; overflow: hidden; margin: 12px 0 16px; font-family: sans-serif; font-size: 0.72em; font-weight: 600; height: 30px; }
+  .timeline-bar .tl-seg { display: flex; align-items: center; justify-content: center; color: white; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl-b1 { background: var(--bowl1); }
+  .tl-b2 { background: var(--bowl2); }
+  .tl-sw { background: var(--swap-text); }
 
-  .recipe-body {
-    padding: 2rem;
-  }
+  .tips { background: var(--step-bg); padding: 16px 20px; border-radius: 8px; font-size: 0.92em; }
+  .tips ul { list-style: disc; padding-left: 20px; }
+  .tips li { padding: 3px 0; }
 
-  .recipe-body h2 {
-    font-size: 1.25rem;
-    color: var(--accent);
-    margin: 2rem 0 1rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 2px solid var(--accent-light);
-  }
+  [data-bowls="1"], [data-bowls="2"] { display: none; }
+  body.mode-1 [data-bowls="1"] { display: block; }
+  body.mode-2 [data-bowls="2"] { display: block; }
+  body.mode-1 span[data-bowls="1"] { display: inline; }
+  body.mode-2 span[data-bowls="2"] { display: inline; }
+  body.mode-1 li[data-bowls="1"] { display: list-item; }
+  body.mode-2 li[data-bowls="2"] { display: list-item; }
+  body.mode-1 ul[data-bowls="1"] { display: block; columns: 2; column-gap: 24px; }
+  body.mode-2 ul[data-bowls="2"] { display: block; columns: 2; column-gap: 24px; }
+  body.mode-1 ol[data-bowls="1"] { display: block; }
+  body.mode-2 ol[data-bowls="2"] { display: block; }
+  body.mode-1 p[data-bowls="1"] { display: block; }
+  body.mode-2 p[data-bowls="2"] { display: block; }
+  body.mode-1 div[data-bowls="1"] { display: block; }
+  body.mode-2 div[data-bowls="2"] { display: block; }
 
-  .recipe-body h2:first-child {
-    margin-top: 0;
-  }
+  .below-card { max-width: 720px; margin: 24px auto 0; padding: 0 8px; }
+  .below-card h3 { font-size: 1em; color: var(--accent); margin: 20px 0 8px; }
+  .below-card p, .below-card ul { font-size: 0.9em; color: var(--text-light); line-height: 1.6; }
+  .below-card ul { list-style: disc; padding-left: 20px; }
+  .below-card a { color: var(--accent); text-decoration: none; }
+  .below-card a:hover { text-decoration: underline; }
+  .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin: 12px 0; }
+  .nutrition-box { text-align: center; padding: 10px 8px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
+  .nutrition-box .n-value { font-size: 1.2em; font-weight: 700; color: var(--accent); }
+  .nutrition-box .n-label { font-size: 0.75em; text-transform: uppercase; color: var(--text-light); }
+  .insulin-badge { display: inline-block; background: var(--accent-light); padding: 4px 12px; border-radius: 20px; font-weight: 700; color: var(--accent); font-size: 0.9em; margin: 4px 0 8px; }
 
-  .ingredient-group h3 {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-light);
-    margin: 1.2rem 0 0.5rem;
-  }
-
-  .ingredient-group ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .ingredient-group li {
-    padding: 0.35rem 0;
-    border-bottom: 1px dotted var(--border);
-    font-size: 0.95rem;
-  }
-
-  .ingredient-group li:last-child {
-    border-bottom: none;
-  }
-
-  .qty {
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  .steps-list {
-    list-style: none;
-    padding: 0;
-    counter-reset: step;
-  }
-
-  .steps-list li {
-    counter-increment: step;
-    padding: 1rem 1rem 1rem 3.5rem;
-    margin-bottom: 0.75rem;
-    background: var(--step-bg);
-    border-radius: 10px;
-    position: relative;
-    font-size: 0.95rem;
-  }
-
-  .steps-list li::before {
-    content: counter(step);
-    position: absolute;
-    left: 1rem;
-    top: 1rem;
-    width: 1.8rem;
-    height: 1.8rem;
-    border-radius: 50%;
-    background: var(--accent);
-    color: white;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-  }
-
-  .setting {
-    display: inline-block;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 0.82rem;
-    background: var(--accent-light);
-    color: var(--accent);
-    padding: 0.15rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .tips-list {
-    list-style: none;
-    padding: 0;
-  }
-
-  .tips-list li {
-    padding: 0.5rem 0 0.5rem 1.5rem;
-    position: relative;
-    font-size: 0.95rem;
-  }
-
-  .tips-list li::before {
-    content: '💡';
-    position: absolute;
-    left: 0;
-  }
-
-  /* Below card */
-  .below-card {
-    max-width: 720px;
-    margin: 0 auto;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 0.9rem;
-    color: var(--text-light);
-  }
-
-  .below-card h3 {
-    font-size: 1rem;
-    color: var(--text);
-    margin: 1.5rem 0 0.75rem;
-  }
-
-  .below-card ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .below-card li {
-    padding: 0.25rem 0;
-  }
-
-  .below-card a {
-    font-size: 0.85rem;
-    word-break: break-all;
-  }
-
-  .nutrition-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0.75rem;
-    margin: 0.75rem 0;
-  }
-
-  .nutrition-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.75rem;
-    text-align: center;
-  }
-
-  .nutrition-item .value {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  .nutrition-item .label {
-    font-size: 0.78rem;
-    color: var(--text-light);
-    margin-top: 0.15rem;
-  }
-
-  .insulin-badge {
-    display: inline-block;
-    margin-top: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: var(--accent-light);
-    border-radius: 8px;
-    font-size: 0.85rem;
-    color: var(--text);
-  }
-
-  .insulin-badge strong {
-    color: var(--accent);
-  }
-
-  @media print {
-    body { background: white; padding: 0; }
-    .recipe-card { box-shadow: none; border: 1px solid #ddd; }
-    .back-link { display: none; }
-    .below-card { page-break-before: always; }
-  }
-
-  @media (max-width: 600px) {
-    body { padding: 0.75rem; }
-    .recipe-header { padding: 1.5rem 1.25rem 1rem; }
-    .recipe-header h1 { font-size: 1.5rem; }
-    .recipe-body { padding: 1.25rem; }
-    .steps-list li { padding-left: 3rem; }
-    .meta-bar { font-size: 0.8rem; gap: 0.4rem 0.8rem; }
-  }
+  @media print { body { padding: 0; background: white; } .recipe-card { box-shadow: none; border-radius: 0; } .back-link, .bowl-toggle { display: none; } }
+  @media (max-width: 520px) { .recipe-header { padding: 24px 20px 18px; } .recipe-header h1 { font-size: 1.4em; } .meta-bar { padding: 12px 20px; gap: 12px; } .recipe-body { padding: 20px; } .ingredients-list, body.mode-1 ul[data-bowls="1"], body.mode-2 ul[data-bowls="2"] { columns: 1; } .timeline-bar { font-size: 0.6em; height: 26px; } }
 </style>
 </head>
-<body>
+<body class="mode-1">
 
-<a class="back-link" href="../index.html">← Back to all recipes</a>
+<a class="back-link" href="../index.html">&larr; Back to all recipes</a>
 
 <div class="recipe-card">
   <div class="recipe-header">
-    <h1>Vegetarian Phở Chay</h1>
+    <h1>Vegetarian Ph&#7903; Chay</h1>
     <div class="subtitle">Vietnamese noodle soup with charred aromatics, whole spices &amp; steamed tofu</div>
   </div>
 
+  <div class="bowl-toggle">
+    <button class="bowl-btn active" onclick="setMode(1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg>
+      1 Bowl
+    </button>
+    <button class="bowl-btn" onclick="setMode(2)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg>
+      2 Bowls
+    </button>
+  </div>
+
   <div class="meta-bar">
-    <span><strong>Device:</strong> Thermomix® TM6</span>
-    <span><strong>Prep:</strong> 15 min</span>
-    <span><strong>Cook:</strong> 35 min</span>
-    <span><strong>Total:</strong> 50 min</span>
-    <span><strong>Servings:</strong> 4</span>
+    <div class="meta-item"><span class="label">Device</span><span class="value">TM6</span></div>
+    <div class="meta-item"><span class="label">Prep</span><span class="value">15 min</span></div>
+    <div class="meta-item"><span class="label">Cook</span><span class="value" data-bowls="1">35 min</span><span class="value" data-bowls="2">~65 min</span></div>
+    <div class="meta-item"><span class="label">Total</span><span class="value" data-bowls="1">50 min</span><span class="value" data-bowls="2">~80 min</span></div>
+    <div class="meta-item"><span class="label">Servings</span><span class="value" data-bowls="1">4</span><span class="value" data-bowls="2">8</span></div>
   </div>
 
   <div class="recipe-body">
 
-    <h2>Ingredients</h2>
-
-    <div class="ingredient-group">
-      <h3>Broth — Aromatics &amp; Spices</h3>
-      <ul>
+    <!-- 1 BOWL INGREDIENTS -->
+    <div data-bowls="1">
+      <h2>Ingredients</h2>
+      <ul class="ingredients-list">
+        <li class="ing-group">Broth &mdash; Aromatics &amp; Spices</li>
         <li><span class="qty">3</span> whole star anise (~3 g)</li>
         <li><span class="qty">5</span> whole cloves (~1 g)</li>
         <li><span class="qty">1</span> cinnamon stick (~8 g)</li>
-        <li><span class="qty">3 g</span> coriander seeds (~1 tsp)</li>
+        <li><span class="qty">3 g</span> coriander seeds</li>
         <li><span class="qty">2</span> green cardamom pods (~1 g)</li>
-        <li><span class="qty">200 g</span> yellow onion (1 large), quartered</li>
-        <li><span class="qty">30 g</span> fresh ginger, sliced into coins (skin on)</li>
-        <li><span class="qty">15 g</span> neutral oil (sunflower or avocado)</li>
-      </ul>
-    </div>
-
-    <div class="ingredient-group">
-      <h3>Broth — Liquid &amp; Umami</h3>
-      <ul>
+        <li><span class="qty">200 g</span> yellow onion, quartered</li>
+        <li><span class="qty">30 g</span> fresh ginger, sliced (skin on)</li>
+        <li><span class="qty">15 g</span> neutral oil</li>
+        <li class="ing-group">Broth &mdash; Liquid &amp; Umami</li>
         <li><span class="qty">1000 g</span> vegetable stock, low-sodium</li>
-        <li><span class="qty">10 g</span> dried shiitake mushrooms (~3–4 pieces)</li>
-        <li><span class="qty">120 g</span> carrot (1 medium), halved lengthwise</li>
-        <li><span class="qty">100 g</span> daikon radish, peeled, in chunks (optional — adds sweetness)</li>
-        <li><span class="qty">25 g</span> soy sauce (or tamari for GF)</li>
-        <li><span class="qty">5 g</span> sugar (rock sugar preferred, granulated fine)</li>
-      </ul>
-    </div>
-
-    <div class="ingredient-group">
-      <h3>Varoma — Steamed Toppings</h3>
-      <ul>
-        <li><span class="qty">200 g</span> extra-firm tofu, sliced 1 cm thick</li>
-        <li><span class="qty">200 g</span> baby bok choy (2–3 heads), halved lengthwise</li>
-      </ul>
-    </div>
-
-    <div class="ingredient-group">
-      <h3>Noodles &amp; Garnish (prepared outside TM)</h3>
-      <ul>
-        <li><span class="qty">200 g</span> dried flat rice noodles (bánh phở, ~5 mm width)</li>
+        <li><span class="qty">10 g</span> dried shiitake (~3&ndash;4 pieces)</li>
+        <li><span class="qty">120 g</span> carrot, halved lengthwise</li>
+        <li><span class="qty">100 g</span> daikon radish, peeled, chunks (optional)</li>
+        <li><span class="qty">25 g</span> soy sauce (or tamari)</li>
+        <li><span class="qty">5 g</span> sugar (rock sugar preferred)</li>
+        <li class="ing-group">Varoma &mdash; Steamed Toppings</li>
+        <li><span class="qty">200 g</span> extra-firm tofu, sliced 1 cm</li>
+        <li><span class="qty">200 g</span> baby bok choy, halved</li>
+        <li class="ing-group">Noodles &amp; Garnish (outside TM)</li>
+        <li><span class="qty">200 g</span> dried flat rice noodles (b&aacute;nh ph&#7903;)</li>
         <li><span class="qty">100 g</span> bean sprouts</li>
-        <li><span class="qty">15 g</span> fresh Thai basil (½ bunch)</li>
-        <li><span class="qty">15 g</span> fresh cilantro (½ bunch)</li>
-        <li><span class="qty">10 g</span> fresh mint (~6–8 leaves)</li>
-        <li><span class="qty">2</span> limes, quartered (~60 ml juice)</li>
-        <li><span class="qty">1–2</span> jalapeño or bird's eye chili, thinly sliced</li>
-        <li><span class="qty">3–4</span> green onions, thinly sliced</li>
-        <li>Hoisin sauce, to serve</li>
-        <li>Sriracha, to serve</li>
+        <li><span class="qty">15 g</span> Thai basil</li>
+        <li><span class="qty">15 g</span> cilantro</li>
+        <li><span class="qty">10 g</span> fresh mint</li>
+        <li><span class="qty">2</span> limes, quartered</li>
+        <li><span class="qty">1&ndash;2</span> jalape&ntilde;o or bird&rsquo;s eye chili, sliced</li>
+        <li><span class="qty">3&ndash;4</span> green onions, sliced</li>
+        <li>Hoisin &amp; sriracha, to serve</li>
+        <li class="ing-group">Finishing</li>
+        <li><span class="qty">5&ndash;6 g</span> salt (reduce if stock is salted)</li>
+        <li><span class="qty">15 ml</span> lime juice</li>
       </ul>
     </div>
 
-    <div class="ingredient-group">
-      <h3>Finishing</h3>
-      <ul>
-        <li><span class="qty">5–6 g</span> salt (to taste — reduce if stock is salted)</li>
-        <li><span class="qty">15 ml</span> lime juice (½ lime, squeezed into broth)</li>
+    <!-- 2 BOWLS INGREDIENTS -->
+    <div data-bowls="2">
+      <h2>Ingredients (doubled &mdash; 2 batches of broth)</h2>
+      <p style="font-size:0.88em; color:var(--text-light); margin-bottom:8px;">Each bowl makes one full batch of broth. Varoma toppings, noodles, and garnish are prepared at double quantity. Only the first batch uses Varoma for steaming.</p>
+      <ul class="ingredients-list">
+        <li class="ing-group">Broth (total for both batches)</li>
+        <li><span class="qty">6</span> star anise (3 per batch)</li>
+        <li><span class="qty">10</span> cloves (5 per batch)</li>
+        <li><span class="qty">2</span> cinnamon sticks (1 per batch)</li>
+        <li><span class="qty">6 g</span> coriander seeds (3 g per batch)</li>
+        <li><span class="qty">4</span> cardamom pods (2 per batch)</li>
+        <li><span class="qty">400 g</span> yellow onion (200 g per batch)</li>
+        <li><span class="qty">60 g</span> fresh ginger (30 g per batch)</li>
+        <li><span class="qty">30 g</span> neutral oil (15 g per batch)</li>
+        <li><span class="qty">2000 g</span> vegetable stock (1000 g per batch)</li>
+        <li><span class="qty">20 g</span> dried shiitake (10 g per batch)</li>
+        <li><span class="qty">240 g</span> carrot (120 g per batch)</li>
+        <li><span class="qty">200 g</span> daikon (100 g per batch, optional)</li>
+        <li><span class="qty">50 g</span> soy sauce (25 g per batch)</li>
+        <li><span class="qty">10 g</span> sugar (5 g per batch)</li>
+        <li><span class="qty">10&ndash;12 g</span> salt (5&ndash;6 g per batch)</li>
+        <li><span class="qty">30 ml</span> lime juice (15 ml per batch)</li>
+        <li class="ing-group">Varoma &amp; Toppings (total)</li>
+        <li><span class="qty">400 g</span> extra-firm tofu, sliced 1 cm</li>
+        <li><span class="qty">400 g</span> baby bok choy, halved</li>
+        <li class="ing-group">Noodles &amp; Garnish (total)</li>
+        <li><span class="qty">400 g</span> dried flat rice noodles</li>
+        <li><span class="qty">200 g</span> bean sprouts</li>
+        <li><span class="qty">30 g</span> Thai basil</li>
+        <li><span class="qty">30 g</span> cilantro</li>
+        <li><span class="qty">20 g</span> mint</li>
+        <li><span class="qty">4</span> limes, quartered</li>
+        <li><span class="qty">2&ndash;3</span> chilis, sliced</li>
+        <li><span class="qty">6</span> green onions, sliced</li>
+        <li>Hoisin &amp; sriracha, to serve</li>
       </ul>
     </div>
 
-    <h2>Steps</h2>
+    <!-- 1 BOWL STEPS -->
+    <div data-bowls="1">
+      <h2>Preparation</h2>
+      <ol class="steps-list">
+        <li>Place star anise, cloves, cinnamon, coriander seeds, and cardamom into mixing bowl. Toast <span class="setting">3 min / 120&deg;C / speed 1</span>.</li>
+        <li>Add onion quarters, ginger, and oil. Saut&eacute; <span class="setting">5 min / 120&deg;C / speed 1</span>.</li>
+        <li>Add vegetable stock, dried shiitake, carrot halves, daikon (if using), soy sauce, and sugar. Stir to combine.</li>
+        <li>Place tofu in Varoma dish, bok choy on Varoma tray. Set Varoma on lid. <strong>Remove measuring cup</strong> (steam must escape). Cook <span class="setting">25 min / Varoma / speed 1</span>.</li>
+        <li><em>While broth simmers:</em> soak rice noodles in boiling water 15&ndash;20 min until pliable. Drain and rinse with cold water. Prepare garnish platter.</li>
+        <li>Remove Varoma. Transfer tofu and bok choy to a plate, cover to keep warm.</li>
+        <li>Insert simmering basket to strain broth. Press on solids, discard. Remove basket.</li>
+        <li>Add salt (5&ndash;6 g) and lime juice (15 ml). Mix <span class="setting">10 sec / speed 2</span>. Taste &mdash; should be savory, lightly sweet, and bright.</li>
+        <li><strong>Assemble:</strong> Divide noodles among 4 bowls. Top with tofu, bok choy, bean sprouts, green onion. Ladle hot broth over. Serve with basil, cilantro, mint, lime, chili, hoisin, sriracha.</li>
+      </ol>
+    </div>
 
-    <ol class="steps-list">
-      <li>
-        Place star anise, cloves, cinnamon stick, coriander seeds, and cardamom pods into mixing bowl. Toast dry spices <span class="setting">3 min / 120°C / speed 1</span>. Fragrant aroma will fill the kitchen — this is the backbone of phở.
-      </li>
-      <li>
-        Add onion quarters, ginger coins, and neutral oil to bowl. Sauté <span class="setting">5 min / 120°C / speed 1</span>. The onion and ginger will soften and brown lightly, building the charred aromatic base.
-      </li>
-      <li>
-        Add vegetable stock, dried shiitake mushrooms, carrot halves, daikon (if using), soy sauce, and sugar to bowl. Stir to combine.
-      </li>
-      <li>
-        Place tofu slices into Varoma dish. Arrange bok choy halves on Varoma tray. Set Varoma assembly on top of mixing bowl lid. Remove measuring cup (steam must escape). Cook <span class="setting">25 min / Varoma / speed 1</span>.
-      </li>
-      <li>
-        While broth simmers: soak rice noodles in a large bowl of boiling water (from kettle) for 15–20 min or until pliable but still chewy. Drain and rinse with cold water. Prepare all garnishes on a serving platter.
-      </li>
-      <li>
-        Remove Varoma. Transfer steamed tofu and bok choy to a plate and cover to keep warm.
-      </li>
-      <li>
-        Insert simmering basket into mixing bowl to strain broth. Press gently on solids with spatula, then discard solids. Remove simmering basket. You should have a clear, amber, intensely fragrant broth.
-      </li>
-      <li>
-        Season: add salt (<span class="qty">5–6 g</span>) and lime juice (<span class="qty">15 ml</span>) to broth. Mix <span class="setting">10 sec / speed 2</span>. Taste and adjust — the broth should be savory, lightly sweet, and bright.
-      </li>
-      <li>
-        <strong>Assemble bowls:</strong> Divide noodles among 4 large bowls. Top with steamed tofu, bok choy, bean sprouts, and sliced green onion. Ladle hot broth over noodles. Serve immediately with Thai basil, cilantro, mint, lime wedges, sliced chili, hoisin, and sriracha alongside.
-      </li>
-    </ol>
+    <!-- 2 BOWLS STEPS -->
+    <div data-bowls="2">
+      <h2>Preparation (2 Bowls)</h2>
+      <p style="font-size:0.88em; color:var(--text-light); margin-bottom:4px;"><strong>Strategy:</strong> Bowl 1 makes broth + Varoma steaming in one shot. During its 25-min cook, prep all garnishes and load Bowl 2 with pre-measured broth ingredients. Bowl 2 runs without Varoma (toppings already done) &mdash; use the steam vent time for extra tofu prep if needed.</p>
+      <p style="font-size:0.82em; color:var(--text-light); margin-bottom:12px;"><strong>Time saved vs two separate cooks:</strong> ~20 min (shared Varoma session, all garnish done during B1 simmer, immediate B2 start).</p>
+
+      <div class="timeline-bar">
+        <div class="tl-seg tl-b1" style="flex:3;">B1 toast</div>
+        <div class="tl-seg tl-b1" style="flex:5;">B1 saut&eacute;</div>
+        <div class="tl-seg tl-b1" style="flex:25;">B1 Varoma 25 min</div>
+        <div class="tl-seg tl-b1" style="flex:2;">B1 strain + season</div>
+        <div class="tl-seg tl-sw" style="flex:1;">&#8644;</div>
+        <div class="tl-seg tl-b2" style="flex:3;">B2 toast</div>
+        <div class="tl-seg tl-b2" style="flex:5;">B2 saut&eacute;</div>
+        <div class="tl-seg tl-b2" style="flex:25;">B2 simmer 25 min</div>
+        <div class="tl-seg tl-b2" style="flex:2;">B2 strain</div>
+      </div>
+
+      <ol class="steps-list">
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Place half the spices (3 star anise, 5 cloves, 1 cinnamon, 3 g coriander, 2 cardamom) into mixing bowl. Toast <span class="setting">3 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Add 200 g onion, 30 g ginger, 15 g oil. Saut&eacute; <span class="setting">5 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Add 1000 g stock, 10 g shiitake, 120 g carrot, 100 g daikon, 25 g soy sauce, 5 g sugar.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Load Varoma: <strong>all</strong> tofu (400 g) in dish, <strong>all</strong> bok choy (400 g) on tray. Set on lid. Remove measuring cup. Cook <span class="setting">25 min / Varoma / speed 1</span>.</li>
+        <li class="step-sw"><span class="bowl-label sw">&#9202; During B1 Varoma</span> Soak <strong>all</strong> 400 g rice noodles in boiling water. Pre-measure Bowl 2 broth ingredients (spices, 200 g onion, 30 g ginger, 15 g oil, 1000 g stock, etc.) into separate containers. Prepare full garnish platter (sprouts, herbs, limes, chili, onion).</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Remove Varoma. Transfer all steamed tofu and bok choy to a covered plate &mdash; this serves all 8 portions.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Insert simmering basket to strain broth. Press solids, discard. Remove basket. Add 5&ndash;6 g salt + 15 ml lime juice. Mix <span class="setting">10 sec / speed 2</span>. Pour into a large pot, cover to keep hot. Remove Bowl 1.</li>
+        <li class="step-sw"><span class="bowl-label sw">&#9202; Swap</span> Place Bowl 2 on base. Everything is pre-measured &mdash; zero delay.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Add remaining spices. Toast <span class="setting">3 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Add 200 g onion, 30 g ginger, 15 g oil. Saut&eacute; <span class="setting">5 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Add 1000 g stock, 10 g shiitake, 120 g carrot, 100 g daikon, 25 g soy sauce, 5 g sugar. Cook <span class="setting">25 min / 100&deg;C / speed 1</span> (no Varoma needed &mdash; toppings already steamed). Measuring cup on lid.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Strain with simmering basket. Season with salt + lime juice. Mix <span class="setting">10 sec / speed 2</span>. Combine with first batch.</li>
+        <li><strong>Assemble 8 bowls:</strong> Divide drained noodles. Top with steamed tofu, bok choy, sprouts, green onion. Ladle piping hot broth over. Serve with herbs, lime, chili, hoisin, sriracha.</li>
+      </ol>
+    </div>
 
     <h2>Tips &amp; Tricks</h2>
-
-    <ul class="tips-list">
-      <li><strong>Mushroom powder boost:</strong> For deeper umami, add 5 g mushroom bouillon powder (or MSG) with the stock in step 3. Trader Joe's carries mushroom umami seasoning that works perfectly.</li>
-      <li><strong>Charring hack:</strong> If you want a more authentic char on the onion and ginger, halve them and char cut-side down in a dry skillet for 3–4 min before adding to the TM at step 2. This adds a smoky depth the TM sauté can't fully replicate.</li>
-      <li><strong>Noodle texture:</strong> Don't boil the rice noodles — soaking in just-boiled water gives a chewier, more authentic texture. If they feel too firm, dunk briefly in boiling water for 10–15 sec.</li>
-      <li><strong>Leftover broth:</strong> This broth freezes beautifully for up to 3 months. Double the broth ingredients (skip the Varoma step) and freeze in 500 ml portions for instant phở on weeknights.</li>
-    </ul>
-
+    <div class="tips">
+      <ul>
+        <li><strong>Charring hack:</strong> For authentic char, halve onion and ginger and char cut-side down in a dry skillet 3&ndash;4 min before adding to TM at step 2.</li>
+        <li><strong>Mushroom powder boost:</strong> Add 5 g mushroom bouillon (Trader Joe&rsquo;s umami seasoning works) with the stock for deeper umami.</li>
+        <li><strong>Noodle texture:</strong> Soak in just-boiled water, don&rsquo;t boil. This gives chewier, more authentic texture.</li>
+        <li><strong>Broth freezes well:</strong> Up to 3 months. Great for instant weeknight ph&#7903;.</li>
+        <li data-bowls="2" style="font-weight:600;">2-bowl strategy: ~80 min for 8 servings. Bowl 1's Varoma session handles ALL tofu and bok choy for both batches. Bowl 2 only needs to simmer broth &mdash; no Varoma, faster turnaround.</li>
+      </ul>
+    </div>
   </div>
 </div>
 
 <div class="below-card">
-
   <h3>Sources &amp; References</h3>
   <ul>
-    <li><a href="https://cookieandkate.com/vegetarian-pho-recipe/" target="_blank">Cookie and Kate — Vegetarian Pho</a> (sautéed shiitake technique, broth/water ratio)</li>
-    <li><a href="https://www.gimmesomeoven.com/vegetarian-vegan-pho-recipe/" target="_blank">Gimme Some Oven — Vegan Pho</a> (5-spice base: star anise, cloves, cinnamon, cardamom, coriander)</li>
-    <li><a href="https://thevietvegan.com/homemade-vegan-vietnamese-pho/" target="_blank">The Viet Vegan — Homemade Vegan Phở</a> (dried shiitake for umami, mushroom powder tip)</li>
-    <li><a href="https://www.connoisseurusveg.com/easy-vegan-pho/" target="_blank">Connoisseurus Veg — Easy Vegan Pho</a> (charring aromatics, unsalted broth approach)</li>
-    <li><a href="https://www.loveandlemons.com/vegan-pho/" target="_blank">Love and Lemons — Vegan Pho</a> (toasted whole spices, bok choy and tofu toppings)</li>
-    <li><a href="https://cookidoo.thermomix.com/recipes/recipe/en-US/r819652" target="_blank">Cookidoo® — Vietnamese Chicken Pho (TM6)</a> (Thermomix step formatting reference)</li>
+    <li><a href="https://cookieandkate.com/vegetarian-pho-recipe/" target="_blank">Cookie and Kate &mdash; Vegetarian Pho</a></li>
+    <li><a href="https://www.gimmesomeoven.com/vegetarian-vegan-pho-recipe/" target="_blank">Gimme Some Oven &mdash; Vegan Pho</a></li>
+    <li><a href="https://thevietvegan.com/homemade-vegan-vietnamese-pho/" target="_blank">The Viet Vegan &mdash; Homemade Vegan Ph&#7903;</a></li>
+    <li><a href="https://www.connoisseurusveg.com/easy-vegan-pho/" target="_blank">Connoisseurus Veg &mdash; Easy Vegan Pho</a></li>
+    <li><a href="https://www.loveandlemons.com/vegan-pho/" target="_blank">Love and Lemons &mdash; Vegan Pho</a></li>
   </ul>
-
-  <h3>Nutrition Estimate <span style="font-weight: normal; font-size: 0.85rem;">(per serving, approximate)</span></h3>
-
-  <div class="nutrition-grid">
-    <div class="nutrition-item">
-      <div class="value">310</div>
-      <div class="label">Calories (kcal)</div>
-    </div>
-    <div class="nutrition-item">
-      <div class="value">44 g</div>
-      <div class="label">Carbohydrates</div>
-    </div>
-    <div class="nutrition-item">
-      <div class="value">4 g</div>
-      <div class="label">Fiber</div>
-    </div>
-    <div class="nutrition-item">
-      <div class="value">15 g</div>
-      <div class="label">Protein</div>
-    </div>
-    <div class="nutrition-item">
-      <div class="value">8 g</div>
-      <div class="label">Fat</div>
-    </div>
-  </div>
-
-  <div class="insulin-badge">
-    <strong>Insulin Load: 2 / 5</strong> — Moderate. Most comes from the rice noodles (~40 g starch per serve). The protein-fat from tofu and the fiber from vegetables slow the glycemic response. Swapping half the noodles for spiralized daikon or zucchini drops this to ~1.5.
-  </div>
-
+  <h3>Nutrition Estimate</h3>
+  <p data-bowls="1" style="font-size:0.85em; color:var(--text-light); margin-bottom:8px;">Per serving (~4 servings)</p>
+  <p data-bowls="2" style="font-size:0.85em; color:var(--text-light); margin-bottom:8px;">Per serving (~8 servings) &mdash; same per-serving values</p>
+  <div class="nutrition-grid"><div class="nutrition-box"><div class="n-value">~310</div><div class="n-label">Calories</div></div><div class="nutrition-box"><div class="n-value">~44 g</div><div class="n-label">Carbs</div></div><div class="nutrition-box"><div class="n-value">~4 g</div><div class="n-label">Fiber</div></div><div class="nutrition-box"><div class="n-value">~15 g</div><div class="n-label">Protein</div></div><div class="nutrition-box"><div class="n-value">~8 g</div><div class="n-label">Fat</div></div></div>
+  <div class="insulin-badge">Estimated Insulin Load: 2 / 5</div>
+  <p>Moderate. Most carbs from rice noodles (~40 g starch/serving). Tofu protein-fat and vegetable fiber slow glycemic response. Swap half the noodles for spiralized daikon to drop to ~1.5.</p>
 </div>
+
+<script>
+function setMode(n) {
+  document.body.className = 'mode-' + n;
+  document.querySelectorAll('.bowl-btn').forEach(function(btn, i) {
+    btn.classList.toggle('active', i === n - 1);
+  });
+}
+</script>
 
 </body>
 </html>

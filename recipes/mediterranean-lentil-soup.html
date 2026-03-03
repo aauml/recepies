@@ -1,581 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mediterranean Lentil Soup — Thermomix® TM6</title>
-  <style>
-    :root {
-      --warm: #f5f0e8;
-      --card: #fffdf8;
-      --accent: #b8622e;
-      --accent-light: #e8d5c4;
-      --text: #2c2420;
-      --text-light: #6b5e56;
-      --border: #e0d6ca;
-      --step-bg: #faf7f2;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mediterranean Lentil Soup &mdash; Thermomix&reg; TM6</title>
+<style>
+  :root {
+    --warm: #f5f0e8;
+    --card: #fffdf8;
+    --accent: #b8622e;
+    --accent-light: #e8d5c4;
+    --accent-dark: #8a4a1e;
+    --text: #2c2420;
+    --text-light: #6b5e56;
+    --border: #e0d6ca;
+    --step-bg: #faf7f2;
+    --bowl1: #2e7d6f;
+    --bowl1-light: #d0ece7;
+    --bowl2: #c0562b;
+    --bowl2-light: #f5ddd1;
+    --swap-bg: #e8e3dc;
+    --swap-text: #6b5e56;
+    --swap-border: #b0a89e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: var(--warm); color: var(--text); line-height: 1.6; padding: 24px 16px; }
+  .back-link { display: inline-block; max-width: 720px; margin: 0 auto 12px; font-size: 0.9em; color: var(--accent); text-decoration: none; }
+  .back-link:hover { text-decoration: underline; }
+  .recipe-card { max-width: 720px; margin: 0 auto; background: var(--card); border-radius: 12px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); overflow: hidden; }
+  .recipe-header { background: var(--accent); color: white; padding: 32px 32px 24px; }
+  .recipe-header h1 { font-size: 1.8em; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+  .recipe-header .subtitle { font-style: italic; opacity: 0.9; font-size: 0.95em; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  .bowl-toggle { display: flex; justify-content: center; gap: 0; padding: 12px 32px; background: #3d2e24; }
+  .bowl-btn { display: flex; align-items: center; gap: 6px; padding: 8px 22px; border: 2px solid rgba(255,255,255,0.25); background: transparent; color: rgba(255,255,255,0.65); font-family: inherit; font-size: 0.88em; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .bowl-btn:first-child { border-radius: 20px 0 0 20px; border-right: none; }
+  .bowl-btn:last-child { border-radius: 0 20px 20px 0; }
+  .bowl-btn.active { background: white; color: var(--accent-dark); border-color: white; }
+  .bowl-btn:hover:not(.active) { background: rgba(255,255,255,0.1); }
+  .bowl-btn svg { flex-shrink: 0; }
 
-    body {
-      background: var(--warm);
-      color: var(--text);
-      font-family: Georgia, 'Times New Roman', serif;
-      line-height: 1.65;
-      padding: 1.5rem;
-    }
+  .meta-bar { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px 32px; background: var(--accent-light); font-size: 0.88em; color: var(--text); }
+  .meta-item { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+  .meta-item .label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); }
+  .meta-item .value { font-weight: 700; font-size: 1.05em; }
 
-    .back-link {
-      display: inline-block;
-      margin-bottom: 1.5rem;
-      color: var(--accent);
-      text-decoration: none;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.875rem;
-      letter-spacing: 0.02em;
-    }
-    .back-link:hover { text-decoration: underline; }
+  .recipe-body { padding: 28px 32px; }
+  h2 { font-size: 1.15em; color: var(--accent); margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--accent-light); }
+  h2:first-of-type { margin-top: 0; }
+  .ingredients-list { list-style: none; columns: 2; column-gap: 24px; }
+  .ingredients-list li { padding: 4px 0; break-inside: avoid; font-size: 0.95em; }
+  .ingredients-list li .qty { font-weight: 700; color: var(--accent); }
+  .ing-group { font-weight: 700; font-size: 0.85em; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 10px; padding-top: 6px; break-inside: avoid; column-span: all; }
 
-    .recipe-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      max-width: 800px;
-      margin: 0 auto;
-      overflow: hidden;
-    }
+  .steps-list { list-style: none; counter-reset: step; }
+  .steps-list li { counter-increment: step; padding: 12px 16px; margin-bottom: 8px; background: var(--step-bg); border-radius: 8px; border-left: 4px solid var(--accent); font-size: 0.93em; }
+  .steps-list li::before { content: counter(step); display: inline-block; width: 26px; height: 26px; background: var(--accent); color: white; border-radius: 50%; text-align: center; line-height: 26px; font-size: 0.82em; font-weight: 700; margin-right: 10px; font-family: sans-serif; }
+  .setting { display: inline-block; background: var(--accent-light); color: var(--text); padding: 1px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.9em; font-weight: 600; margin: 0 2px; }
 
-    .recipe-header {
-      padding: 2rem 2.5rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
+  .steps-list li.step-b1 { border-left-color: var(--bowl1); }
+  .steps-list li.step-b1::before { background: var(--bowl1); }
+  .steps-list li.step-b2 { border-left-color: var(--bowl2); }
+  .steps-list li.step-b2::before { background: var(--bowl2); }
+  .steps-list li.step-sw { border-left-color: var(--swap-border); background: var(--swap-bg); font-style: italic; }
+  .steps-list li.step-sw::before { background: var(--swap-text); }
 
-    .recipe-header h1 {
-      font-size: 2rem;
-      color: var(--accent);
-      line-height: 1.2;
-      margin-bottom: 0.4rem;
-    }
+  .bowl-label { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 4px; font-family: sans-serif; font-size: 0.8em; font-weight: 700; margin-right: 6px; vertical-align: middle; color: white; }
+  .bowl-label.b1 { background: var(--bowl1); }
+  .bowl-label.b2 { background: var(--bowl2); }
+  .bowl-label.sw { background: var(--swap-text); }
+  .bowl-label svg { flex-shrink: 0; }
 
-    .recipe-header .subtitle {
-      color: var(--text-light);
-      font-style: italic;
-      font-size: 1rem;
-    }
+  .timeline-bar { display: flex; gap: 0; border-radius: 6px; overflow: hidden; margin: 12px 0 16px; font-family: sans-serif; font-size: 0.72em; font-weight: 600; height: 30px; }
+  .timeline-bar .tl-seg { display: flex; align-items: center; justify-content: center; color: white; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl-b1 { background: var(--bowl1); }
+  .tl-b2 { background: var(--bowl2); }
+  .tl-sw { background: var(--swap-text); }
 
-    .meta-bar {
-      background: var(--accent-light);
-      padding: 0.875rem 2.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.75rem;
-      border-bottom: 1px solid var(--border);
-    }
+  .tips { background: var(--step-bg); padding: 16px 20px; border-radius: 8px; font-size: 0.92em; }
+  .tips ul { list-style: disc; padding-left: 20px; }
+  .tips li { padding: 3px 0; }
 
-    .meta-item {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.75rem;
-      color: var(--text-light);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
+  [data-bowls="1"], [data-bowls="2"] { display: none; }
+  body.mode-1 [data-bowls="1"] { display: block; }
+  body.mode-2 [data-bowls="2"] { display: block; }
+  body.mode-1 span[data-bowls="1"] { display: inline; }
+  body.mode-2 span[data-bowls="2"] { display: inline; }
+  body.mode-1 li[data-bowls="1"] { display: list-item; }
+  body.mode-2 li[data-bowls="2"] { display: list-item; }
+  body.mode-1 ul[data-bowls="1"] { display: block; columns: 2; column-gap: 24px; }
+  body.mode-2 ul[data-bowls="2"] { display: block; columns: 2; column-gap: 24px; }
+  body.mode-1 ol[data-bowls="1"] { display: block; }
+  body.mode-2 ol[data-bowls="2"] { display: block; }
+  body.mode-1 p[data-bowls="1"] { display: block; }
+  body.mode-2 p[data-bowls="2"] { display: block; }
+  body.mode-1 div[data-bowls="1"] { display: block; }
+  body.mode-2 div[data-bowls="2"] { display: block; }
 
-    .meta-item strong {
-      display: block;
-      color: var(--text);
-      font-size: 0.95rem;
-      text-transform: none;
-      letter-spacing: 0;
-      font-family: Georgia, serif;
-      font-weight: normal;
-      margin-top: 0.1rem;
-    }
+  .below-card { max-width: 720px; margin: 24px auto 0; padding: 0 8px; }
+  .below-card h3 { font-size: 1em; color: var(--accent); margin: 20px 0 8px; }
+  .below-card p, .below-card ul { font-size: 0.9em; color: var(--text-light); line-height: 1.6; }
+  .below-card ul { list-style: disc; padding-left: 20px; }
+  .below-card a { color: var(--accent); text-decoration: none; }
+  .below-card a:hover { text-decoration: underline; }
+  .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin: 12px 0; }
+  .nutrition-box { text-align: center; padding: 10px 8px; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
+  .nutrition-box .n-value { font-size: 1.2em; font-weight: 700; color: var(--accent); }
+  .nutrition-box .n-label { font-size: 0.75em; text-transform: uppercase; color: var(--text-light); }
+  .insulin-badge { display: inline-block; background: var(--accent-light); padding: 4px 12px; border-radius: 20px; font-weight: 700; color: var(--accent); font-size: 0.9em; margin: 4px 0 8px; }
 
-    .recipe-body {
-      padding: 2rem 2.5rem;
-    }
-
-    h2 {
-      font-size: 0.8rem;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 1rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--border);
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-weight: 700;
-    }
-
-    .ingredients-section { margin-bottom: 2.25rem; }
-
-    .ingredient-group h3 {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-light);
-      margin: 1.25rem 0 0.5rem;
-    }
-
-    .ingredient-group:first-child h3 { margin-top: 0; }
-
-    .ingredient-list { list-style: none; }
-
-    .ingredient-list li {
-      padding: 0.3rem 0;
-      border-bottom: 1px dotted var(--border);
-      font-size: 0.925rem;
-      display: flex;
-      gap: 0.6rem;
-      align-items: baseline;
-    }
-
-    .ingredient-list li:last-child { border-bottom: none; }
-
-    .qty {
-      color: var(--accent);
-      font-weight: bold;
-      white-space: nowrap;
-      min-width: 4.5rem;
-      flex-shrink: 0;
-    }
-
-    .steps-section { margin-bottom: 2rem; }
-
-    .step {
-      background: var(--step-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.65rem;
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-
-    .step-num {
-      background: var(--accent);
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.72rem;
-      font-weight: 700;
-      width: 1.6rem;
-      height: 1.6rem;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 0.2rem;
-    }
-
-    .step-content {
-      flex: 1;
-      font-size: 0.925rem;
-    }
-
-    .bowl-badge {
-      display: inline-block;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 0.15rem 0.55rem;
-      border-radius: 4px;
-      margin-bottom: 0.4rem;
-    }
-
-    .bowl-1 { background: #d4e8f5; color: #1a4f72; }
-    .bowl-2 { background: #d5f5e3; color: #1a6335; }
-    .by-hand { background: #fef9e7; color: #7d6608; border: 1px solid #e8d96a; }
-    .to-serve { background: var(--accent-light); color: var(--accent); }
-
-    .setting {
-      display: inline-block;
-      background: var(--accent);
-      color: white;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.77rem;
-      padding: 0.1rem 0.4rem;
-      border-radius: 4px;
-      white-space: nowrap;
-    }
-
-    .tips-section { margin-bottom: 0.5rem; }
-
-    .tip {
-      padding: 0.55rem 0;
-      border-bottom: 1px dotted var(--border);
-      font-size: 0.9rem;
-      line-height: 1.55;
-    }
-
-    .tip:last-child { border-bottom: none; }
-    .tip strong { color: var(--accent); }
-
-    /* ---- Below card ---- */
-    .below-card {
-      max-width: 800px;
-      margin: 1.25rem auto 2rem;
-      padding: 0 0.25rem;
-      display: grid;
-      gap: 0.75rem;
-    }
-
-    .below-section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem 1.75rem;
-      font-size: 0.875rem;
-    }
-
-    .below-section h3 {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      color: var(--text-light);
-      margin-bottom: 0.6rem;
-      font-weight: 700;
-    }
-
-    .below-section a { color: var(--accent); }
-
-    .nutrition-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.6rem;
-      margin-bottom: 0.9rem;
-    }
-
-    .nutrition-item {
-      text-align: center;
-      padding: 0.5rem 0.25rem;
-      background: var(--warm);
-      border-radius: 6px;
-    }
-
-    .nutrition-item .value {
-      display: block;
-      font-size: 1.05rem;
-      font-weight: bold;
-      color: var(--accent);
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    .nutrition-item .label {
-      font-size: 0.7rem;
-      color: var(--text-light);
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    .insulin-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: var(--accent-light);
-      padding: 0.5rem 0.85rem;
-      border-radius: 6px;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.8rem;
-      color: var(--text);
-      flex-wrap: wrap;
-    }
-
-    .insulin-dots { display: flex; gap: 3px; align-items: center; }
-    .insulin-dots span {
-      display: inline-block;
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-    }
-    .dot-on { background: var(--accent); }
-    .dot-off { background: var(--border); }
-
-    .insulin-note {
-      color: var(--text-light);
-      font-size: 0.78rem;
-      margin-top: 0.4rem;
-      width: 100%;
-    }
-
-    /* Responsive */
-    @media (max-width: 620px) {
-      body { padding: 0.75rem; }
-      .recipe-header, .recipe-body { padding: 1.25rem; }
-      .meta-bar { padding: 0.75rem 1.25rem; gap: 0.9rem; }
-      .recipe-header h1 { font-size: 1.5rem; }
-      .nutrition-grid { grid-template-columns: repeat(3, 1fr); }
-      .below-section { padding: 1rem 1.25rem; }
-    }
-
-    @media print {
-      body { background: white; padding: 0; }
-      .back-link { display: none; }
-      .recipe-card { border: none; border-radius: 0; box-shadow: none; }
-      .step { break-inside: avoid; }
-    }
-  </style>
+  @media print { body { padding: 0; background: white; } .recipe-card { box-shadow: none; border-radius: 0; } .back-link, .bowl-toggle { display: none; } }
+  @media (max-width: 520px) { .recipe-header { padding: 24px 20px 18px; } .recipe-header h1 { font-size: 1.4em; } .meta-bar { padding: 12px 20px; gap: 12px; } .recipe-body { padding: 20px; } .ingredients-list, body.mode-1 ul[data-bowls="1"], body.mode-2 ul[data-bowls="2"] { columns: 1; } .timeline-bar { font-size: 0.6em; height: 26px; } }
+</style>
 </head>
-<body>
+<body class="mode-1">
 
-<a class="back-link" href="../index.html">← Back to all recipes</a>
+<a class="back-link" href="../index.html">&larr; Back to all recipes</a>
 
 <div class="recipe-card">
-
   <div class="recipe-header">
     <h1>Mediterranean Lentil Soup</h1>
-    <p class="subtitle">Two-bowl double batch · Preserved lemon · Herby oil finish</p>
+    <div class="subtitle">Preserved lemon, Aleppo pepper &amp; a bright herby oil &mdash; adapted from Rainbow Plant Life</div>
+  </div>
+
+  <div class="bowl-toggle">
+    <button class="bowl-btn active" onclick="setMode(1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg>
+      1 Bowl
+    </button>
+    <button class="bowl-btn" onclick="setMode(2)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg>
+      2 Bowls
+    </button>
   </div>
 
   <div class="meta-bar">
-    <div class="meta-item">Device<strong>Thermomix® TM6</strong></div>
-    <div class="meta-item">Prep<strong>15 min</strong></div>
-    <div class="meta-item">Active cook<strong>~65 min</strong></div>
-    <div class="meta-item">Servings<strong>8 (double batch)</strong></div>
-    <div class="meta-item">Workflow<strong>2-bowl parallel</strong></div>
+    <div class="meta-item"><span class="label">Device</span><span class="value">TM6</span></div>
+    <div class="meta-item"><span class="label">Prep</span><span class="value">15 min</span></div>
+    <div class="meta-item"><span class="label">Cook</span><span class="value" data-bowls="1">45 min</span><span class="value" data-bowls="2">~75 min</span></div>
+    <div class="meta-item"><span class="label">Total</span><span class="value" data-bowls="1">60 min</span><span class="value" data-bowls="2">~90 min</span></div>
+    <div class="meta-item"><span class="label">Servings</span><span class="value" data-bowls="1">4</span><span class="value" data-bowls="2">8</span></div>
   </div>
 
   <div class="recipe-body">
 
-    <!-- INGREDIENTS -->
-    <div class="ingredients-section">
+    <!-- 1 BOWL INGREDIENTS -->
+    <div data-bowls="1">
       <h2>Ingredients</h2>
-
-      <div class="ingredient-group">
-        <h3>Per Bowl — Make Twice (Bowl 1 + Bowl 2)</h3>
-        <ul class="ingredient-list">
-          <li><span class="qty">30 ml</span> extra virgin olive oil (for sautéing)</li>
-          <li><span class="qty">200 g</span> yellow onion (1 large), quartered</li>
-          <li><span class="qty">180 g</span> carrots (~3 medium), roughly chunked</li>
-          <li><span class="qty">22 g</span> garlic (6 cloves)</li>
-          <li><span class="qty">18 g</span> preserved lemon peel, finely chopped by hand</li>
-          <li><span class="qty">1 tsp</span> Aleppo pepper (or ½ tsp mild chilli flakes)</li>
-          <li><span class="qty">2 tsp</span> ground coriander</li>
-          <li><span class="qty">700 ml</span> vegetable broth</li>
-          <li><span class="qty">150 ml</span> water</li>
-          <li><span class="qty">200 g</span> green or brown lentils, rinsed</li>
-          <li><span class="qty">2</span> bay leaves + 8 fresh thyme sprigs (simmering basket)</li>
-          <li><span class="qty">12 g</span> nutritional yeast (~2–3 tbsp)</li>
-          <li><span class="qty">7 g</span> kosher salt (~1¼ tsp), plus more to taste</li>
-          <li><span class="qty">15 ml</span> lemon juice (½ lemon), added at the end</li>
-        </ul>
-      </div>
-
-      <div class="ingredient-group">
-        <h3>Herby Oil — One Batch Serves All 8</h3>
-        <ul class="ingredient-list">
-          <li><span class="qty">30 ml</span> good-quality extra virgin olive oil</li>
-          <li><span class="qty">16 g</span> fresh basil, dill, and/or flat-leaf parsley</li>
-          <li><span class="qty">1</span> lemon, zested</li>
-          <li><span class="qty">2 pinches</span> flaky sea salt</li>
-        </ul>
-      </div>
-
-      <div class="ingredient-group">
-        <h3>Yogurt Sauce — Optional, Serves All 8</h3>
-        <ul class="ingredient-list">
-          <li><span class="qty">240 g</span> plain vegan yogurt (Culina or Cocojune recommended)</li>
-          <li><span class="qty">20 ml</span> lemon juice</li>
-          <li><span class="qty">1 pinch</span> each salt and black pepper</li>
-        </ul>
-      </div>
+      <ul class="ingredients-list">
+        <li class="ing-group">Soup Base</li>
+        <li><span class="qty">200 g</span> onion (~1 large), quartered</li>
+        <li><span class="qty">180 g</span> carrots (~2 medium), in chunks</li>
+        <li><span class="qty">22 g</span> garlic (~5 cloves)</li>
+        <li><span class="qty">30 ml</span> olive oil</li>
+        <li><span class="qty">18 g</span> preserved lemon peel, chopped by hand</li>
+        <li><span class="qty">1 tsp</span> Aleppo pepper (or &frac12; tsp red pepper flakes)</li>
+        <li><span class="qty">2 tsp</span> ground coriander</li>
+        <li><span class="qty">200 g</span> green or brown lentils, rinsed</li>
+        <li><span class="qty">700 ml</span> vegetable broth</li>
+        <li><span class="qty">150 ml</span> water</li>
+        <li><span class="qty">2</span> bay leaves</li>
+        <li><span class="qty">3</span> fresh thyme sprigs</li>
+        <li><span class="qty">12 g</span> nutritional yeast</li>
+        <li><span class="qty">7 g</span> salt (adjust to taste)</li>
+        <li><span class="qty">15 ml</span> lemon juice</li>
+        <li class="ing-group">Herby Oil</li>
+        <li><span class="qty">30 ml</span> olive oil</li>
+        <li><span class="qty">16 g</span> fresh basil, dill, and/or parsley</li>
+        <li><span class="qty">1</span> lemon, zested</li>
+        <li><span class="qty">2 pinches</span> flaky sea salt</li>
+        <li class="ing-group">Optional Yogurt Sauce</li>
+        <li><span class="qty">120 g</span> plain vegan yogurt</li>
+        <li><span class="qty">10 ml</span> lemon juice</li>
+        <li><span class="qty">1 pinch</span> salt &amp; pepper</li>
+      </ul>
     </div>
 
-    <!-- STEPS -->
-    <div class="steps-section">
-      <h2>Steps</h2>
-
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2</span><br>
-          Add <span class="qty">180 g</span> chunked carrots and <span class="qty">22 g</span> garlic. Chop <span class="setting">5 sec / speed 5</span>. Scrape down with spatula. Transfer to a small bowl — label it <em>"Batch 1 carrots."</em>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2</span><br>
-          Add second batch: <span class="qty">180 g</span> carrots and <span class="qty">22 g</span> garlic. Chop <span class="setting">5 sec / speed 5</span>. Scrape down. Transfer to another bowl — label <em>"Batch 2 carrots."</em> Set Bowl 2 aside.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-1">Bowl 1</span><br>
-          Add <span class="qty">200 g</span> quartered onion. Chop <span class="setting">5 sec / speed 7</span>. Scrape down with spatula.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-1">Bowl 1</span><br>
-          Add <span class="qty">30 ml</span> olive oil. Sauté <span class="setting">12 min / 120°C / speed 1</span> until onion is softened and beginning to colour. Measuring cup on lid.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <span class="bowl-badge by-hand">By hand — during step 4</span><br>
-          Finely chop <span class="qty">36 g</span> total preserved lemon peel (18 g per bowl) by hand. Quarter the second onion (<span class="qty">200 g</span>). Measure out spices for both bowls.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">6</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-1">Bowl 1</span><br>
-          Add Batch 1 carrots/garlic and <span class="qty">18 g</span> preserved lemon peel. Sauté <span class="setting">5 min / 120°C / speed 1</span>.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">7</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-1">Bowl 1</span><br>
-          Add <span class="qty">1 tsp</span> Aleppo pepper and <span class="qty">2 tsp</span> ground coriander. Cook <span class="setting">1 min / 120°C / speed 1</span>.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">8</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-1">Bowl 1</span><br>
-          Place simmering basket in bowl with 2 bay leaves and thyme sprigs inside. Add <span class="qty">700 ml</span> vegetable broth, <span class="qty">150 ml</span> water, <span class="qty">200 g</span> rinsed lentils, and plenty of black pepper. Cook <span class="setting">22 min / 100°C / reverse speed 1</span>. Measuring cup on lid.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">9</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2 — swap (~30 sec)</span><br>
-          Swap to Bowl 2. Add <span class="qty">200 g</span> quartered second onion. Chop <span class="setting">5 sec / speed 7</span>. Scrape down. Add <span class="qty">30 ml</span> olive oil. Sauté <span class="setting">12 min / 120°C / speed 1</span>. Measuring cup on lid.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">10</div>
-        <div class="step-content">
-          <span class="bowl-badge by-hand">By hand — during step 9</span><br>
-          <strong>Herby Oil:</strong> finely chop <span class="qty">16 g</span> fresh herbs. Combine with zest of 1 lemon and <span class="qty">30 ml</span> olive oil. Season with flaky sea salt. Adjust to taste — looser is better for spooning.<br><br>
-          <strong>Yogurt Sauce (optional):</strong> stir <span class="qty">240 g</span> yogurt with <span class="qty">20 ml</span> lemon juice, salt, and pepper.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">11</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2</span><br>
-          Add Batch 2 carrots/garlic and <span class="qty">18 g</span> preserved lemon peel. Sauté <span class="setting">5 min / 120°C / speed 1</span>.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">12</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2</span><br>
-          Add <span class="qty">1 tsp</span> Aleppo pepper and <span class="qty">2 tsp</span> ground coriander. Cook <span class="setting">1 min / 120°C / speed 1</span>.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">13</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2</span><br>
-          Place simmering basket with bay leaves and thyme in bowl. Add <span class="qty">700 ml</span> broth, <span class="qty">150 ml</span> water, <span class="qty">200 g</span> rinsed lentils, black pepper. Cook <span class="setting">22 min / 100°C / reverse speed 1</span>. Measuring cup on lid.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">14</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-1">Bowl 1 — swap when Bowl 2 starts (~30 sec)</span><br>
-          Swap to Bowl 1. Lift out simmering basket; discard herbs. Stir in <span class="qty">12 g</span> nutritional yeast and <span class="qty">7 g</span> salt. Cook <span class="setting">2 min / 100°C / reverse speed 1</span>. Remove from heat. Stir in <span class="qty">15 ml</span> lemon juice. Taste and adjust salt and lemon. Transfer to a large pot or serving vessel to free the bowl.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">15</div>
-        <div class="step-content">
-          <span class="bowl-badge bowl-2">Bowl 2 — swap (~30 sec)</span><br>
-          Swap to Bowl 2. Lift out simmering basket; discard herbs. Stir in <span class="qty">12 g</span> nutritional yeast and <span class="qty">7 g</span> salt. Cook <span class="setting">2 min / 100°C / reverse speed 1</span>. Remove from heat. Stir in <span class="qty">15 ml</span> lemon juice. Taste and adjust.
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="step-num">16</div>
-        <div class="step-content">
-          <span class="bowl-badge to-serve">To serve</span><br>
-          Ladle soup into bowls. Spoon herby oil generously over each — don't be shy, this is what makes the soup. Add a dollop of yogurt sauce if using. Serve with crusty bread.
-        </div>
-      </div>
-
+    <!-- 2 BOWLS INGREDIENTS -->
+    <div data-bowls="2">
+      <h2>Ingredients (doubled &mdash; 2 batches)</h2>
+      <p style="font-size:0.88em; color:var(--text-light); margin-bottom:8px;">Split soup base ingredients evenly across both batches. Herby oil and yogurt sauce are made once at double quantity.</p>
+      <ul class="ingredients-list">
+        <li class="ing-group">Soup Base (total for both bowls)</li>
+        <li><span class="qty">400 g</span> onion (~2 large), quartered</li>
+        <li><span class="qty">360 g</span> carrots (~4 medium), in chunks</li>
+        <li><span class="qty">44 g</span> garlic (~10 cloves)</li>
+        <li><span class="qty">60 ml</span> olive oil (30 ml per batch)</li>
+        <li><span class="qty">36 g</span> preserved lemon peel, chopped by hand</li>
+        <li><span class="qty">2 tsp</span> Aleppo pepper (1 tsp per batch)</li>
+        <li><span class="qty">4 tsp</span> ground coriander (2 tsp per batch)</li>
+        <li><span class="qty">400 g</span> lentils (200 g per batch)</li>
+        <li><span class="qty">1400 ml</span> vegetable broth (700 ml per batch)</li>
+        <li><span class="qty">300 ml</span> water (150 ml per batch)</li>
+        <li><span class="qty">4</span> bay leaves (2 per batch)</li>
+        <li><span class="qty">6</span> thyme sprigs (3 per batch)</li>
+        <li><span class="qty">24 g</span> nutritional yeast (12 g per batch)</li>
+        <li><span class="qty">14 g</span> salt (7 g per batch)</li>
+        <li><span class="qty">30 ml</span> lemon juice (15 ml per batch)</li>
+        <li class="ing-group">Herby Oil (serves 8)</li>
+        <li><span class="qty">45 ml</span> olive oil</li>
+        <li><span class="qty">24 g</span> fresh herbs (basil, dill, parsley)</li>
+        <li><span class="qty">1</span> lemon, zested</li>
+        <li><span class="qty">2 pinches</span> flaky sea salt</li>
+        <li class="ing-group">Optional Yogurt Sauce (serves 8)</li>
+        <li><span class="qty">240 g</span> plain vegan yogurt</li>
+        <li><span class="qty">20 ml</span> lemon juice</li>
+        <li><span class="qty">1 pinch</span> salt &amp; pepper</li>
+      </ul>
     </div>
 
-    <!-- TIPS -->
-    <div class="tips-section">
-      <h2>Tips &amp; Tricks</h2>
-      <div class="tip"><strong>TM6 onion browning:</strong> The 120°C cap means you won't get as deep a fond as a screaming-hot Dutch oven. The extended 12-minute sauté compensates well — but if you want maximum caramelization, do the first onion step in a pan, then deglaze into the TM6 bowl before adding carrots.</div>
-      <div class="tip"><strong>Preserved lemons:</strong> Whole Foods stocks them (Mina brand is reliable in San Dimas area). Chop by hand rather than in the TM6 — the machine over-processes them into mush and you lose the pleasant textural bursts of flavour.</div>
-      <div class="tip"><strong>Lentil texture:</strong> Reverse speed 1 keeps the lentils intact. For a thicker, more broken-down soup, after cooking remove about a third of the lentils, pulse the bowl 3–4 times at speed 5 with the measuring cup off, then stir the whole lentils back in.</div>
-      <div class="tip"><strong>Meal prep storage:</strong> Both batches keep 5 days refrigerated. Store herby oil separately — basil blackens by day 2. Hold the lemon juice when freezing and add fresh upon reheating.</div>
+    <!-- 1 BOWL STEPS -->
+    <div data-bowls="1">
+      <h2>Preparation</h2>
+      <ol class="steps-list">
+        <li>Place carrots (180 g) and garlic (22 g) into mixing bowl. Chop <span class="setting">5 sec / speed 5</span>. Scrape down. Transfer to a small bowl.</li>
+        <li>Add onion (200 g). Chop <span class="setting">5 sec / speed 7</span>. Scrape down.</li>
+        <li>Add 30 ml olive oil. Saut&eacute; <span class="setting">12 min / 120&deg;C / speed 1</span>. Measuring cup on lid.</li>
+        <li><em>During saut&eacute;:</em> chop 18 g preserved lemon peel by hand. Measure out spices.</li>
+        <li>Add reserved carrots/garlic and preserved lemon. Saut&eacute; <span class="setting">5 min / 120&deg;C / speed 1</span>.</li>
+        <li>Add 1 tsp Aleppo pepper and 2 tsp coriander. Cook <span class="setting">1 min / 120&deg;C / speed 1</span>.</li>
+        <li>Place simmering basket with bay leaves and thyme inside bowl. Add 700 ml broth, 150 ml water, 200 g lentils, black pepper. Cook <span class="setting">22 min / 100&deg;C / &circlearrowright; speed 1</span>. Measuring cup on lid.</li>
+        <li><em>During simmer:</em> prepare herby oil &mdash; chop herbs, combine with lemon zest, olive oil, and flaky salt. Optional: stir yogurt sauce.</li>
+        <li>Lift out simmering basket, discard herbs. Stir in 12 g nutritional yeast and 7 g salt. Cook <span class="setting">2 min / 100&deg;C / &circlearrowright; speed 1</span>. Stir in 15 ml lemon juice. Taste and adjust.</li>
+        <li>Ladle into bowls. Spoon herby oil generously over each serving. Dollop yogurt sauce if using. Serve with crusty bread.</li>
+      </ol>
     </div>
 
-  </div><!-- /recipe-body -->
-</div><!-- /recipe-card -->
+    <!-- 2 BOWLS STEPS -->
+    <div data-bowls="2">
+      <h2>Preparation (2 Bowls)</h2>
+      <p style="font-size:0.88em; color:var(--text-light); margin-bottom:4px;"><strong>Strategy:</strong> Batch-chop all aromatics up front. Start Bowl 1 cooking. During its 12-min onion saut&eacute; + 22-min lentil simmer, prep condiments and pre-measure Bowl 2. Swap immediately when Bowl 1 finishes simmering.</p>
+      <p style="font-size:0.82em; color:var(--text-light); margin-bottom:12px;"><strong>Time saved vs two separate cooks:</strong> ~20 min (single chop session, condiments done during dead time, immediate Bowl 2 start).</p>
+
+      <div class="timeline-bar">
+        <div class="tl-seg tl-b1" style="flex:2;">Chop all</div>
+        <div class="tl-seg tl-b1" style="flex:12;">B1 onion saut&eacute;</div>
+        <div class="tl-seg tl-b1" style="flex:6;">B1 aromatics</div>
+        <div class="tl-seg tl-b1" style="flex:22;">B1 simmer 22 min</div>
+        <div class="tl-seg tl-b1" style="flex:3;">B1 finish</div>
+        <div class="tl-seg tl-sw" style="flex:1;">&#8644;</div>
+        <div class="tl-seg tl-b2" style="flex:12;">B2 onion saut&eacute;</div>
+        <div class="tl-seg tl-b2" style="flex:6;">B2 aromatics</div>
+        <div class="tl-seg tl-b2" style="flex:22;">B2 simmer 22 min</div>
+        <div class="tl-seg tl-b2" style="flex:3;">B2 finish</div>
+      </div>
+
+      <ol class="steps-list">
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Place <strong>all</strong> carrots (360 g) and garlic (44 g) into mixing bowl. Chop <span class="setting">5 sec / speed 5</span>. Scrape down. Transfer to a container, split into two equal halves.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Add first onion (200 g). Chop <span class="setting">5 sec / speed 7</span>. Scrape down.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Add 30 ml olive oil. Saut&eacute; <span class="setting">12 min / 120&deg;C / speed 1</span>. Measuring cup on lid.</li>
+        <li class="step-sw"><span class="bowl-label sw">&#9202; During B1 saut&eacute;</span> Chop all 36 g preserved lemon peel by hand (split into 2&times;18 g). Quarter second onion. Pre-measure spices for both batches. Place Bowl 2 veggies (half carrot/garlic + second onion) and ingredients ready beside machine.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Add half the carrots/garlic and 18 g preserved lemon. Saut&eacute; <span class="setting">5 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Add 1 tsp Aleppo pepper, 2 tsp coriander. Cook <span class="setting">1 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Simmering basket with 2 bay leaves + 3 thyme sprigs. Add 700 ml broth, 150 ml water, 200 g lentils, pepper. Cook <span class="setting">22 min / 100&deg;C / &circlearrowright; speed 1</span>. Measuring cup on lid.</li>
+        <li class="step-sw"><span class="bowl-label sw">&#9202; During B1 simmer</span> Prepare herby oil: chop 24 g herbs, combine with zest, 45 ml oil, flaky salt. Optional yogurt sauce: stir 240 g yogurt + 20 ml lemon + salt/pepper. Set aside &mdash; serves all 8.</li>
+        <li class="step-b1"><span class="bowl-label b1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 1</span> Remove basket, discard herbs. Add 12 g nutritional yeast, 7 g salt. Cook <span class="setting">2 min / 100&deg;C / &circlearrowright; speed 1</span>. Add 15 ml lemon juice. Pour into serving pot. Remove Bowl 1.</li>
+        <li class="step-sw"><span class="bowl-label sw">&#9202; Swap</span> Place Bowl 2 on base with second onion (200 g). Chop <span class="setting">5 sec / speed 7</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Add 30 ml olive oil. Saut&eacute; <span class="setting">12 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Add remaining carrots/garlic and 18 g preserved lemon. Saut&eacute; <span class="setting">5 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Add 1 tsp Aleppo pepper, 2 tsp coriander. Cook <span class="setting">1 min / 120&deg;C / speed 1</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Simmering basket with 2 bay leaves + 3 thyme. Add 700 ml broth, 150 ml water, 200 g lentils, pepper. Cook <span class="setting">22 min / 100&deg;C / &circlearrowright; speed 1</span>.</li>
+        <li class="step-b2"><span class="bowl-label b2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg> Bowl 2</span> Remove basket, discard herbs. Add 12 g nutritional yeast, 7 g salt. Cook <span class="setting">2 min / 100&deg;C / &circlearrowright; speed 1</span>. Add 15 ml lemon juice. Combine with first batch.</li>
+        <li>Ladle into bowls. Spoon herby oil generously over each serving. Dollop yogurt if using. Serve with crusty bread.</li>
+      </ol>
+    </div>
+
+    <h2>Tips &amp; Tricks</h2>
+    <div class="tips">
+      <ul>
+        <li><strong>Onion browning:</strong> TM6 caps at 120&deg;C, so the extended 12-min saut&eacute; compensates. For deeper caramelization, do onions in a pan first, then deglaze into the bowl.</li>
+        <li><strong>Preserved lemons:</strong> Chop by hand &mdash; the TM6 over-processes them into mush. Whole Foods stocks Mina brand.</li>
+        <li><strong>Lentil texture:</strong> Reverse mode keeps them intact. For thicker soup, remove a third, pulse <span class="setting">3&ndash;4 times / speed 5</span>, then recombine.</li>
+        <li><strong>Storage:</strong> Keeps 5 days refrigerated. Store herby oil separately &mdash; basil blackens by day 2. Hold the lemon juice when freezing.</li>
+        <li data-bowls="2" style="font-weight:600;">2-bowl strategy: ~90 min for 8 servings. The 12-min saut&eacute; + 22-min simmer in Bowl 1 gives you ~34 min to prep all condiments and measure Bowl 2 ingredients.</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 <div class="below-card">
-
-  <div class="below-section">
-    <h3>Source &amp; Reference</h3>
-    <p>Converted from: <a href="https://rainbowplantlife.com/lentil-soup/" target="_blank">Mediterranean Lentil Soup — Rainbow Plant Life by Nisha Vora</a></p>
-    <p style="margin-top:0.4rem;color:var(--text-light)">Adapted for Thermomix® TM6 with two-bowl double-batch workflow. Volume reduced per bowl (700 ml broth + 150 ml water) to stay within TM6 heat capacity (~1.5 L). Original serves 4 · This version yields 8 servings.</p>
-  </div>
-
-  <div class="below-section">
-    <h3>Nutrition Estimate — Per Serving (of 8)</h3>
-    <div class="nutrition-grid">
-      <div class="nutrition-item">
-        <span class="value">~325</span>
-        <span class="label">Calories</span>
-      </div>
-      <div class="nutrition-item">
-        <span class="value">41 g</span>
-        <span class="label">Carbs</span>
-      </div>
-      <div class="nutrition-item">
-        <span class="value">10 g</span>
-        <span class="label">Fiber</span>
-      </div>
-      <div class="nutrition-item">
-        <span class="value">14 g</span>
-        <span class="label">Protein</span>
-      </div>
-      <div class="nutrition-item">
-        <span class="value">13 g</span>
-        <span class="label">Fat</span>
-      </div>
-    </div>
-    <div class="insulin-badge">
-      <strong>Insulin load:</strong>
-      <span class="insulin-dots">
-        <span class="dot-on"></span><span class="dot-on"></span><span class="dot-off"></span><span class="dot-off"></span><span class="dot-off"></span>
-      </span>
-      <strong>2 / 5 — Low</strong>
-      <span class="insulin-note">High fiber from lentils (10 g/serving) significantly blunts glycemic response. Olive oil adds fat that further slows digestion. Main carbohydrate contributors: lentils and carrots, both low–medium GI.</span>
-    </div>
-  </div>
-
+  <h3>Sources &amp; References</h3>
+  <ul>
+    <li><a href="https://rainbowplantlife.com/lentil-soup/" target="_blank">Rainbow Plant Life &mdash; Mediterranean Lentil Soup by Nisha Vora</a> (source recipe)</li>
+  </ul>
+  <h3>Nutrition Estimate</h3>
+  <p data-bowls="1" style="font-size:0.85em; color:var(--text-light); margin-bottom:8px;">Per serving (~4 servings)</p>
+  <p data-bowls="2" style="font-size:0.85em; color:var(--text-light); margin-bottom:8px;">Per serving (~8 servings) &mdash; same per-serving values</p>
+  <div class="nutrition-grid"><div class="nutrition-box"><div class="n-value">~325</div><div class="n-label">Calories</div></div><div class="nutrition-box"><div class="n-value">~41 g</div><div class="n-label">Carbs</div></div><div class="nutrition-box"><div class="n-value">~10 g</div><div class="n-label">Fiber</div></div><div class="nutrition-box"><div class="n-value">~14 g</div><div class="n-label">Protein</div></div><div class="nutrition-box"><div class="n-value">~13 g</div><div class="n-label">Fat</div></div></div>
+  <div class="insulin-badge">Estimated Insulin Load: 2 / 5</div>
+  <p>High fiber from lentils (10 g/serving) blunts glycemic response. Olive oil slows digestion further. Main carb contributors: lentils and carrots, both low&ndash;medium GI.</p>
 </div>
+
+<script>
+function setMode(n) {
+  document.body.className = 'mode-' + n;
+  document.querySelectorAll('.bowl-btn').forEach(function(btn, i) {
+    btn.classList.toggle('active', i === n - 1);
+  });
+}
+</script>
 
 </body>
 </html>
