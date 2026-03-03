@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vegetarian Phở Chay — Thermomix® TM6</title>
+<style>
+  :root {
+    --warm: #f5f0e8;
+    --card: #fffdf8;
+    --accent: #b8622e;
+    --accent-light: #e8d5c4;
+    --text: #2c2420;
+    --text-light: #6b5e56;
+    --border: #e0d6ca;
+    --step-bg: #faf7f2;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--warm);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 1.5rem;
+  }
+
+  a { color: var(--accent); }
+
+  .back-link {
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  .recipe-card {
+    max-width: 720px;
+    margin: 0 auto 2rem;
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(44, 36, 32, 0.08);
+    overflow: hidden;
+  }
+
+  .recipe-header {
+    padding: 2.5rem 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .recipe-header h1 {
+    font-size: 2rem;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
+  }
+
+  .recipe-header .subtitle {
+    font-style: italic;
+    color: var(--text-light);
+    font-size: 1.05rem;
+  }
+
+  .meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.2rem;
+    padding: 1rem 1.5rem;
+    background: var(--accent-light);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .meta-bar span {
+    white-space: nowrap;
+  }
+
+  .meta-bar strong {
+    color: var(--accent);
+  }
+
+  .recipe-body {
+    padding: 2rem;
+  }
+
+  .recipe-body h2 {
+    font-size: 1.25rem;
+    color: var(--accent);
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--accent-light);
+  }
+
+  .recipe-body h2:first-child {
+    margin-top: 0;
+  }
+
+  .ingredient-group h3 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-light);
+    margin: 1.2rem 0 0.5rem;
+  }
+
+  .ingredient-group ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .ingredient-group li {
+    padding: 0.35rem 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 0.95rem;
+  }
+
+  .ingredient-group li:last-child {
+    border-bottom: none;
+  }
+
+  .qty {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .steps-list {
+    list-style: none;
+    padding: 0;
+    counter-reset: step;
+  }
+
+  .steps-list li {
+    counter-increment: step;
+    padding: 1rem 1rem 1rem 3.5rem;
+    margin-bottom: 0.75rem;
+    background: var(--step-bg);
+    border-radius: 10px;
+    position: relative;
+    font-size: 0.95rem;
+  }
+
+  .steps-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .setting {
+    display: inline-block;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.82rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .tips-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .tips-list li {
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    position: relative;
+    font-size: 0.95rem;
+  }
+
+  .tips-list li::before {
+    content: '💡';
+    position: absolute;
+    left: 0;
+  }
+
+  /* Below card */
+  .below-card {
+    max-width: 720px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .below-card h3 {
+    font-size: 1rem;
+    color: var(--text);
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  .below-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .below-card li {
+    padding: 0.25rem 0;
+  }
+
+  .below-card a {
+    font-size: 0.85rem;
+    word-break: break-all;
+  }
+
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  .nutrition-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem;
+    text-align: center;
+  }
+
+  .nutrition-item .value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .nutrition-item .label {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    margin-top: 0.15rem;
+  }
+
+  .insulin-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--accent-light);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .insulin-badge strong {
+    color: var(--accent);
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .recipe-card { box-shadow: none; border: 1px solid #ddd; }
+    .back-link { display: none; }
+    .below-card { page-break-before: always; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 0.75rem; }
+    .recipe-header { padding: 1.5rem 1.25rem 1rem; }
+    .recipe-header h1 { font-size: 1.5rem; }
+    .recipe-body { padding: 1.25rem; }
+    .steps-list li { padding-left: 3rem; }
+    .meta-bar { font-size: 0.8rem; gap: 0.4rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← Back to all recipes</a>
+
+<div class="recipe-card">
+  <div class="recipe-header">
+    <h1>Vegetarian Phở Chay</h1>
+    <div class="subtitle">Vietnamese noodle soup with charred aromatics, whole spices &amp; steamed tofu</div>
+  </div>
+
+  <div class="meta-bar">
+    <span><strong>Device:</strong> Thermomix® TM6</span>
+    <span><strong>Prep:</strong> 15 min</span>
+    <span><strong>Cook:</strong> 35 min</span>
+    <span><strong>Total:</strong> 50 min</span>
+    <span><strong>Servings:</strong> 4</span>
+  </div>
+
+  <div class="recipe-body">
+
+    <h2>Ingredients</h2>
+
+    <div class="ingredient-group">
+      <h3>Broth — Aromatics &amp; Spices</h3>
+      <ul>
+        <li><span class="qty">3</span> whole star anise (~3 g)</li>
+        <li><span class="qty">5</span> whole cloves (~1 g)</li>
+        <li><span class="qty">1</span> cinnamon stick (~8 g)</li>
+        <li><span class="qty">3 g</span> coriander seeds (~1 tsp)</li>
+        <li><span class="qty">2</span> green cardamom pods (~1 g)</li>
+        <li><span class="qty">200 g</span> yellow onion (1 large), quartered</li>
+        <li><span class="qty">30 g</span> fresh ginger, sliced into coins (skin on)</li>
+        <li><span class="qty">15 g</span> neutral oil (sunflower or avocado)</li>
+      </ul>
+    </div>
+
+    <div class="ingredient-group">
+      <h3>Broth — Liquid &amp; Umami</h3>
+      <ul>
+        <li><span class="qty">1000 g</span> vegetable stock, low-sodium</li>
+        <li><span class="qty">10 g</span> dried shiitake mushrooms (~3–4 pieces)</li>
+        <li><span class="qty">120 g</span> carrot (1 medium), halved lengthwise</li>
+        <li><span class="qty">100 g</span> daikon radish, peeled, in chunks (optional — adds sweetness)</li>
+        <li><span class="qty">25 g</span> soy sauce (or tamari for GF)</li>
+        <li><span class="qty">5 g</span> sugar (rock sugar preferred, granulated fine)</li>
+      </ul>
+    </div>
+
+    <div class="ingredient-group">
+      <h3>Varoma — Steamed Toppings</h3>
+      <ul>
+        <li><span class="qty">200 g</span> extra-firm tofu, sliced 1 cm thick</li>
+        <li><span class="qty">200 g</span> baby bok choy (2–3 heads), halved lengthwise</li>
+      </ul>
+    </div>
+
+    <div class="ingredient-group">
+      <h3>Noodles &amp; Garnish (prepared outside TM)</h3>
+      <ul>
+        <li><span class="qty">200 g</span> dried flat rice noodles (bánh phở, ~5 mm width)</li>
+        <li><span class="qty">100 g</span> bean sprouts</li>
+        <li><span class="qty">15 g</span> fresh Thai basil (½ bunch)</li>
+        <li><span class="qty">15 g</span> fresh cilantro (½ bunch)</li>
+        <li><span class="qty">10 g</span> fresh mint (~6–8 leaves)</li>
+        <li><span class="qty">2</span> limes, quartered (~60 ml juice)</li>
+        <li><span class="qty">1–2</span> jalapeño or bird's eye chili, thinly sliced</li>
+        <li><span class="qty">3–4</span> green onions, thinly sliced</li>
+        <li>Hoisin sauce, to serve</li>
+        <li>Sriracha, to serve</li>
+      </ul>
+    </div>
+
+    <div class="ingredient-group">
+      <h3>Finishing</h3>
+      <ul>
+        <li><span class="qty">5–6 g</span> salt (to taste — reduce if stock is salted)</li>
+        <li><span class="qty">15 ml</span> lime juice (½ lime, squeezed into broth)</li>
+      </ul>
+    </div>
+
+    <h2>Steps</h2>
+
+    <ol class="steps-list">
+      <li>
+        Place star anise, cloves, cinnamon stick, coriander seeds, and cardamom pods into mixing bowl. Toast dry spices <span class="setting">3 min / 120°C / speed 1</span>. Fragrant aroma will fill the kitchen — this is the backbone of phở.
+      </li>
+      <li>
+        Add onion quarters, ginger coins, and neutral oil to bowl. Sauté <span class="setting">5 min / 120°C / speed 1</span>. The onion and ginger will soften and brown lightly, building the charred aromatic base.
+      </li>
+      <li>
+        Add vegetable stock, dried shiitake mushrooms, carrot halves, daikon (if using), soy sauce, and sugar to bowl. Stir to combine.
+      </li>
+      <li>
+        Place tofu slices into Varoma dish. Arrange bok choy halves on Varoma tray. Set Varoma assembly on top of mixing bowl lid. Remove measuring cup (steam must escape). Cook <span class="setting">25 min / Varoma / speed 1</span>.
+      </li>
+      <li>
+        While broth simmers: soak rice noodles in a large bowl of boiling water (from kettle) for 15–20 min or until pliable but still chewy. Drain and rinse with cold water. Prepare all garnishes on a serving platter.
+      </li>
+      <li>
+        Remove Varoma. Transfer steamed tofu and bok choy to a plate and cover to keep warm.
+      </li>
+      <li>
+        Insert simmering basket into mixing bowl to strain broth. Press gently on solids with spatula, then discard solids. Remove simmering basket. You should have a clear, amber, intensely fragrant broth.
+      </li>
+      <li>
+        Season: add salt (<span class="qty">5–6 g</span>) and lime juice (<span class="qty">15 ml</span>) to broth. Mix <span class="setting">10 sec / speed 2</span>. Taste and adjust — the broth should be savory, lightly sweet, and bright.
+      </li>
+      <li>
+        <strong>Assemble bowls:</strong> Divide noodles among 4 large bowls. Top with steamed tofu, bok choy, bean sprouts, and sliced green onion. Ladle hot broth over noodles. Serve immediately with Thai basil, cilantro, mint, lime wedges, sliced chili, hoisin, and sriracha alongside.
+      </li>
+    </ol>
+
+    <h2>Tips &amp; Tricks</h2>
+
+    <ul class="tips-list">
+      <li><strong>Mushroom powder boost:</strong> For deeper umami, add 5 g mushroom bouillon powder (or MSG) with the stock in step 3. Trader Joe's carries mushroom umami seasoning that works perfectly.</li>
+      <li><strong>Charring hack:</strong> If you want a more authentic char on the onion and ginger, halve them and char cut-side down in a dry skillet for 3–4 min before adding to the TM at step 2. This adds a smoky depth the TM sauté can't fully replicate.</li>
+      <li><strong>Noodle texture:</strong> Don't boil the rice noodles — soaking in just-boiled water gives a chewier, more authentic texture. If they feel too firm, dunk briefly in boiling water for 10–15 sec.</li>
+      <li><strong>Leftover broth:</strong> This broth freezes beautifully for up to 3 months. Double the broth ingredients (skip the Varoma step) and freeze in 500 ml portions for instant phở on weeknights.</li>
+    </ul>
+
+  </div>
+</div>
+
+<div class="below-card">
+
+  <h3>Sources &amp; References</h3>
+  <ul>
+    <li><a href="https://cookieandkate.com/vegetarian-pho-recipe/" target="_blank">Cookie and Kate — Vegetarian Pho</a> (sautéed shiitake technique, broth/water ratio)</li>
+    <li><a href="https://www.gimmesomeoven.com/vegetarian-vegan-pho-recipe/" target="_blank">Gimme Some Oven — Vegan Pho</a> (5-spice base: star anise, cloves, cinnamon, cardamom, coriander)</li>
+    <li><a href="https://thevietvegan.com/homemade-vegan-vietnamese-pho/" target="_blank">The Viet Vegan — Homemade Vegan Phở</a> (dried shiitake for umami, mushroom powder tip)</li>
+    <li><a href="https://www.connoisseurusveg.com/easy-vegan-pho/" target="_blank">Connoisseurus Veg — Easy Vegan Pho</a> (charring aromatics, unsalted broth approach)</li>
+    <li><a href="https://www.loveandlemons.com/vegan-pho/" target="_blank">Love and Lemons — Vegan Pho</a> (toasted whole spices, bok choy and tofu toppings)</li>
+    <li><a href="https://cookidoo.thermomix.com/recipes/recipe/en-US/r819652" target="_blank">Cookidoo® — Vietnamese Chicken Pho (TM6)</a> (Thermomix step formatting reference)</li>
+  </ul>
+
+  <h3>Nutrition Estimate <span style="font-weight: normal; font-size: 0.85rem;">(per serving, approximate)</span></h3>
+
+  <div class="nutrition-grid">
+    <div class="nutrition-item">
+      <div class="value">310</div>
+      <div class="label">Calories (kcal)</div>
+    </div>
+    <div class="nutrition-item">
+      <div class="value">44 g</div>
+      <div class="label">Carbohydrates</div>
+    </div>
+    <div class="nutrition-item">
+      <div class="value">4 g</div>
+      <div class="label">Fiber</div>
+    </div>
+    <div class="nutrition-item">
+      <div class="value">15 g</div>
+      <div class="label">Protein</div>
+    </div>
+    <div class="nutrition-item">
+      <div class="value">8 g</div>
+      <div class="label">Fat</div>
+    </div>
+  </div>
+
+  <div class="insulin-badge">
+    <strong>Insulin Load: 2 / 5</strong> — Moderate. Most comes from the rice noodles (~40 g starch per serve). The protein-fat from tofu and the fiber from vegetables slow the glycemic response. Swapping half the noodles for spiralized daikon or zucchini drops this to ~1.5.
+  </div>
+
+</div>
+
+</body>
+</html>
