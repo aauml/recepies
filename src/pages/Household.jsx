@@ -42,11 +42,11 @@ export default function Household() {
         subtitle={household ? `${members.length} member${members.length !== 1 ? 's' : ''}` : 'Share with your family'}
       />
 
-      {/* Pending invites for this user */}
-      {pendingInvites.length > 0 && (
+      {/* Pending invites for this user (only invites addressed to their email, not outgoing) */}
+      {pendingInvites.filter(inv => inv.email?.toLowerCase() === user?.email?.toLowerCase() && (!household || inv.household_id !== household.id)).length > 0 && (
         <div className="px-5 py-3">
           <h2 className="text-sm font-bold mb-2">You're Invited</h2>
-          {pendingInvites.map((inv) => (
+          {pendingInvites.filter(inv => inv.email?.toLowerCase() === user?.email?.toLowerCase() && (!household || inv.household_id !== household.id)).map((inv) => (
             <div key={inv.id} className="bg-accent-light border border-accent/30 rounded-xl p-4 mb-2">
               <p className="text-sm font-semibold text-accent-dark">
                 &#127968; Join &ldquo;{inv.households?.name || 'Household'}&rdquo;
