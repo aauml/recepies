@@ -65,10 +65,15 @@ export default function RecipeDetail() {
   async function deleteRecipe() {
     setDeleting(true)
     setDeleteError('')
-    const { error } = await supabase.from('recipes').delete().eq('id', id)
+    const { error, count } = await supabase.from('recipes').delete({ count: 'exact' }).eq('id', id)
     if (error) {
       console.error('Delete recipe error:', error)
       setDeleteError(error.message || 'Could not delete recipe')
+      setDeleting(false)
+      return
+    }
+    if (count === 0) {
+      setDeleteError('Only the recipe creator can delete this recipe.')
       setDeleting(false)
       return
     }
@@ -112,24 +117,25 @@ export default function RecipeDetail() {
   const time = bowlMode === 1 ? recipe.time_1bowl : recipe.time_2bowl
 
   const has2bowl = recipe.ingredients_2bowl && recipe.steps_2bowl
+  const isCreator = recipe.created_by === user?.id
 
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
       {/* Header */}
       <AppHeader title={recipe.title} subtitle={recipe.description}>
         <div className="flex items-center gap-2 shrink-0">
-          <Link
+          {isCreator && <Link
             to={`/recipes/${recipe.id}/edit`}
             className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0 bg-white/15 px-3 py-1 rounded-lg"
           >
             &#9998; Edit
-          </Link>
-          <button
+          </Link>}
+          {isCreator && <button
             onClick={() => setShowDelete(true)}
             className="text-white/60 text-sm min-h-0 min-w-0 bg-white/10 px-3 py-1 rounded-lg"
           >
             &#128465;
-          </button>
+          </button>}
         </div>
       </AppHeader>
 
