@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 const tabs = [
   { to: '/recipes', icon: '\uD83D\uDCD6', label: 'Recipes' },
@@ -8,19 +8,8 @@ const tabs = [
 ]
 
 export default function TabBar({ shoppingCount = 0 }) {
-  const navigate = useNavigate()
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-warm-card border-t border-warm-border flex safe-bottom z-50">
-      {/* Logo / Home button */}
-      <button
-        onClick={() => navigate('/recipes')}
-        className="flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-h-0 bg-transparent"
-      >
-        <span className="text-[1.4em] leading-none">&#127858;</span>
-        <span className="text-[0.55em] text-accent font-bold tracking-tight">TM6</span>
-      </button>
-
       {tabs.map((tab) => (
         <NavLink
           key={tab.to}

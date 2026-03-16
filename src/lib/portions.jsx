@@ -87,16 +87,16 @@ export function MeasurementBadges({ name, qty, unit, estimate, compact = false }
       <span className="text-xs tabular-nums">
         <span className="font-semibold text-accent">{m.metric}</span>
         {m.imperial && <span className="text-[#2563eb] ml-1">({m.imperial})</span>}
-        {m.visual && <span className="text-green ml-1">{m.visual}</span>}
+        {m.visual && <span className="text-[#2e7d6f] ml-1">{m.visual}</span>}
       </span>
     )
   }
 
   return (
-    <div className="flex flex-wrap gap-1 mt-0.5">
+    <div className="flex flex-wrap gap-1.5 mt-0.5">
       <span className="text-xs font-semibold text-accent tabular-nums">{m.metric}</span>
-      {m.imperial && <span className="text-[0.65rem] px-1.5 py-0 rounded-full bg-[#eff6ff] text-[#2563eb] font-mono">{m.imperial}</span>}
-      {m.visual && <span className="text-[0.65rem] px-1.5 py-0 rounded-full bg-green-light text-green font-mono">{m.visual}</span>}
+      {m.imperial && <span className="text-[0.65rem] text-[#2563eb] font-mono tabular-nums">{m.imperial}</span>}
+      {m.visual && <span className="text-[0.65rem] text-[#2e7d6f] font-mono">{m.visual}</span>}
     </div>
   )
 }
@@ -105,10 +105,10 @@ export function MeasurementBadgesDark({ name, qty, unit, estimate }) {
   const m = getMeasurements(name, qty, unit, estimate)
   if (!m.metric && !m.imperial && !m.visual) return null
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       <span className="text-xs font-semibold text-dark-warm-light tabular-nums">{m.metric}</span>
-      {m.imperial && <span className="text-[0.65rem] px-1.5 rounded-full bg-[#1e3a5f] text-[#93c5fd] font-mono">{m.imperial}</span>}
-      {m.visual && <span className="text-[0.65rem] px-1.5 rounded-full bg-[#1a3a2a] text-[#86efac] font-mono">{m.visual}</span>}
+      {m.imperial && <span className="text-[0.65rem] text-[#93c5fd] font-mono tabular-nums">{m.imperial}</span>}
+      {m.visual && <span className="text-[0.65rem] text-[#86efac] font-mono">{m.visual}</span>}
     </div>
   )
 }

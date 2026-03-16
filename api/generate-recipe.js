@@ -11,24 +11,84 @@ export default async function handler(req, res) {
 
   // If input looks like a URL, try to fetch its content
   let context = input.trim()
+  let sourceUrl = null
   const urlMatch = context.match(/^https?:\/\/\S+/)
   if (urlMatch) {
-    try {
-      const resp = await fetch(urlMatch[0], {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)' },
-        signal: AbortSignal.timeout(8000),
-      })
-      const html = await resp.text()
-      const text = html
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 12000)
-      context = `Convert this recipe from: ${urlMatch[0]}\n\nExtracted content:\n${text}`
-    } catch {
-      context = `Convert this recipe from URL: ${urlMatch[0]} (could not fetch — generate from your knowledge of this recipe)`
+    sourceUrl = urlMatch[0]
+    const isYouTube = /youtube\.com\/watch|youtu\.be\//.test(sourceUrl)
+
+    if (isYouTube) {
+      // Extract YouTube video ID and try to get transcript
+      let videoId = ''
+      const ytMatch = sourceUrl.match(/(?:v=|youtu\.be\/)([\w-]{11})/)
+      if (ytMatch) videoId = ytMatch[1]
+
+      let transcript = ''
+      if (videoId) {
+        try {
+          // Try fetching YouTube transcript via timedtext API
+          const langResp = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)' },
+            signal: AbortSignal.timeout(8000),
+          })
+          const pageHtml = await langResp.text()
+
+          // Extract captions track URL from page
+          const captionMatch = pageHtml.match(/"captionTracks":\[.*?"baseUrl":"(.*?)"/s)
+          if (captionMatch) {
+            const captionUrl = captionMatch[1].replace(/\\u0026/g, '&')
+            const captResp = await fetch(captionUrl, { signal: AbortSignal.timeout(8000) })
+            const captXml = await captResp.text()
+            transcript = captXml
+              .replace(/<[^>]*>/g, ' ')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .replace(/&#39;/g, "'")
+              .replace(/&quot;/g, '"')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 15000)
+          }
+        } catch {}
+      }
+
+      // Also fetch the page text for title/description
+      let pageText = ''
+      try {
+        const resp = await fetch(sourceUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)' },
+          signal: AbortSignal.timeout(8000),
+        })
+        const html = await resp.text()
+        const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i)
+        pageText = titleMatch ? titleMatch[1] : ''
+      } catch {}
+
+      if (transcript) {
+        context = `Convert this YouTube recipe video into a Thermomix recipe.\nVideo: ${sourceUrl}\nTitle: ${pageText}\n\nTranscript:\n${transcript}`
+      } else {
+        context = `Convert this YouTube recipe video: ${sourceUrl}\nTitle: ${pageText}\n(Could not extract transcript — generate from your knowledge of this recipe and the video title)`
+      }
+    } else {
+      // Regular website
+      try {
+        const resp = await fetch(sourceUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)' },
+          signal: AbortSignal.timeout(8000),
+        })
+        const html = await resp.text()
+        const text = html
+          .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 12000)
+        context = `Convert this recipe from: ${sourceUrl}\n\nExtracted content:\n${text}`
+      } catch {
+        context = `Convert this recipe from URL: ${sourceUrl} (could not fetch — generate from your knowledge of this recipe)`
+      }
     }
   }
 
@@ -96,19 +156,24 @@ When using Thermomix TM6, every step MUST include the correct Thermomix settings
 ### If user provides a dish name:
 Search your knowledge for well-regarded variations. Synthesize the best elements into one optimized recipe.
 
-**Source URLs requirements:**
-- source_urls MUST contain direct, working links to real recipe pages that inspired the recipe
-- Use well-known, reliable recipe sites: Serious Eats, Budget Bytes, Bon Appétit, NYT Cooking, BBC Good Food, Epicurious, Allrecipes, Food52, King Arthur Baking, Cookie and Kate, Minimalist Baker
-- Each URL must be a direct link to a specific recipe page (not a homepage or search page)
-- Include 2-3 source URLs per recipe
-- Format: full URL like "https://www.seriouseats.com/recipe-name-12345"
-- If you're not confident a URL is real, omit it rather than guess
-
 ### If user provides a URL or recipe text:
 Extract the original recipe. Convert every step to ${appliance}-equivalent operations. Reorder for efficiency.
+${sourceUrl ? `\nIMPORTANT: The user provided this source URL: ${sourceUrl}\nThis URL MUST be included as the FIRST entry in source_urls. Then add 1-2 complementary source URLs from other reliable sites for comparison/verification.` : ''}
+
+### If user provides a YouTube video:
+Extract the recipe from the video transcript. Convert to ${appliance} format. Include the YouTube URL as the first source.
 
 ### If user provides ingredients:
 Propose a recipe maximizing those ingredients. Minimize additional items needed.
+
+## Source URLs Rules
+- source_urls MUST contain direct, working links to SPECIFIC recipe pages
+- Use well-known, reliable sites: Serious Eats, Budget Bytes, Bon Appétit, BBC Good Food, Epicurious, Allrecipes, Food52, Cookie and Kate, Minimalist Baker
+- Each URL must be a direct link to a specific recipe page — NEVER a homepage, search page, or category page
+- Include the full URL path (e.g. "https://www.seriouseats.com/creamy-coconut-red-lentil-soup-recipe")
+- If the user provided a URL, always include it as the first source
+- Add 1-2 additional source URLs from other reliable sites
+- If you are not confident a URL points to a real specific recipe page, omit it
 
 ## Core Defaults
 - **Vegetarian by default**: No meat, no fish, no gelatin. Eggs and dairy ARE allowed. Use vegetable stock always. Substitute meat with tofu, tempeh, seitan, legumes, or mushrooms.
@@ -185,7 +250,8 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
 - Vegetarian (unless user overrode it)
 - Both 1-bowl and 2-bowl versions
 - 2-bowl ingredients correctly doubled
-- 2-bowl workflow genuinely optimized`
+- 2-bowl workflow genuinely optimized
+- Source URLs are direct links to specific recipe pages (not homepages)`
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -222,6 +288,15 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
     }
 
     const recipe = JSON.parse(braceMatch[0])
+
+    // Ensure source URL is included if user provided one
+    if (sourceUrl) {
+      if (!recipe.source_urls) recipe.source_urls = []
+      if (!recipe.source_urls.includes(sourceUrl)) {
+        recipe.source_urls.unshift(sourceUrl)
+      }
+    }
+
     return res.status(200).json(recipe)
   } catch (err) {
     console.error('generate-recipe error:', err)

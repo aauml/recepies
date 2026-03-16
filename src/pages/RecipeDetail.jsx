@@ -12,6 +12,11 @@ export default function RecipeDetail() {
   const [bowlMode, setBowlMode] = useState(1)
   const [loading, setLoading] = useState(true)
   const [addedToShopping, setAddedToShopping] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
 
   useEffect(() => {
     supabase
@@ -49,6 +54,40 @@ export default function RecipeDetail() {
     }
   }
 
+  async function deleteRecipe() {
+    setDeleting(true)
+    await supabase.from('recipes').delete().eq('id', id)
+    setDeleting(false)
+    navigate('/recipes')
+  }
+
+  async function handleAiEdit() {
+    if (!aiPrompt.trim() || !recipe) return
+    setAiLoading(true)
+    setAiError('')
+    try {
+      const resp = await fetch('/api/edit-recipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipe, instruction: aiPrompt.trim() }),
+      })
+      if (!resp.ok) throw new Error('AI edit failed')
+      const updated = await resp.json()
+      // Save to DB
+      const { error } = await supabase.from('recipes').update({
+        ...updated,
+        updated_at: new Date().toISOString(),
+      }).eq('id', id)
+      if (!error) {
+        setRecipe((r) => ({ ...r, ...updated }))
+        setAiPrompt('')
+      }
+    } catch (err) {
+      setAiError(err.message)
+    }
+    setAiLoading(false)
+  }
+
   if (loading) return <div className="flex items-center justify-center min-h-dvh text-warm-text-dim">Loading...</div>
   if (!recipe) return <div className="flex items-center justify-center min-h-dvh text-warm-text-dim">Recipe not found</div>
 
@@ -64,21 +103,53 @@ export default function RecipeDetail() {
       {/* Header */}
       <div className="bg-accent text-white px-5 pt-4 pb-5 safe-top">
         <div className="flex items-center justify-between mb-2">
-          <Link to="/recipes" className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0">
-            &#8592; Back
-          </Link>
-          <Link
-            to={`/recipes/${recipe.id}/edit`}
-            className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0 bg-white/15 px-3 py-1 rounded-lg"
-          >
-            &#9998; Edit
-          </Link>
+          <button onClick={() => navigate('/recipes')} className="flex items-center gap-2 min-h-0 bg-transparent text-white/80">
+            <span className="text-xl leading-none">&#127858;</span>
+            <span className="text-[0.6rem] font-bold tracking-tight opacity-70">TM6</span>
+          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to={`/recipes/${recipe.id}/edit`}
+              className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0 bg-white/15 px-3 py-1 rounded-lg"
+            >
+              &#9998; Edit
+            </Link>
+            <button
+              onClick={() => setShowDelete(true)}
+              className="text-white/60 text-sm min-h-0 min-w-0 bg-white/10 px-3 py-1 rounded-lg"
+            >
+              &#128465;
+            </button>
+          </div>
         </div>
         <h1 className="text-xl font-bold leading-tight">{recipe.title}</h1>
         {recipe.description && (
           <p className="text-white/70 text-sm mt-1">{recipe.description}</p>
         )}
       </div>
+
+      {/* Delete confirm */}
+      {showDelete && (
+        <div className="mx-5 mt-3 bg-red-50 border border-red-200 rounded-xl p-4">
+          <p className="text-sm text-red-800 font-semibold mb-2">Delete this recipe?</p>
+          <p className="text-xs text-red-600 mb-3">This cannot be undone.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={deleteRecipe}
+              disabled={deleting}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold min-h-0 disabled:opacity-50"
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+            <button
+              onClick={() => setShowDelete(false)}
+              className="px-4 py-2 rounded-lg bg-warm-card border border-warm-border text-sm text-warm-text min-h-0"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Bowl toggle */}
       {has2bowl && (
@@ -175,7 +246,6 @@ export default function RecipeDetail() {
                       ))}
                     </div>
                   )}
-                  {/* Step ingredients with portions */}
                   {step.ingredients?.length > 0 && (
                     <div className="mt-2 bg-warm-bg rounded-lg px-3 py-2">
                       {step.ingredients.map((ing, i) => {
@@ -233,16 +303,42 @@ export default function RecipeDetail() {
         <section className="mx-5 mb-4">
           <h2 className="text-base font-bold text-warm-text mb-2">Sources</h2>
           <ul className="list-none p-0 flex flex-col gap-1">
-            {recipe.source_urls.filter(u => u).map((url, i) => (
-              <li key={i}>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="text-accent text-sm break-all">
-                  {url.replace(/^https?:\/\//, '').split('/')[0]}
-                </a>
-              </li>
-            ))}
+            {recipe.source_urls.filter(u => u).map((url, i) => {
+              const display = url.replace(/^https?:\/\//, '').replace(/\/$/, '')
+              const shortDisplay = display.length > 60 ? display.slice(0, 57) + '...' : display
+              return (
+                <li key={i}>
+                  <a href={url} target="_blank" rel="noopener noreferrer" className="text-accent text-sm">
+                    {shortDisplay}
+                  </a>
+                </li>
+              )
+            })}
           </ul>
         </section>
       )}
+
+      {/* AI Edit */}
+      <section className="mx-5 mb-4">
+        <h2 className="text-base font-bold text-warm-text mb-2">&#129302; AI Edit</h2>
+        <div className="bg-warm-card rounded-xl border border-warm-border p-3">
+          <textarea
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="Ask AI to modify this recipe, e.g.: &quot;verify and fix the source links&quot;, &quot;add more spice&quot;, &quot;replace butter with coconut oil&quot;, &quot;check the proportions for 2 bowls&quot;"
+            rows={3}
+            className="w-full py-2 px-3 rounded-lg bg-warm-bg border border-warm-border text-sm text-warm-text outline-none focus:border-accent resize-none"
+          />
+          {aiError && <p className="text-xs text-red-600 mt-1">{aiError}</p>}
+          <button
+            onClick={handleAiEdit}
+            disabled={aiLoading || !aiPrompt.trim()}
+            className="mt-2 w-full py-2.5 rounded-xl bg-accent text-white text-sm font-semibold disabled:opacity-50"
+          >
+            {aiLoading ? 'Updating recipe...' : 'Apply changes'}
+          </button>
+        </div>
+      </section>
 
       {/* Actions */}
       <div className="mx-5 flex flex-col gap-2">

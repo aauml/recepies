@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import AppHeader from '../components/AppHeader'
 
 export default function History() {
   const { user } = useAuth()
@@ -29,10 +30,7 @@ export default function History() {
 
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
-      <header className="bg-accent text-white px-5 pt-4 pb-4 safe-top">
-        <h1 className="text-lg font-bold">Cook History</h1>
-        <p className="text-white/60 text-xs mt-0.5">{logs.length} entries</p>
-      </header>
+      <AppHeader title="Cook History" subtitle={`${logs.length} entries`} />
 
       <div className="px-5 py-3 flex flex-col gap-2">
         {loading ? (

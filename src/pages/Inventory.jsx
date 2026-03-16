@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import AppHeader from '../components/AppHeader'
 
 export default function Inventory() {
   const { user } = useAuth()
@@ -73,10 +74,7 @@ export default function Inventory() {
 
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
-      <header className="bg-accent text-white px-5 pt-4 pb-4 safe-top">
-        <h1 className="text-lg font-bold">Inventory</h1>
-        <p className="text-white/60 text-xs mt-0.5">{items.length} items at home</p>
-      </header>
+      <AppHeader title="Inventory" subtitle={`${items.length} items at home`} />
 
       {/* AI text input */}
       <div className="px-5 py-3">
