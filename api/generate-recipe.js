@@ -154,7 +154,7 @@ When using Thermomix TM6, every step MUST include the correct Thermomix settings
 ## How Requests Work
 
 ### If user provides a dish name:
-Search your knowledge for well-regarded variations. Synthesize the best elements into one optimized recipe.
+Compare well-regarded variations and techniques from professional chefs and home cooks. Reason carefully about the best approaches — flavor combinations, textures, cooking methods, timing — then synthesize the strongest elements into one optimized recipe.
 
 ### If user provides a URL or recipe text:
 Extract the original recipe. Convert every step to ${appliance}-equivalent operations. Reorder for efficiency.
@@ -249,7 +249,7 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
 - Both 1-bowl and 2-bowl versions
 - 2-bowl ingredients correctly doubled
 - 2-bowl workflow genuinely optimized
-- Source URLs are direct links to specific recipe pages (not homepages)`
+- source_urls contains only user-provided URLs (empty [] if none given)`
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -261,7 +261,8 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
+        max_tokens: 16000,
+        thinking: { type: 'enabled', budget_tokens: 5000 },
         system: systemPrompt,
         messages: [{ role: 'user', content: context }],
       }),
@@ -274,7 +275,10 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
     }
 
     const data = await response.json()
-    const text = data.content?.[0]?.text || ''
+    const thinkingBlock = data.content?.find(b => b.type === 'thinking')
+    if (thinkingBlock) console.log('AI thinking trace:', thinkingBlock.thinking?.slice(0, 2000))
+    const textBlock = data.content?.find(b => b.type === 'text')
+    const text = textBlock?.text || ''
 
     // Extract JSON from response (handle potential markdown fences)
     let jsonStr = text

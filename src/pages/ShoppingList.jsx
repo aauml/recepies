@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { getMeasurements } from '../lib/portions'
+import { getMeasurements, MeasurementBadges } from '../lib/portions'
 import AppHeader from '../components/AppHeader'
 
 const CATEGORY_ORDER = ['produce', 'dairy', 'protein', 'pantry', 'spices', 'frozen', 'other']
@@ -221,8 +222,6 @@ export default function ShoppingList() {
   // Render a single shopping row with inventory column
   function ShoppingRow({ item }) {
     const { qty, unit } = parseQtyUnit(item.quantity)
-    const m = getMeasurements(item.item_name, qty, unit, item.estimate)
-    const primary = m.visual || m.metric
     const info = computeNeed(item.item_name, qty, unit, item.estimate, inventory)
     const isEditing = editingInvFor === item.id
 
@@ -238,9 +237,7 @@ export default function ShoppingList() {
           </span>
           <div className="flex-1 min-w-0">
             <div className="text-sm leading-tight">{item.item_name}</div>
-            {primary && (
-              <div className="text-[0.65rem] text-[#2e7d6f] font-semibold">{primary}</div>
-            )}
+            <MeasurementBadges name={item.item_name} qty={qty} unit={unit} estimate={item.estimate} compact />
           </div>
         </button>
 
@@ -362,9 +359,9 @@ export default function ShoppingList() {
           return (
             <div key={rid}>
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-xs font-bold text-warm-text-dim uppercase tracking-wide">
+                <Link to={`/recipes/${rid}`} className="text-xs font-bold text-accent uppercase tracking-wide no-underline">
                   {rec?.thumbnail_emoji || '\uD83C\uDF7D'} {rec?.title || 'Recipe'}
-                </h3>
+                </Link>
                 <button
                   onClick={() => deleteRecipeItems(rid)}
                   className="text-[0.6rem] text-red-400 font-semibold min-h-0 min-w-0 bg-transparent"

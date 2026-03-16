@@ -293,7 +293,15 @@ export default function CookingMode() {
     >
       {/* Top bar */}
       <div className="flex justify-between items-center px-5 py-3 safe-top bg-dark-card border-b border-[#333] shrink-0">
-        <span className="text-[0.9em] font-semibold max-w-[55%] truncate">{recipe.title}</span>
+        <div className="flex items-center gap-2 min-w-0 max-w-[55%]">
+          <button
+            onClick={() => navigate(`/recipes/${id}`)}
+            className="text-dark-text-dim min-h-0 min-w-0 bg-transparent shrink-0 text-lg leading-none"
+          >
+            &#10005;
+          </button>
+          <span className="text-[0.9em] font-semibold truncate">{recipe.title}</span>
+        </div>
         <div className="flex items-center gap-3">
           <button onClick={startEditStep} className="text-dark-text-dim text-xs min-h-0 bg-transparent border border-[#444] rounded-lg px-2 py-1">
             &#9998; Edit

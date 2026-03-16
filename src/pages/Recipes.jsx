@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import ThermomixJar from '../components/ThermomixJar'
+import AppHeader from '../components/AppHeader'
 
 const TAG_FILTERS = [
   { label: 'All', value: null },
@@ -65,19 +65,15 @@ export default function Recipes() {
   return (
     <div className="flex flex-col min-h-dvh pb-20">
       {/* Header */}
-      <header className="bg-accent text-white px-5 pt-4 pb-3.5 safe-top flex justify-between items-center">
-        <div className="flex items-center gap-2 text-[1.15em] font-bold">
-          <ThermomixJar size={22} />
-          My Thermomix
-        </div>
-        <button onClick={signOut} className="w-8 h-8 min-w-8 min-h-8 rounded-full bg-white/25 flex items-center justify-center text-[0.85em] overflow-hidden">
+      <AppHeader title="My Thermomix">
+        <button onClick={signOut} className="w-8 h-8 min-w-8 min-h-8 rounded-full bg-white/25 flex items-center justify-center text-[0.85em] overflow-hidden shrink-0">
           {avatar ? (
             <img src={avatar} alt="" className="w-full h-full object-cover" />
           ) : (
             initials
           )}
         </button>
-      </header>
+      </AppHeader>
 
       {/* Search bar */}
       <div className="bg-accent-dark px-5 py-3.5">

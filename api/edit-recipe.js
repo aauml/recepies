@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 ## Rules
 - Return ONLY valid JSON — no markdown, no explanation
 - Preserve ALL existing fields unless the instruction specifically changes them
-- If asked to verify/fix source URLs: ensure each URL is a direct link to a specific recipe page on a well-known site (Serious Eats, BBC Good Food, Allrecipes, Epicurious, Food52, Cookie and Kate, Minimalist Baker, Budget Bytes, etc). Remove any that point to homepages or search pages. Replace broken/generic URLs with real, specific recipe page URLs you're confident exist.
+- If asked to verify/fix source URLs: do NOT generate, guess, or invent new URLs. Only keep URLs that the user originally provided. Remove any suspicious or unverified URLs. If no user-provided URLs remain, set source_urls to an empty array [].
 - If asked to check proportions: verify 2-bowl ingredients are exactly doubled from 1-bowl
 - If asked to modify ingredients: update both 1-bowl and 2-bowl versions
 - Keep all Thermomix settings valid (speed <=4 with butterfly whisk, speed <=6 at Varoma)
@@ -31,7 +31,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
+        max_tokens: 12000,
+        thinking: { type: 'enabled', budget_tokens: 2000 },
         system: systemPrompt,
         messages: [{
           role: 'user',
@@ -47,7 +48,10 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json()
-    const text = data.content?.[0]?.text || ''
+    const thinkingBlock = data.content?.find(b => b.type === 'thinking')
+    if (thinkingBlock) console.log('AI edit thinking:', thinkingBlock.thinking?.slice(0, 1000))
+    const textBlock = data.content?.find(b => b.type === 'text')
+    const text = textBlock?.text || ''
     let jsonStr = text
     const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (fenceMatch) jsonStr = fenceMatch[1]

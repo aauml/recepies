@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { MeasurementBadges } from '../lib/portions'
+import AppHeader from '../components/AppHeader'
 
 export default function RecipeDetail() {
   const { id } = useParams()
@@ -101,32 +102,22 @@ export default function RecipeDetail() {
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
       {/* Header */}
-      <div className="bg-accent text-white px-5 pt-4 pb-5 safe-top">
-        <div className="flex items-center justify-between mb-2">
-          <button onClick={() => navigate('/recipes')} className="flex items-center gap-2 min-h-0 bg-transparent text-white/80">
-            <span className="text-xl leading-none">&#127858;</span>
-            <span className="text-[0.6rem] font-bold tracking-tight opacity-70">TM6</span>
+      <AppHeader title={recipe.title} subtitle={recipe.description}>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            to={`/recipes/${recipe.id}/edit`}
+            className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0 bg-white/15 px-3 py-1 rounded-lg"
+          >
+            &#9998; Edit
+          </Link>
+          <button
+            onClick={() => setShowDelete(true)}
+            className="text-white/60 text-sm min-h-0 min-w-0 bg-white/10 px-3 py-1 rounded-lg"
+          >
+            &#128465;
           </button>
-          <div className="flex items-center gap-2">
-            <Link
-              to={`/recipes/${recipe.id}/edit`}
-              className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0 bg-white/15 px-3 py-1 rounded-lg"
-            >
-              &#9998; Edit
-            </Link>
-            <button
-              onClick={() => setShowDelete(true)}
-              className="text-white/60 text-sm min-h-0 min-w-0 bg-white/10 px-3 py-1 rounded-lg"
-            >
-              &#128465;
-            </button>
-          </div>
         </div>
-        <h1 className="text-xl font-bold leading-tight">{recipe.title}</h1>
-        {recipe.description && (
-          <p className="text-white/70 text-sm mt-1">{recipe.description}</p>
-        )}
-      </div>
+      </AppHeader>
 
       {/* Delete confirm */}
       {showDelete && (
