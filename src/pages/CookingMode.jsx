@@ -316,9 +316,9 @@ export default function CookingMode() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-5 gap-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-3 gap-2 overflow-y-auto hide-scrollbar">
         {/* TM6 Ring */}
-        <div className="relative w-[220px] h-[220px] shrink-0">
+        <div className="relative w-[160px] h-[160px] shrink-0">
           <svg viewBox="0 0 200 200" className="w-full h-full">
             <circle cx="100" cy="100" r="90" fill="none" stroke="#333" strokeWidth="8" />
             <circle
@@ -346,7 +346,7 @@ export default function CookingMode() {
             )}
           </svg>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-            <div className={`text-[2.8em] font-extralight tracking-tight leading-none tabular-nums ${step.time ? 'animate-pulse' : ''}`}>
+            <div className={`text-[2.2em] font-extralight tracking-tight leading-none tabular-nums ${step.time ? 'animate-pulse' : ''}`}>
               {step.time || '\u2014'}
             </div>
             <div className="text-[0.7em] text-dark-text-dim mt-0.5 uppercase tracking-widest">
@@ -398,16 +398,16 @@ export default function CookingMode() {
 
         {/* Step ingredients with portions */}
         {step.ingredients?.length > 0 && (
-          <div className="bg-dark-card rounded-xl p-3 px-4 w-full max-w-[360px]">
-            <div className="text-[0.72em] uppercase tracking-widest text-dark-text-dim mb-2">
+          <div className="bg-dark-card rounded-xl p-2.5 px-3.5 w-full max-w-[360px]">
+            <div className="text-[0.68em] uppercase tracking-widest text-dark-text-dim mb-1.5">
               Ingredients for this step
             </div>
-            <ul className="list-none p-0 flex flex-col gap-1">
+            <ul className="list-none p-0 flex flex-col gap-0.5">
               {step.ingredients.map((ing, i) => {
                 const qtyNum = ing.qty?.replace(/[^\d.]/g, '') || ''
                 const qtyUnit = ing.qty?.replace(/[\d.\s]/g, '') || 'g'
                 return (
-                  <li key={i} className="text-[0.88em]">
+                  <li key={i} className="text-[0.82em]">
                     <div className="flex justify-between items-start">
                       <span>{ing.name}</span>
                       <span className="font-semibold text-dark-warm-light tabular-nums">{ing.qty}</span>
@@ -422,9 +422,9 @@ export default function CookingMode() {
 
         {/* Step note */}
         {step.note && (
-          <div className="bg-[#2a2515] border border-[#5a4a2a] rounded-xl p-3 px-4 w-full max-w-[360px]">
-            <div className="text-[0.72em] uppercase tracking-widest text-dark-text-dim mb-1">&#128221; Note</div>
-            <p className="text-[0.85em] text-[#e8d8a0]">{step.note}</p>
+          <div className="bg-[#2a2515] border border-[#5a4a2a] rounded-xl p-2.5 px-3.5 w-full max-w-[360px]">
+            <div className="text-[0.68em] uppercase tracking-widest text-dark-text-dim mb-1">&#128221; Note</div>
+            <p className="text-[0.82em] text-[#e8d8a0]">{step.note}</p>
           </div>
         )}
       </div>

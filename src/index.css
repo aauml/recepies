@@ -52,6 +52,7 @@ body {
   min-height: 100dvh;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -63,12 +64,6 @@ body {
 
 .safe-bottom {
   padding-bottom: max(0px, env(safe-area-inset-bottom));
-}
-
-/* Touch target minimum */
-button, a, [role="button"] {
-  min-height: 44px;
-  min-width: 44px;
 }
 
 /* Scrollbar hide for horizontal scrolling */

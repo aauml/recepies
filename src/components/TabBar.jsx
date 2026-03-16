@@ -15,7 +15,7 @@ export default function TabBar({ shoppingCount = 0 }) {
           key={tab.to}
           to={tab.to}
           className={({ isActive }) =>
-            `flex-1 flex flex-col items-center gap-0.5 pt-2 pb-1 text-[0.65em] relative ${
+            `flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1.5 text-[0.7em] relative ${
               isActive ? 'text-accent font-semibold' : 'text-warm-text-dim'
             }`
           }

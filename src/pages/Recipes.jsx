@@ -95,20 +95,23 @@ export default function Recipes() {
       </div>
 
       {/* Tag filters */}
-      <div className="flex gap-2 px-5 py-3 overflow-x-auto hide-scrollbar">
-        {TAG_FILTERS.map((tag) => (
-          <button
-            key={tag.label}
-            onClick={() => setActiveTag(tag.value)}
-            className={`px-4 py-1.5 rounded-full whitespace-nowrap text-[0.82em] font-semibold border-[1.5px] transition-all min-h-0 min-w-0 ${
-              activeTag === tag.value
-                ? 'bg-accent text-white border-accent'
-                : 'bg-warm-card text-warm-text-dim border-warm-border'
-            }`}
-          >
-            {tag.icon ? `${tag.icon} ` : ''}{tag.label}
-          </button>
-        ))}
+      <div className="relative">
+        <div className="flex gap-2 px-5 py-3 overflow-x-auto hide-scrollbar">
+          {TAG_FILTERS.map((tag) => (
+            <button
+              key={tag.label}
+              onClick={() => setActiveTag(tag.value)}
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-[0.85em] font-semibold border-[1.5px] transition-all ${
+                activeTag === tag.value
+                  ? 'bg-accent text-white border-accent'
+                  : 'bg-warm-card text-warm-text-dim border-warm-border'
+              }`}
+            >
+              {tag.icon ? `${tag.icon} ` : ''}{tag.label}
+            </button>
+          ))}
+        </div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-warm-bg to-transparent pointer-events-none" />
       </div>
 
       {/* Recipe list */}
@@ -154,7 +157,7 @@ function RecipeCard({ recipe, onShop }) {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-[1em] font-bold leading-tight mb-1">{recipe.title}</h3>
-            <p className="text-[0.8em] text-warm-text-dim leading-snug line-clamp-2">
+            <p className="text-[0.82em] text-warm-text-dim leading-snug line-clamp-2">
               {recipe.description}
             </p>
           </div>
@@ -182,19 +185,19 @@ function RecipeCard({ recipe, onShop }) {
       <div className="flex border-t border-[#f0ebe4]">
         <Link
           to={`/recipes/${recipe.id}/cook`}
-          className="flex-1 py-2.5 text-center text-accent font-bold text-[0.78em] no-underline active:bg-warm-bg flex items-center justify-center gap-1"
+          className="flex-1 py-2.5 text-center text-accent font-bold text-[0.8em] no-underline active:bg-warm-bg flex items-center justify-center gap-1"
         >
           &#128293; Cook
         </Link>
         <button
           onClick={handleShop}
-          className="flex-1 py-2.5 text-green font-semibold text-[0.78em] border-l border-r border-[#f0ebe4] active:bg-warm-bg min-h-0 bg-transparent flex items-center justify-center gap-1"
+          className="flex-1 py-2.5 text-green font-semibold text-[0.8em] border-l border-r border-[#f0ebe4] active:bg-warm-bg bg-transparent flex items-center justify-center gap-1"
         >
           {shopMsg ? '&#10003; Added!' : '\uD83D\uDED2 Shop'}
         </button>
         <Link
           to={`/recipes/${recipe.id}/edit`}
-          className="flex-1 py-2.5 text-center text-warm-text-dim font-semibold text-[0.78em] no-underline active:bg-warm-bg flex items-center justify-center gap-1"
+          className="flex-1 py-2.5 text-center text-warm-text-dim font-semibold text-[0.8em] no-underline active:bg-warm-bg flex items-center justify-center gap-1"
         >
           &#9998; Edit
         </Link>

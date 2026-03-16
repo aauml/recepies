@@ -242,7 +242,7 @@ export default function ShoppingList() {
         </button>
 
         {/* Right: inventory cell */}
-        <div className="w-[100px] shrink-0 border-l border-warm-border flex items-center px-2">
+        <div className="w-[90px] shrink-0 border-l border-warm-border flex items-center px-2">
           {isEditing ? (
             <form
               onSubmit={(e) => { e.preventDefault(); saveInvQtyForItem(item.item_name) }}
@@ -318,7 +318,7 @@ export default function ShoppingList() {
         {/* Column headers */}
         <div className="flex text-[0.6rem] uppercase tracking-wide text-warm-text-dim font-bold px-1">
           <span className="flex-1">Item</span>
-          <span className="w-[100px] text-center shrink-0">Inventory</span>
+          <span className="w-[90px] text-center shrink-0">Inventory</span>
         </div>
         {sortedCats.map((cat) => (
           <div key={cat}>
@@ -352,7 +352,7 @@ export default function ShoppingList() {
       <div className="flex flex-col gap-3">
         <div className="flex text-[0.6rem] uppercase tracking-wide text-warm-text-dim font-bold px-1">
           <span className="flex-1">Item</span>
-          <span className="w-[100px] text-center shrink-0">Inventory</span>
+          <span className="w-[90px] text-center shrink-0">Inventory</span>
         </div>
         {Object.entries(byRecipe).map(([rid, rItems]) => {
           const rec = recipes[rid]
@@ -394,7 +394,7 @@ export default function ShoppingList() {
   }
 
   return (
-    <div className="min-h-dvh pb-24 bg-warm-bg">
+    <div className="min-h-dvh pb-24 bg-warm-bg overflow-x-hidden">
       <AppHeader title="Shopping List" subtitle={`${unchecked.length} items needed`} />
 
       {/* AI quick add */}
