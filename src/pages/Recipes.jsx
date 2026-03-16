@@ -172,7 +172,6 @@ function RecipeCard({ recipe, creator, onShop }) {
   const handleShop = async () => {
     await onShop()
     setShopMsg(true)
-    setTimeout(() => setShopMsg(false), 2000)
   }
 
   return (
@@ -226,9 +225,12 @@ function RecipeCard({ recipe, creator, onShop }) {
         </Link>
         <button
           onClick={handleShop}
-          className="flex-1 py-2.5 text-green font-semibold text-[0.8em] border-l border-r border-[#f0ebe4] active:bg-warm-bg bg-transparent flex items-center justify-center gap-1"
+          disabled={shopMsg}
+          className={`flex-1 py-2.5 font-semibold text-[0.8em] border-l border-r border-[#f0ebe4] bg-transparent flex items-center justify-center gap-1 ${
+            shopMsg ? 'text-warm-text-dim opacity-50' : 'text-green active:bg-warm-bg'
+          }`}
         >
-          {shopMsg ? '&#10003; Added!' : '\uD83D\uDED2 Shop'}
+          {shopMsg ? '\u2713 Added' : '\uD83D\uDED2 Shop'}
         </button>
         <Link
           to={`/recipes/${recipe.id}/edit`}

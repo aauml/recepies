@@ -2,5 +2,10 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/" }
-  ]
+  ],
+  "functions": {
+    "api/generate-recipe.js": {
+      "maxDuration": 60
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -11,18 +11,53 @@ export default function AddRecipe() {
   const [generating, setGenerating] = useState(false)
   const [aiError, setAiError] = useState('')
   const [recipe, setRecipe] = useState(null)
+  const [images, setImages] = useState([]) // [{dataUrl, base64, mediaType}]
+  const fileInputRef = useRef(null)
+
+  function handleImageSelect(e) {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    files.forEach((file) => {
+      if (!file.type.startsWith('image/')) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result
+        const base64 = dataUrl.split(',')[1]
+        const mediaType = file.type
+        setImages((prev) => [...prev, { dataUrl, base64, mediaType, name: file.name }])
+      }
+      reader.readAsDataURL(file)
+    })
+    // Reset input so same file can be selected again
+    e.target.value = ''
+  }
+
+  function removeImage(index) {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
 
   async function handleGenerate() {
-    if (!aiInput.trim()) return
+    if (!aiInput.trim() && images.length === 0) return
     setGenerating(true)
     setAiError('')
     setRecipe(null)
 
     try {
+      const body = { input: aiInput || '' }
+
+      // If images, send as base64 array
+      if (images.length > 0) {
+        body.images = images.map((img) => ({
+          base64: img.base64,
+          media_type: img.mediaType,
+        }))
+      }
+
       const resp = await fetch('/api/generate-recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: aiInput }),
+        body: JSON.stringify(body),
       })
 
       if (!resp.ok) {
@@ -70,7 +105,7 @@ export default function AddRecipe() {
       servings_2bowl: recipe.servings_2bowl || null,
       time_2bowl: recipe.time_2bowl || null,
       tags: recipe.tags || [],
-      thumbnail_emoji: recipe.thumbnail_emoji || '🍽',
+      thumbnail_emoji: recipe.thumbnail_emoji || '\uD83C\uDF7D',
       source_urls: (recipe.source_urls || []).filter((u) => u),
       ingredients_1bowl: ingredients,
       steps_1bowl: steps,
@@ -84,6 +119,8 @@ export default function AddRecipe() {
     setSaving(false)
     if (!error && data) navigate(`/recipes/${data.id}`)
   }
+
+  const canGenerate = aiInput.trim() || images.length > 0
 
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
@@ -105,14 +142,55 @@ export default function AddRecipe() {
           <textarea
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
-            className="w-full py-3 px-3 rounded-xl bg-warm-bg border border-warm-border text-warm-text text-sm outline-none focus:border-accent resize-y min-h-[120px]"
-            rows={5}
-            placeholder={'Paste a URL, list ingredients, or describe what you want to cook...\n\ne.g. "lentil soup with coconut milk"\ne.g. "I have potatoes, leeks, cream, garlic"\ne.g. https://www.example.com/recipe/...'}
+            className="w-full py-3 px-3 rounded-xl bg-warm-bg border border-warm-border text-warm-text text-sm outline-none focus:border-accent resize-y min-h-[100px]"
+            rows={4}
+            placeholder={'Describe a dish, paste a URL, or list ingredients...\n\ne.g. "lentil soup with coconut milk"\ne.g. "I have potatoes, leeks, cream, garlic"'}
           />
+
+          {/* Photo upload area */}
+          <div className="mt-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              capture="environment"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+
+            {/* Image previews */}
+            {images.length > 0 && (
+              <div className="flex gap-2 mb-3 overflow-x-auto hide-scrollbar">
+                {images.map((img, i) => (
+                  <div key={i} className="relative shrink-0">
+                    <img
+                      src={img.dataUrl}
+                      alt={img.name}
+                      className="w-20 h-20 rounded-xl object-cover border border-warm-border"
+                    />
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[0.6rem] flex items-center justify-center min-h-0 min-w-0"
+                    >
+                      &#10005;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-2.5 rounded-xl border-2 border-dashed border-warm-border text-warm-text-dim text-sm font-semibold bg-transparent active:bg-warm-bg flex items-center justify-center gap-2"
+            >
+              &#128247; Add photo of dish or ingredients
+            </button>
+          </div>
 
           <button
             onClick={handleGenerate}
-            disabled={generating || !aiInput.trim()}
+            disabled={generating || !canGenerate}
             className="w-full mt-3 py-3 rounded-xl bg-accent text-white font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {generating ? (
@@ -142,7 +220,7 @@ export default function AddRecipe() {
             {/* Title & description */}
             <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">{recipe.thumbnail_emoji || '🍽'}</span>
+                <span className="text-2xl">{recipe.thumbnail_emoji || '\uD83C\uDF7D'}</span>
                 <h3 className="text-lg font-bold text-warm-text">{recipe.title}</h3>
               </div>
               {recipe.description && <p className="text-warm-text-dim text-sm mt-1">{recipe.description}</p>}
@@ -190,7 +268,7 @@ export default function AddRecipe() {
                       {(step.temp || step.speed || step.time) && (
                         <div className="flex gap-1.5 mt-1 flex-wrap">
                           {step.temp && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-[#fff3e0] text-[#e65100] font-mono">{step.temp}</span>}
-                          {step.speed && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-green-light text-green font-mono">{step.reverse ? '↻ ' : ''}Spd {step.speed}</span>}
+                          {step.speed && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-green-light text-green font-mono">{step.reverse ? '\u21BB ' : ''}Spd {step.speed}</span>}
                           {step.time && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-accent-light text-accent-dark font-mono">{step.time}</span>}
                         </div>
                       )}

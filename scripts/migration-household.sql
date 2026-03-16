@@ -64,7 +64,10 @@ ALTER TABLE household_invites ENABLE ROW LEVEL SECURITY;
 
 -- 7. RLS for households
 CREATE POLICY "hh_select" ON households FOR SELECT TO authenticated
-  USING (id IN (SELECT household_id FROM household_members WHERE user_id = auth.uid()));
+  USING (
+    created_by = auth.uid()
+    OR id IN (SELECT household_id FROM household_members WHERE user_id = auth.uid())
+  );
 CREATE POLICY "hh_insert" ON households FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "hh_update" ON households FOR UPDATE TO authenticated
   USING (id IN (SELECT household_id FROM household_members WHERE user_id = auth.uid() AND role = 'owner'));

@@ -10,21 +10,27 @@ export default function ProfileMenu({ isOpen, onClose }) {
   const { household, members } = useHousehold()
   const [editingName, setEditingName] = useState(false)
   const [displayName, setDisplayName] = useState('')
+  const [savedName, setSavedName] = useState(null)
 
   if (!isOpen || !user) return null
 
-  const name = user.user_metadata?.full_name || user.email
+  const name = savedName || user.user_metadata?.full_name || user.email
   const avatar = user.user_metadata?.avatar_url
   const memberCount = members.length
 
   function startEditName() {
-    setDisplayName(user.user_metadata?.full_name || '')
+    setDisplayName(savedName || user.user_metadata?.full_name || '')
     setEditingName(true)
   }
 
   async function saveName() {
-    if (displayName.trim()) {
-      await supabase.from('profiles').update({ display_name: displayName.trim() }).eq('id', user.id)
+    const trimmed = displayName.trim()
+    if (trimmed) {
+      // Update profiles table
+      await supabase.from('profiles').update({ display_name: trimmed }).eq('id', user.id)
+      // Update auth user metadata so it reflects immediately
+      await supabase.auth.updateUser({ data: { full_name: trimmed } })
+      setSavedName(trimmed)
     }
     setEditingName(false)
   }
@@ -103,7 +109,7 @@ export default function ProfileMenu({ isOpen, onClose }) {
                 <span className="text-lg">&#9998;</span>
                 <div>
                   <p className="text-sm font-semibold">Display Name</p>
-                  <p className="text-xs text-warm-text-dim">{user.user_metadata?.full_name || 'Not set'}</p>
+                  <p className="text-xs text-warm-text-dim">{savedName || user.user_metadata?.full_name || 'Not set'}</p>
                 </div>
               </button>
             )}

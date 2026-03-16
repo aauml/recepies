@@ -6,11 +6,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { input, appliance = 'Thermomix TM6' } = req.body
-  if (!input?.trim()) return res.status(400).json({ error: 'Input is required' })
+  const { input, images, appliance = 'Thermomix TM6' } = req.body
+  if (!input?.trim() && (!images || images.length === 0)) return res.status(400).json({ error: 'Input or images required' })
 
   // If input looks like a URL, try to fetch its content
-  let context = input.trim()
+  let context = (input || '').trim()
   let sourceUrl = null
   const urlMatch = context.match(/^https?:\/\/\S+/)
   if (urlMatch) {
@@ -163,6 +163,12 @@ ${sourceUrl ? `\nIMPORTANT: The user provided this source URL: ${sourceUrl}\nThi
 ### If user provides a YouTube video:
 Extract the recipe from the video transcript. Convert to ${appliance} format. Include the YouTube URL as the first source.
 
+### If user provides photo(s) of a dish:
+Analyze the image carefully. Identify the dish, its visible ingredients, cooking techniques, and garnishes. Infer likely hidden ingredients (seasonings, stocks, oils). Then generate a complete Thermomix recipe that would recreate the dish. If the user also provides text, use it as additional context (e.g. "this is my mom's soup" or "I think it has lentils").
+
+### If user provides photo(s) of ingredients:
+Identify all visible ingredients from the photo(s). Propose the best recipe that maximizes these ingredients. If the user provides additional text, treat it as extra context or preferences.
+
 ### If user provides ingredients:
 Propose a recipe maximizing those ingredients. Minimize additional items needed.
 
@@ -252,6 +258,28 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
 - source_urls contains only user-provided URLs (empty [] if none given)`
 
   try {
+    // Build user message content — text + optional images
+    let userContent
+    if (images && images.length > 0) {
+      // Vision request: build multi-part content with images + text
+      const parts = []
+      for (const img of images) {
+        parts.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: img.media_type || 'image/jpeg',
+            data: img.base64,
+          },
+        })
+      }
+      const textPart = context || 'Identify this dish and its likely ingredients from the photo(s), then generate a complete Thermomix recipe for it.'
+      parts.push({ type: 'text', text: textPart })
+      userContent = parts
+    } else {
+      userContent = context
+    }
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -264,7 +292,7 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
         max_tokens: 16000,
         thinking: { type: 'enabled', budget_tokens: 5000 },
         system: systemPrompt,
-        messages: [{ role: 'user', content: context }],
+        messages: [{ role: 'user', content: userContent }],
       }),
     })
 
