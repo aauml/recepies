@@ -2,44 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-
-function getPortionInfo(name, qty, unit) {
-  const g = parseFloat(qty)
-  if (!g || isNaN(g)) return null
-  const parts = []
-  if (unit === 'g') parts.push(`${(g / 28.35).toFixed(1)} oz`)
-  else if (unit === 'ml') parts.push(`${(g / 29.57).toFixed(1)} fl oz`)
-  const lower = (name || '').toLowerCase()
-  const estimates = [
-    [/onion/, 150, 'medium onion'],
-    [/garlic/, 5, 'clove'],
-    [/potato/, 180, 'medium potato'],
-    [/carrot/, 120, 'medium carrot'],
-    [/tomato/, 150, 'medium tomato'],
-    [/egg/, 55, 'egg'],
-    [/pepper|bell/, 170, 'pepper'],
-    [/zucchini/, 200, 'medium zucchini'],
-    [/lemon/, 60, 'lemon'],
-    [/lime/, 45, 'lime'],
-    [/cilantro/, 30, 'bunch'],
-    [/parsley/, 30, 'bunch'],
-    [/ginger/, 15, 'thumb piece'],
-  ]
-  if (unit === 'g') {
-    for (const [regex, weight, label] of estimates) {
-      if (regex.test(lower)) {
-        const count = g / weight
-        const rounded = Math.round(count * 2) / 2
-        if (rounded >= 0.5) {
-          const plural = rounded !== 1 && !label.includes('bunch') && !label.includes('piece') ? 's' : ''
-          parts.push(`~${rounded} ${label}${plural}`)
-        }
-        break
-      }
-    }
-  }
-  return parts.length > 0 ? parts.join(', ') : null
-}
+import { MeasurementBadgesDark } from '../lib/portions'
 
 export default function CookingMode() {
   const { id } = useParams()
@@ -435,14 +398,13 @@ export default function CookingMode() {
               {step.ingredients.map((ing, i) => {
                 const qtyNum = ing.qty?.replace(/[^\d.]/g, '') || ''
                 const qtyUnit = ing.qty?.replace(/[\d.\s]/g, '') || 'g'
-                const est = ing.estimate || getPortionInfo(ing.name, qtyNum, qtyUnit)
                 return (
                   <li key={i} className="text-[0.88em]">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-start">
                       <span>{ing.name}</span>
                       <span className="font-semibold text-dark-warm-light tabular-nums">{ing.qty}</span>
                     </div>
-                    {est && <div className="text-[0.75em] text-dark-text-dim">{est}</div>}
+                    <MeasurementBadgesDark name={ing.name} qty={qtyNum} unit={qtyUnit} estimate={ing.estimate} />
                   </li>
                 )
               })}

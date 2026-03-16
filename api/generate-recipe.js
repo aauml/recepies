@@ -94,7 +94,15 @@ When using Thermomix TM6, every step MUST include the correct Thermomix settings
 ## How Requests Work
 
 ### If user provides a dish name:
-Search your knowledge for well-regarded variations. Synthesize the best elements into one optimized recipe. Cite inspiration sources in source_urls if known.
+Search your knowledge for well-regarded variations. Synthesize the best elements into one optimized recipe.
+
+**Source URLs requirements:**
+- source_urls MUST contain direct, working links to real recipe pages that inspired the recipe
+- Use well-known, reliable recipe sites: Serious Eats, Budget Bytes, Bon Appétit, NYT Cooking, BBC Good Food, Epicurious, Allrecipes, Food52, King Arthur Baking, Cookie and Kate, Minimalist Baker
+- Each URL must be a direct link to a specific recipe page (not a homepage or search page)
+- Include 2-3 source URLs per recipe
+- Format: full URL like "https://www.seriouseats.com/recipe-name-12345"
+- If you're not confident a URL is real, omit it rather than guess
 
 ### If user provides a URL or recipe text:
 Extract the original recipe. Convert every step to ${appliance}-equivalent operations. Reorder for efficiency.

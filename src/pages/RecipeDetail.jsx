@@ -2,50 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-
-function getPortionInfo(name, qty, unit) {
-  const g = parseFloat(qty)
-  if (!g || isNaN(g)) return null
-  const parts = []
-  if (unit === 'g') parts.push(`${(g / 28.35).toFixed(1)} oz`)
-  else if (unit === 'ml') parts.push(`${(g / 29.57).toFixed(1)} fl oz`)
-
-  const lower = (name || '').toLowerCase()
-  const estimates = [
-    [/onion/, 150, 'medium onion'],
-    [/garlic/, 5, 'clove'],
-    [/potato/, 180, 'medium potato'],
-    [/carrot/, 120, 'medium carrot'],
-    [/tomato/, 150, 'medium tomato'],
-    [/egg/, 55, 'egg'],
-    [/pepper|bell/, 170, 'pepper'],
-    [/zucchini|courgette/, 200, 'medium zucchini'],
-    [/lemon/, 60, 'lemon'],
-    [/lime/, 45, 'lime'],
-    [/cilantro|coriander.*fresh/, 30, 'bunch'],
-    [/parsley/, 30, 'bunch'],
-    [/basil/, 20, 'bunch'],
-    [/ginger/, 15, 'thumb piece'],
-    [/avocado/, 170, 'avocado'],
-    [/banana/, 120, 'banana'],
-    [/apple/, 180, 'apple'],
-    [/celery/, 60, 'stalk'],
-  ]
-  if (unit === 'g') {
-    for (const [regex, weight, label] of estimates) {
-      if (regex.test(lower)) {
-        const count = g / weight
-        const rounded = Math.round(count * 2) / 2
-        if (rounded >= 0.5) {
-          const plural = rounded !== 1 && !label.includes('bunch') && !label.includes('piece') ? 's' : ''
-          parts.push(`~${rounded} ${label}${plural}`)
-        }
-        break
-      }
-    }
-  }
-  return parts.length > 0 ? parts.join(', ') : null
-}
+import { MeasurementBadges } from '../lib/portions'
 
 export default function RecipeDetail() {
   const { id } = useParams()
@@ -164,20 +121,14 @@ export default function RecipeDetail() {
               <h3 className="text-xs uppercase tracking-wide text-warm-text-dim font-semibold mb-1.5">{group.group}</h3>
             )}
             <ul className="list-none p-0 flex flex-col gap-1">
-              {(group.items || []).map((item, ii) => {
-                const estimate = item.estimate || getPortionInfo(item.name, item.qty, item.unit)
-                return (
+              {(group.items || []).map((item, ii) => (
                   <li key={ii} className="bg-warm-card rounded-lg px-3 py-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between items-start text-sm">
                       <span>{item.name}</span>
-                      <span className="font-semibold text-accent tabular-nums">{item.qty}{item.unit}</span>
+                      <MeasurementBadges name={item.name} qty={item.qty} unit={item.unit} estimate={item.estimate} />
                     </div>
-                    {estimate && (
-                      <div className="text-[0.65rem] text-warm-text-dim mt-0.5">{estimate}</div>
-                    )}
                   </li>
-                )
-              })}
+                ))}
             </ul>
           </div>
         ))}
@@ -228,14 +179,12 @@ export default function RecipeDetail() {
                   {step.ingredients?.length > 0 && (
                     <div className="mt-2 bg-warm-bg rounded-lg px-3 py-2">
                       {step.ingredients.map((ing, i) => {
-                        const est = ing.estimate || getPortionInfo(ing.name, ing.qty?.replace(/[^\d.]/g, ''), ing.qty?.replace(/[\d.]/g, '') || 'g')
+                        const qtyNum = ing.qty?.replace(/[^\d.]/g, '') || ''
+                        const qtyUnit = ing.qty?.replace(/[\d.\s]/g, '') || 'g'
                         return (
-                          <div key={i} className="flex justify-between text-xs py-0.5">
+                          <div key={i} className="flex justify-between items-start text-xs py-0.5">
                             <span className="text-warm-text-dim">{ing.name}</span>
-                            <div className="text-right">
-                              <span className="font-semibold text-accent">{ing.qty}</span>
-                              {est && <span className="text-warm-text-dim ml-1">({est})</span>}
-                            </div>
+                            <MeasurementBadges name={ing.name} qty={qtyNum} unit={qtyUnit} estimate={ing.estimate} compact />
                           </div>
                         )
                       })}
