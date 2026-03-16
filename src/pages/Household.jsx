@@ -16,9 +16,31 @@ export default function Household() {
   const [inviteMsg, setInviteMsg] = useState('')
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [inviteAction, setInviteAction] = useState(null) // {id, action}
+  const [inviteError, setInviteError] = useState('')
 
   const myRole = members.find((m) => m.user_id === user?.id)?.role
   const isOwner = myRole === 'owner'
+
+  async function handleAccept(inviteId) {
+    setInviteAction({ id: inviteId, action: 'accepting' })
+    setInviteError('')
+    const result = await acceptInvite(inviteId)
+    if (result?.error) {
+      setInviteError(result.error.message || 'Could not accept invite')
+    }
+    setInviteAction(null)
+  }
+
+  async function handleDecline(inviteId) {
+    setInviteAction({ id: inviteId, action: 'declining' })
+    setInviteError('')
+    const result = await declineInvite(inviteId)
+    if (result?.error) {
+      setInviteError(result.error.message || 'Could not decline invite')
+    }
+    setInviteAction(null)
+  }
 
   async function handleInvite(e) {
     e.preventDefault()
@@ -52,13 +74,24 @@ export default function Household() {
                 &#127968; Join &ldquo;{inv.households?.name || 'Household'}&rdquo;
               </p>
               <div className="flex gap-2 mt-3">
-                <button onClick={() => acceptInvite(inv.id)} className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-semibold">
-                  Accept
+                <button
+                  onClick={() => handleAccept(inv.id)}
+                  disabled={inviteAction?.id === inv.id}
+                  className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-semibold disabled:opacity-50"
+                >
+                  {inviteAction?.id === inv.id && inviteAction?.action === 'accepting' ? '...' : 'Accept'}
                 </button>
-                <button onClick={() => declineInvite(inv.id)} className="px-4 py-2 rounded-lg bg-warm-card border border-warm-border text-sm">
-                  Decline
+                <button
+                  onClick={() => handleDecline(inv.id)}
+                  disabled={inviteAction?.id === inv.id}
+                  className="px-4 py-2 rounded-lg bg-warm-card border border-warm-border text-sm disabled:opacity-50"
+                >
+                  {inviteAction?.id === inv.id && inviteAction?.action === 'declining' ? '...' : 'Decline'}
                 </button>
               </div>
+              {inviteError && inviteAction === null && (
+                <p className="text-red-500 text-xs mt-2">{inviteError}</p>
+              )}
             </div>
           ))}
         </div>

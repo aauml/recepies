@@ -147,28 +147,54 @@ export function HouseholdProvider({ children }) {
 
   async function acceptInvite(inviteId) {
     const invite = pendingInvites.find((i) => i.id === inviteId)
-    if (!invite) return
+    if (!invite) {
+      console.error('acceptInvite: invite not found', inviteId)
+      return { error: { message: 'Invite not found' } }
+    }
 
-    await supabase
+    // If already in a household, leave it first
+    if (household) {
+      await supabase
+        .from('household_members')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('household_id', household.id)
+    }
+
+    const { error: updateErr } = await supabase
       .from('household_invites')
       .update({ status: 'accepted' })
       .eq('id', inviteId)
+    if (updateErr) {
+      console.error('acceptInvite update error:', updateErr)
+      return { error: updateErr }
+    }
 
-    await supabase.from('household_members').insert({
+    const { error: insertErr } = await supabase.from('household_members').insert({
       household_id: invite.household_id,
       user_id: user.id,
       role: 'member',
     })
+    if (insertErr) {
+      console.error('acceptInvite insert error:', insertErr)
+      return { error: insertErr }
+    }
 
     await refresh()
+    return {}
   }
 
   async function declineInvite(inviteId) {
-    await supabase
+    const { error } = await supabase
       .from('household_invites')
       .update({ status: 'declined' })
       .eq('id', inviteId)
+    if (error) {
+      console.error('declineInvite error:', error)
+      return { error }
+    }
     await refresh()
+    return {}
   }
 
   async function leaveHousehold() {
