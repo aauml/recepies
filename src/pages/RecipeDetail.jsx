@@ -60,9 +60,18 @@ export default function RecipeDetail() {
     }
   }
 
+  const [deleteError, setDeleteError] = useState('')
+
   async function deleteRecipe() {
     setDeleting(true)
-    await supabase.from('recipes').delete().eq('id', id)
+    setDeleteError('')
+    const { error } = await supabase.from('recipes').delete().eq('id', id)
+    if (error) {
+      console.error('Delete recipe error:', error)
+      setDeleteError(error.message || 'Could not delete recipe')
+      setDeleting(false)
+      return
+    }
     setDeleting(false)
     navigate('/recipes')
   }
@@ -144,6 +153,7 @@ export default function RecipeDetail() {
               Cancel
             </button>
           </div>
+          {deleteError && <p className="text-xs text-red-600 mt-2">{deleteError}</p>}
         </div>
       )}
 
