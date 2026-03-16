@@ -18,6 +18,7 @@ export default function RecipeDetail() {
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [creator, setCreator] = useState(null)
 
   useEffect(() => {
     supabase
@@ -29,6 +30,10 @@ export default function RecipeDetail() {
         if (error) console.error('Recipe fetch error:', error)
         setRecipe(data)
         setLoading(false)
+        if (data?.created_by) {
+          supabase.from('profiles').select('display_name, avatar_url').eq('id', data.created_by).single()
+            .then(({ data: p }) => { if (p) setCreator(p) })
+        }
       })
   }, [id])
 
@@ -160,9 +165,15 @@ export default function RecipeDetail() {
       )}
 
       {/* Meta bar */}
-      <div className="flex gap-4 px-5 py-3 text-sm text-warm-text-dim">
+      <div className="flex gap-4 px-5 py-3 text-sm text-warm-text-dim flex-wrap">
         {time && <span>&#9201; {time}</span>}
         {servings && <span>&#127860; {servings} servings</span>}
+        {creator && (
+          <span className="flex items-center gap-1">
+            {creator.avatar_url && <img src={creator.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />}
+            by {creator.display_name}
+          </span>
+        )}
       </div>
 
       {/* Tags */}

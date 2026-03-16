@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useHousehold } from '../contexts/HouseholdContext'
 import AppHeader from '../components/AppHeader'
 
 export default function History() {
   const { user } = useAuth()
+  const { householdUserIds, members } = useHousehold()
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [confirmClear, setConfirmClear] = useState(false)
@@ -18,7 +20,7 @@ export default function History() {
     const { data } = await supabase
       .from('cook_log')
       .select('*, recipes(title, thumbnail_emoji)')
-      .eq('user_id', user.id)
+      .in('user_id', householdUserIds)
       .order('cooked_at', { ascending: false })
     setLogs(data || [])
     setLoading(false)
@@ -96,7 +98,13 @@ export default function History() {
                   <span className="text-2xl">{log.recipes?.thumbnail_emoji || '\uD83C\uDF7D'}</span>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold">{log.recipes?.title || 'Unknown recipe'}</h3>
-                    <p className="text-xs text-warm-text-dim mt-0.5">{formatDate(log.cooked_at)}</p>
+                    <p className="text-xs text-warm-text-dim mt-0.5">
+                      {formatDate(log.cooked_at)}
+                      {members.length > 1 && (() => {
+                        const m = members.find(mb => mb.user_id === log.user_id)
+                        return m ? <span className="ml-1.5">&#8226; {m.display_name}</span> : null
+                      })()}
+                    </p>
                     {log.rating && (
                       <div className="flex gap-0.5 mt-1">
                         {[1, 2, 3, 4, 5].map((n) => (

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { HouseholdProvider } from './contexts/HouseholdContext'
 import TabBar from './components/TabBar'
 import Login from './pages/Login'
 import Recipes from './pages/Recipes'
@@ -10,6 +11,8 @@ import EditRecipe from './pages/EditRecipe'
 import ShoppingList from './pages/ShoppingList'
 import Inventory from './pages/Inventory'
 import History from './pages/History'
+import Household from './pages/Household'
+import DietPreferences from './pages/DietPreferences'
 
 function AppRoutes() {
   const { user, loading } = useAuth()
@@ -36,6 +39,8 @@ function AppRoutes() {
         <Route path="/shopping" element={<ShoppingList />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/history" element={<History />} />
+        <Route path="/household" element={<Household />} />
+        <Route path="/diet" element={<DietPreferences />} />
         <Route path="*" element={<Navigate to="/recipes" replace />} />
       </Routes>
       <Routes>
@@ -50,7 +55,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <HouseholdProvider>
+          <AppRoutes />
+        </HouseholdProvider>
       </AuthProvider>
     </BrowserRouter>
   )

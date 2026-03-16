@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import AppHeader from '../components/AppHeader'
+import ProfileMenu from '../components/ProfileMenu'
+import InviteBanner from '../components/InviteBanner'
 
 const TAG_FILTERS = [
   { label: 'All', value: null },
@@ -17,11 +19,13 @@ const TAG_FILTERS = [
 ]
 
 export default function Recipes() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const [recipes, setRecipes] = useState([])
+  const [profiles, setProfiles] = useState({})
   const [search, setSearch] = useState('')
   const [activeTag, setActiveTag] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [profileOpen, setProfileOpen] = useState(false)
 
   useEffect(() => {
     fetchRecipes()
@@ -32,7 +36,20 @@ export default function Recipes() {
       .from('recipes')
       .select('*')
       .order('created_at', { ascending: false })
-    if (!error) setRecipes(data || [])
+    if (!error) {
+      setRecipes(data || [])
+      // Fetch creator profiles
+      const creatorIds = [...new Set((data || []).filter(r => r.created_by).map(r => r.created_by))]
+      if (creatorIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', creatorIds)
+        const map = {}
+        ;(profs || []).forEach(p => { map[p.id] = p })
+        setProfiles(map)
+      }
+    }
     setLoading(false)
   }
 
@@ -66,7 +83,10 @@ export default function Recipes() {
     <div className="flex flex-col min-h-dvh pb-20">
       {/* Header */}
       <AppHeader title="My Thermomix">
-        <button onClick={signOut} className="w-8 h-8 min-w-8 min-h-8 rounded-full bg-white/25 flex items-center justify-center text-[0.85em] overflow-hidden shrink-0">
+        <button
+          onClick={() => setProfileOpen(true)}
+          className="w-8 h-8 min-w-8 rounded-full bg-white/25 flex items-center justify-center text-[0.85em] overflow-hidden shrink-0"
+        >
           {avatar ? (
             <img src={avatar} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -74,6 +94,12 @@ export default function Recipes() {
           )}
         </button>
       </AppHeader>
+
+      {/* Profile menu */}
+      <ProfileMenu isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
+
+      {/* Invite banner */}
+      <InviteBanner />
 
       {/* Search bar */}
       <div className="bg-accent-dark px-5 py-3.5">
@@ -130,6 +156,7 @@ export default function Recipes() {
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
+              creator={profiles[recipe.created_by]}
               onShop={() => addToShoppingList(recipe)}
             />
           ))
@@ -139,7 +166,7 @@ export default function Recipes() {
   )
 }
 
-function RecipeCard({ recipe, onShop }) {
+function RecipeCard({ recipe, creator, onShop }) {
   const [shopMsg, setShopMsg] = useState(false)
 
   const handleShop = async () => {
@@ -152,8 +179,15 @@ function RecipeCard({ recipe, onShop }) {
     <div className="bg-warm-card rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
       <Link to={`/recipes/${recipe.id}`} className="no-underline text-inherit">
         <div className="flex gap-3.5 p-4">
-          <div className="w-[72px] h-[72px] rounded-xl bg-accent-light flex items-center justify-center text-[2em] shrink-0">
+          <div className="w-[72px] h-[72px] rounded-xl bg-accent-light flex items-center justify-center text-[2em] shrink-0 relative">
             {recipe.thumbnail_emoji || '\uD83C\uDF7D'}
+            {creator?.avatar_url && (
+              <img
+                src={creator.avatar_url}
+                alt=""
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-warm-card object-cover"
+              />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-[1em] font-bold leading-tight mb-1">{recipe.title}</h3>
@@ -167,6 +201,7 @@ function RecipeCard({ recipe, onShop }) {
       <div className="flex gap-3 px-4 pb-2.5 text-[0.75em] text-warm-text-dim">
         {recipe.time_1bowl && <span>&#9201; {recipe.time_1bowl}</span>}
         {recipe.servings_1bowl && <span>&#127860; {recipe.servings_1bowl}</span>}
+        {creator && <span>by {creator.display_name}</span>}
       </div>
 
       {(recipe.tags || []).length > 0 && (

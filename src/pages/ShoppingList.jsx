@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useHousehold } from '../contexts/HouseholdContext'
 import { getMeasurements, MeasurementBadges } from '../lib/portions'
 import AppHeader from '../components/AppHeader'
 
@@ -68,6 +69,7 @@ function computeNeed(itemName, itemQty, itemUnit, itemEstimate, inventory) {
 
 export default function ShoppingList() {
   const { user } = useAuth()
+  const { householdUserIds } = useHousehold()
   const [items, setItems] = useState([])
   const [inventory, setInventory] = useState([])
   const [recipes, setRecipes] = useState({})
@@ -90,7 +92,7 @@ export default function ShoppingList() {
     const { data } = await supabase
       .from('shopping_list')
       .select('*')
-      .eq('user_id', user.id)
+      .in('user_id', householdUserIds)
       .order('added_at', { ascending: true })
     setItems(data || [])
     setLoading(false)
@@ -111,7 +113,7 @@ export default function ShoppingList() {
     const { data } = await supabase
       .from('inventory')
       .select('*')
-      .eq('user_id', user.id)
+      .in('user_id', householdUserIds)
       .order('updated_at', { ascending: false })
     setInventory(data || [])
   }
