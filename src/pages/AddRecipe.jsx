@@ -3,101 +3,26 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
-const CATEGORIES = ['produce', 'dairy', 'pantry', 'protein', 'spices', 'other']
-const TAG_OPTIONS = ['soup', 'main', 'side', 'dessert', 'bread', 'sauce', 'snack', 'breakfast', 'vegan', 'meal-prep']
-const APPLIANCES = ['Thermomix TM6', 'Air Fryer', 'Oven', 'Combined']
-
-const emptyIngredient = () => ({ name: '', qty: '', unit: 'g', category: 'produce' })
-const emptyStep = () => ({ action: '', detail: '', time: '', temp: '', speed: '', reverse: false, accessories: [], ingredients: [] })
-
 export default function AddRecipe() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [saving, setSaving] = useState(false)
   const [aiInput, setAiInput] = useState('')
-  const [appliance, setAppliance] = useState('Thermomix TM6')
   const [generating, setGenerating] = useState(false)
   const [aiError, setAiError] = useState('')
-  const [generated, setGenerated] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    servings_1bowl: '',
-    time_1bowl: '',
-    servings_2bowl: '',
-    time_2bowl: '',
-    tags: [],
-    thumbnail_emoji: '🍽',
-    source_urls: [''],
-    ingredients: [{ group: '', items: [emptyIngredient()] }],
-    ingredients_2bowl: [],
-    steps: [emptyStep()],
-    steps_2bowl: [],
-    nutrition: null,
-    insulin_load: null,
-  })
-
-  function updateField(field, value) {
-    setForm((f) => ({ ...f, [field]: value }))
-  }
-
-  function addIngredientGroup() {
-    setForm((f) => ({ ...f, ingredients: [...f.ingredients, { group: '', items: [emptyIngredient()] }] }))
-  }
-
-  function addIngredient(groupIdx) {
-    setForm((f) => {
-      const groups = [...f.ingredients]
-      groups[groupIdx] = { ...groups[groupIdx], items: [...groups[groupIdx].items, emptyIngredient()] }
-      return { ...f, ingredients: groups }
-    })
-  }
-
-  function updateIngredient(groupIdx, itemIdx, field, value) {
-    setForm((f) => {
-      const groups = [...f.ingredients]
-      const items = [...groups[groupIdx].items]
-      items[itemIdx] = { ...items[itemIdx], [field]: value }
-      groups[groupIdx] = { ...groups[groupIdx], items }
-      return { ...f, ingredients: groups }
-    })
-  }
-
-  function removeIngredient(groupIdx, itemIdx) {
-    setForm((f) => {
-      const groups = [...f.ingredients]
-      const items = groups[groupIdx].items.filter((_, i) => i !== itemIdx)
-      groups[groupIdx] = { ...groups[groupIdx], items }
-      return { ...f, ingredients: groups }
-    })
-  }
-
-  function addStep() {
-    setForm((f) => ({ ...f, steps: [...f.steps, emptyStep()] }))
-  }
-
-  function updateStep(idx, field, value) {
-    setForm((f) => {
-      const steps = [...f.steps]
-      steps[idx] = { ...steps[idx], [field]: value }
-      return { ...f, steps }
-    })
-  }
-
-  function removeStep(idx) {
-    setForm((f) => ({ ...f, steps: f.steps.filter((_, i) => i !== idx) }))
-  }
+  const [recipe, setRecipe] = useState(null)
 
   async function handleGenerate() {
     if (!aiInput.trim()) return
     setGenerating(true)
     setAiError('')
+    setRecipe(null)
 
     try {
       const resp = await fetch('/api/generate-recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: aiInput, appliance }),
+        body: JSON.stringify({ input: aiInput }),
       })
 
       if (!resp.ok) {
@@ -105,26 +30,7 @@ export default function AddRecipe() {
         throw new Error(err.error || `Server error ${resp.status}`)
       }
 
-      const recipe = await resp.json()
-
-      setForm({
-        title: recipe.title || '',
-        description: recipe.description || '',
-        servings_1bowl: recipe.servings_1bowl || '',
-        time_1bowl: recipe.time_1bowl || '',
-        servings_2bowl: recipe.servings_2bowl || '',
-        time_2bowl: recipe.time_2bowl || '',
-        tags: recipe.tags || [],
-        thumbnail_emoji: recipe.thumbnail_emoji || '🍽',
-        source_urls: recipe.source_urls?.length ? recipe.source_urls : [''],
-        ingredients: recipe.ingredients_1bowl || [{ group: '', items: [emptyIngredient()] }],
-        ingredients_2bowl: recipe.ingredients_2bowl || [],
-        steps: recipe.steps_1bowl || [emptyStep()],
-        steps_2bowl: recipe.steps_2bowl || [],
-        nutrition: recipe.nutrition || null,
-        insulin_load: recipe.insulin_load || null,
-      })
-      setGenerated(true)
+      setRecipe(await resp.json())
     } catch (err) {
       setAiError(err.message)
     } finally {
@@ -133,53 +39,51 @@ export default function AddRecipe() {
   }
 
   async function handleSave() {
-    if (!form.title.trim()) return
+    if (!recipe?.title) return
     setSaving(true)
 
-    const ingredients = form.ingredients.map((g) => ({
+    const ingredients = (recipe.ingredients_1bowl || []).map((g) => ({
       group: g.group,
-      items: g.items.filter((i) => i.name.trim()),
+      items: (g.items || []).filter((i) => i.name?.trim()),
     })).filter((g) => g.items.length > 0)
 
-    const steps = form.steps.filter((s) => s.action.trim()).map((s) => ({
+    const steps = (recipe.steps_1bowl || []).filter((s) => s.action?.trim()).map((s) => ({
       ...s,
       speed: s.speed ? Number(s.speed) : null,
     }))
 
-    const steps2 = (form.steps_2bowl || []).filter((s) => s.action?.trim()).map((s) => ({
+    const ingredients2 = (recipe.ingredients_2bowl || []).map((g) => ({
+      group: g.group,
+      items: (g.items || []).filter((i) => i.name?.trim()),
+    })).filter((g) => g.items.length > 0)
+
+    const steps2 = (recipe.steps_2bowl || []).filter((s) => s.action?.trim()).map((s) => ({
       ...s,
       speed: s.speed ? Number(s.speed) : null,
     }))
-
-    const ingredients2 = (form.ingredients_2bowl || []).map((g) => ({
-      group: g.group,
-      items: (g.items || []).filter((i) => i.name.trim()),
-    })).filter((g) => g.items.length > 0)
 
     const { data, error } = await supabase.from('recipes').insert({
-      title: form.title.trim(),
-      description: form.description.trim() || null,
-      servings_1bowl: form.servings_1bowl || null,
-      time_1bowl: form.time_1bowl || null,
-      servings_2bowl: form.servings_2bowl || null,
-      time_2bowl: form.time_2bowl || null,
-      tags: form.tags,
-      thumbnail_emoji: form.thumbnail_emoji || '🍽',
-      source_urls: form.source_urls.filter((u) => u.trim()),
+      title: recipe.title,
+      description: recipe.description || null,
+      servings_1bowl: recipe.servings_1bowl || null,
+      time_1bowl: recipe.time_1bowl || null,
+      servings_2bowl: recipe.servings_2bowl || null,
+      time_2bowl: recipe.time_2bowl || null,
+      tags: recipe.tags || [],
+      thumbnail_emoji: recipe.thumbnail_emoji || '🍽',
+      source_urls: (recipe.source_urls || []).filter((u) => u),
       ingredients_1bowl: ingredients,
       steps_1bowl: steps,
       ingredients_2bowl: ingredients2.length > 0 ? ingredients2 : null,
       steps_2bowl: steps2.length > 0 ? steps2 : null,
-      nutrition: form.nutrition,
-      insulin_load: form.insulin_load,
+      nutrition: recipe.nutrition || null,
+      insulin_load: recipe.insulin_load || null,
       created_by: user?.id,
     }).select().single()
 
     setSaving(false)
     if (!error && data) navigate(`/recipes/${data.id}`)
   }
-
-  const inputClass = 'w-full py-2.5 px-3 rounded-xl bg-warm-card border border-warm-border text-warm-text text-sm outline-none focus:border-accent'
 
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
@@ -191,7 +95,7 @@ export default function AddRecipe() {
       </div>
 
       <div className="px-5 py-4 flex flex-col gap-4">
-        {/* AI Generation Section */}
+        {/* AI Generation */}
         <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">&#10024;</span>
@@ -201,31 +105,15 @@ export default function AddRecipe() {
           <textarea
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
-            className={`${inputClass} resize-none mb-3`}
-            rows={3}
-            placeholder="Paste a URL, list ingredients, or describe what you want to cook...&#10;&#10;e.g. &quot;lentil soup with coconut milk&quot; or &quot;I have potatoes, leeks, cream&quot;"
+            className="w-full py-3 px-3 rounded-xl bg-warm-bg border border-warm-border text-warm-text text-sm outline-none focus:border-accent resize-y min-h-[120px]"
+            rows={5}
+            placeholder={'Paste a URL, list ingredients, or describe what you want to cook...\n\ne.g. "lentil soup with coconut milk"\ne.g. "I have potatoes, leeks, cream, garlic"\ne.g. https://www.example.com/recipe/...'}
           />
-
-          {/* Appliance selector */}
-          <div className="flex flex-wrap gap-2 mb-3">
-            {APPLIANCES.map((a) => (
-              <button
-                key={a}
-                onClick={() => setAppliance(a)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold min-h-0 min-w-0 border transition-colors ${
-                  appliance === a ? 'bg-accent text-white border-accent' : 'bg-warm-bg text-warm-text-dim border-warm-border'
-                }`}
-              >
-                {a === 'Thermomix TM6' ? '🥣 ' : a === 'Air Fryer' ? '🌀 ' : a === 'Oven' ? '🔥 ' : '🍳 '}
-                {a}
-              </button>
-            ))}
-          </div>
 
           <button
             onClick={handleGenerate}
             disabled={generating || !aiInput.trim()}
-            className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full mt-3 py-3 rounded-xl bg-accent text-white font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {generating ? (
               <>
@@ -240,213 +128,133 @@ export default function AddRecipe() {
           {aiError && (
             <p className="text-red-500 text-xs mt-2">{aiError}</p>
           )}
-
-          {generated && (
-            <p className="text-green-600 text-xs mt-2 font-semibold">&#10003; Recipe generated! Review and edit below, then save.</p>
-          )}
         </div>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-warm-border" />
-          <span className="text-xs text-warm-text-dim font-semibold">{generated ? 'REVIEW & EDIT' : 'OR FILL MANUALLY'}</span>
-          <div className="flex-1 h-px bg-warm-border" />
-        </div>
-
-        {/* Title */}
-        <div>
-          <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1 block">Title *</label>
-          <input value={form.title} onChange={(e) => updateField('title', e.target.value)} className={inputClass} placeholder="e.g. Spiced Lentil Soup" />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1 block">Description</label>
-          <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} className={`${inputClass} resize-none`} rows={2} placeholder="Short description" />
-        </div>
-
-        {/* Meta row */}
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1 block">Emoji</label>
-            <input value={form.thumbnail_emoji} onChange={(e) => updateField('thumbnail_emoji', e.target.value)} className={inputClass} />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1 block">Time</label>
-            <input value={form.time_1bowl} onChange={(e) => updateField('time_1bowl', e.target.value)} className={inputClass} placeholder="45 min" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1 block">Servings</label>
-            <input value={form.servings_1bowl} onChange={(e) => updateField('servings_1bowl', e.target.value)} className={inputClass} placeholder="4-6" />
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div>
-          <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1.5 block">Tags</label>
-          <div className="flex flex-wrap gap-2">
-            {TAG_OPTIONS.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => updateField('tags', form.tags.includes(tag) ? form.tags.filter((t) => t !== tag) : [...form.tags, tag])}
-                className={`px-3 py-1 rounded-full text-xs font-semibold min-h-0 min-w-0 border ${
-                  form.tags.includes(tag) ? 'bg-accent text-white border-accent' : 'bg-warm-card text-warm-text-dim border-warm-border'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Nutrition (if AI generated) */}
-        {form.nutrition && (
-          <div>
-            <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1.5 block">Nutrition (per serving)</label>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(form.nutrition).map(([key, val]) => (
-                <div key={key} className="bg-warm-card rounded-lg p-2.5 text-center border border-warm-border">
-                  <div className="text-sm font-bold text-accent">{val}</div>
-                  <div className="text-[0.65rem] text-warm-text-dim capitalize">{key}</div>
-                </div>
-              ))}
+        {/* Generated Recipe Preview */}
+        {recipe && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-warm-border" />
+              <span className="text-xs text-warm-text-dim font-semibold">PREVIEW</span>
+              <div className="flex-1 h-px bg-warm-border" />
             </div>
-            {form.insulin_load && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-warm-text-dim">Insulin Load:</span>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <span key={n} className={`w-5 h-2 rounded-full ${n <= form.insulin_load ? 'bg-accent' : 'bg-warm-border'}`} />
+
+            {/* Title & description */}
+            <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">{recipe.thumbnail_emoji || '🍽'}</span>
+                <h3 className="text-lg font-bold text-warm-text">{recipe.title}</h3>
+              </div>
+              {recipe.description && <p className="text-warm-text-dim text-sm mt-1">{recipe.description}</p>}
+              <div className="flex gap-3 mt-2 text-xs text-warm-text-dim">
+                {recipe.time_1bowl && <span>&#9201; {recipe.time_1bowl}</span>}
+                {recipe.servings_1bowl && <span>&#127860; {recipe.servings_1bowl} servings</span>}
+              </div>
+              {recipe.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {recipe.tags.map((tag) => (
+                    <span key={tag} className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-light text-accent-dark">{tag}</span>
                   ))}
                 </div>
-                <span className="text-xs font-semibold text-accent">{form.insulin_load}/5</span>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
 
-        {/* Ingredients */}
-        <div>
-          <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1.5 block">Ingredients (1 Bowl)</label>
-          {form.ingredients.map((group, gi) => (
-            <div key={gi} className="mb-3 bg-warm-card rounded-xl p-3">
-              <input
-                value={group.group}
-                onChange={(e) => {
-                  const groups = [...form.ingredients]
-                  groups[gi] = { ...groups[gi], group: e.target.value }
-                  updateField('ingredients', groups)
-                }}
-                className="w-full py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs text-warm-text mb-2 outline-none"
-                placeholder="Group name (e.g. Base, Toppings)"
-              />
-              {group.items.map((item, ii) => (
-                <div key={ii} className="flex gap-1.5 mb-1.5">
-                  <input
-                    value={item.name}
-                    onChange={(e) => updateIngredient(gi, ii, 'name', e.target.value)}
-                    className="flex-1 py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none"
-                    placeholder="Ingredient"
-                  />
-                  <input
-                    value={item.qty}
-                    onChange={(e) => updateIngredient(gi, ii, 'qty', e.target.value)}
-                    className="w-16 py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none text-center"
-                    placeholder="200"
-                  />
-                  <select
-                    value={item.unit}
-                    onChange={(e) => updateIngredient(gi, ii, 'unit', e.target.value)}
-                    className="w-14 py-1.5 px-1 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none"
-                  >
-                    <option value="g">g</option>
-                    <option value="ml">ml</option>
-                    <option value="pcs">pcs</option>
-                    <option value="tsp">tsp</option>
-                    <option value="tbsp">tbsp</option>
-                  </select>
-                  <button onClick={() => removeIngredient(gi, ii)} className="text-red-400 text-xs min-h-0 min-w-6 bg-transparent">&#10005;</button>
+            {/* Ingredients */}
+            <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
+              <h3 className="text-sm font-bold text-warm-text mb-2">Ingredients (1 Bowl)</h3>
+              {(recipe.ingredients_1bowl || []).map((group, gi) => (
+                <div key={gi} className="mb-2">
+                  {group.group && <h4 className="text-xs uppercase tracking-wide text-warm-text-dim font-semibold mb-1">{group.group}</h4>}
+                  <ul className="list-none p-0 flex flex-col gap-1">
+                    {(group.items || []).map((item, ii) => (
+                      <li key={ii} className="flex justify-between text-sm bg-warm-bg rounded-lg px-3 py-1.5">
+                        <span>{item.name}</span>
+                        <span className="font-semibold text-accent tabular-nums">{item.qty}{item.unit}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
-              <button onClick={() => addIngredient(gi)} className="text-accent text-xs font-semibold mt-1 min-h-0 min-w-0 bg-transparent">
-                + Add ingredient
-              </button>
             </div>
-          ))}
-          <button onClick={addIngredientGroup} className="text-accent text-xs font-semibold min-h-0 min-w-0 bg-transparent">
-            + Add ingredient group
-          </button>
-        </div>
 
-        {/* Steps */}
-        <div>
-          <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1.5 block">Steps (1 Bowl)</label>
-          {form.steps.map((step, si) => (
-            <div key={si} className="bg-warm-card rounded-xl p-3 mb-2">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-6 h-6 rounded-full bg-accent text-white text-[0.7em] font-bold flex items-center justify-center shrink-0">
-                  {si + 1}
-                </span>
-                <input
-                  value={step.action}
-                  onChange={(e) => updateStep(si, 'action', e.target.value)}
-                  className="flex-1 py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none font-semibold"
-                  placeholder="Action (e.g. Chop vegetables)"
-                />
-                <button onClick={() => removeStep(si)} className="text-red-400 text-xs min-h-0 min-w-6 bg-transparent">&#10005;</button>
-              </div>
-              <textarea
-                value={step.detail}
-                onChange={(e) => updateStep(si, 'detail', e.target.value)}
-                className="w-full py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none resize-none mb-2"
-                rows={2}
-                placeholder="Detail / instructions"
-              />
-              <div className="grid grid-cols-4 gap-1.5">
-                <input value={step.time} onChange={(e) => updateStep(si, 'time', e.target.value)} className="py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none text-center" placeholder="Time" />
-                <input value={step.temp} onChange={(e) => updateStep(si, 'temp', e.target.value)} className="py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none text-center" placeholder="Temp" />
-                <input value={step.speed} onChange={(e) => updateStep(si, 'speed', e.target.value)} className="py-1.5 px-2 rounded-lg bg-warm-bg border border-warm-border text-xs outline-none text-center" placeholder="Speed" />
-                <label className="flex items-center gap-1 text-xs text-warm-text-dim justify-center">
-                  <input type="checkbox" checked={step.reverse} onChange={(e) => updateStep(si, 'reverse', e.target.checked)} />
-                  &#8635;
-                </label>
-              </div>
+            {/* Steps */}
+            <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
+              <h3 className="text-sm font-bold text-warm-text mb-2">Steps (1 Bowl)</h3>
+              <ol className="list-none p-0 flex flex-col gap-2">
+                {(recipe.steps_1bowl || []).map((step, si) => (
+                  <li key={si} className="flex items-start gap-2">
+                    <span className="w-6 h-6 rounded-full bg-accent text-white text-[0.65rem] font-bold flex items-center justify-center shrink-0 mt-0.5">{si + 1}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{step.action}</p>
+                      {step.detail && <p className="text-warm-text-dim text-xs mt-0.5">{step.detail}</p>}
+                      {(step.temp || step.speed || step.time) && (
+                        <div className="flex gap-1.5 mt-1 flex-wrap">
+                          {step.temp && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-[#fff3e0] text-[#e65100] font-mono">{step.temp}</span>}
+                          {step.speed && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-green-light text-green font-mono">{step.reverse ? '↻ ' : ''}Spd {step.speed}</span>}
+                          {step.time && <span className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-accent-light text-accent-dark font-mono">{step.time}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
-          ))}
-          <button onClick={addStep} className="text-accent text-xs font-semibold min-h-0 min-w-0 bg-transparent">
-            + Add step
-          </button>
-        </div>
 
-        {/* Source URLs */}
-        <div>
-          <label className="text-xs font-semibold text-warm-text-dim uppercase tracking-wide mb-1 block">Source URLs</label>
-          {form.source_urls.map((url, i) => (
-            <input
-              key={i}
-              value={url}
-              onChange={(e) => {
-                const urls = [...form.source_urls]
-                urls[i] = e.target.value
-                updateField('source_urls', urls)
-              }}
-              className={`${inputClass} mb-1.5`}
-              placeholder="https://..."
-            />
-          ))}
-          <button onClick={() => updateField('source_urls', [...form.source_urls, ''])} className="text-accent text-xs font-semibold min-h-0 min-w-0 bg-transparent">
-            + Add source
-          </button>
-        </div>
+            {/* Nutrition */}
+            {recipe.nutrition && (
+              <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
+                <h3 className="text-sm font-bold text-warm-text mb-2">Nutrition (per serving)</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(recipe.nutrition).map(([key, val]) => (
+                    <div key={key} className="bg-warm-bg rounded-lg p-2 text-center">
+                      <div className="text-sm font-bold text-accent">{val}</div>
+                      <div className="text-[0.6rem] text-warm-text-dim capitalize">{key}</div>
+                    </div>
+                  ))}
+                </div>
+                {recipe.insulin_load && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-warm-text-dim">Insulin Load:</span>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <span key={n} className={`w-5 h-2 rounded-full ${n <= recipe.insulin_load ? 'bg-accent' : 'bg-warm-border'}`} />
+                      ))}
+                    </div>
+                    <span className="text-xs font-semibold text-accent">{recipe.insulin_load}/5</span>
+                  </div>
+                )}
+              </div>
+            )}
 
-        {/* Save */}
-        <button
-          onClick={handleSave}
-          disabled={saving || !form.title.trim()}
-          className="w-full py-3.5 rounded-xl bg-accent text-white font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save Recipe'}
-        </button>
+            {/* Sources */}
+            {recipe.source_urls?.some(u => u) && (
+              <div className="bg-warm-card rounded-2xl p-4 border border-warm-border">
+                <h3 className="text-sm font-bold text-warm-text mb-1">Sources</h3>
+                {recipe.source_urls.filter(u => u).map((url, i) => (
+                  <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-accent text-xs break-all block">{url.replace(/^https?:\/\//, '').split('/')[0]}</a>
+                ))}
+              </div>
+            )}
+
+            {/* Save */}
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full py-3.5 rounded-xl bg-accent text-white font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Recipe'}
+            </button>
+
+            {/* Regenerate */}
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="w-full py-3 rounded-xl bg-warm-card border border-warm-border text-warm-text-dim font-semibold text-sm"
+            >
+              &#8635; Regenerate
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
