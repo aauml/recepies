@@ -79,46 +79,65 @@ export function HouseholdProvider({ children }) {
     refresh()
   }, [refresh])
 
+  // Create household + add self as owner
   async function createHousehold(name = 'My Household') {
-    const { data: hh, error } = await supabase
+    // Generate UUID client-side to avoid RLS SELECT issues
+    const hhId = crypto.randomUUID()
+    const { error: insertErr } = await supabase
       .from('households')
-      .insert({ name, created_by: user.id })
-      .select()
-      .single()
-    if (error || !hh) return { error }
+      .insert({ id: hhId, name, created_by: user.id })
+    if (insertErr) {
+      console.error('Create household error:', insertErr)
+      return { error: insertErr }
+    }
 
-    await supabase.from('household_members').insert({
-      household_id: hh.id,
+    const { error: memberErr } = await supabase.from('household_members').insert({
+      household_id: hhId,
       user_id: user.id,
       role: 'owner',
     })
+    if (memberErr) {
+      console.error('Add owner member error:', memberErr)
+      return { error: memberErr }
+    }
 
     await refresh()
-    return { data: hh }
+    return { data: { id: hhId, name } }
   }
 
-  async function inviteMember(email) {
-    if (!household) return { error: 'No household' }
+  // Invite by email — auto-creates household if none exists
+  async function inviteByEmail(email) {
+    let hh = household
+    // Auto-create household if user doesn't have one
+    if (!hh) {
+      const result = await createHousehold('My Household')
+      if (result.error) return { error: result.error }
+      hh = result.data
+    }
+    if (!hh) return { error: { message: 'Could not create household' } }
+
     const { error } = await supabase.from('household_invites').insert({
-      household_id: household.id,
+      household_id: hh.id,
       email: email.toLowerCase().trim(),
       invited_by: user.id,
     })
-    if (!error) await refresh()
-    return { error }
+    if (error) {
+      console.error('Invite error:', error)
+      return { error }
+    }
+    await refresh()
+    return {}
   }
 
   async function acceptInvite(inviteId) {
     const invite = pendingInvites.find((i) => i.id === inviteId)
     if (!invite) return
 
-    // Update invite status
     await supabase
       .from('household_invites')
       .update({ status: 'accepted' })
       .eq('id', inviteId)
 
-    // Add as member
     await supabase.from('household_members').insert({
       household_id: invite.household_id,
       user_id: user.id,
@@ -171,7 +190,7 @@ export function HouseholdProvider({ children }) {
         householdUserIds,
         loading,
         createHousehold,
-        inviteMember,
+        inviteByEmail,
         acceptInvite,
         declineInvite,
         leaveHousehold,
