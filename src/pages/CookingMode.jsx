@@ -13,6 +13,8 @@ export default function CookingMode() {
   const [showFinish, setShowFinish] = useState(false)
   const [rating, setRating] = useState(0)
   const [feedback, setFeedback] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [editStep, setEditStep] = useState(null)
   const touchStartX = useRef(0)
 
   useEffect(() => {
@@ -68,6 +70,25 @@ export default function CookingMode() {
       return
     }
     setCurrent(next)
+  }
+
+  function startEditStep() {
+    setEditStep({ ...step })
+    setEditing(true)
+  }
+
+  async function saveEditStep() {
+    const newSteps = [...steps]
+    newSteps[current] = editStep
+    const { error } = await supabase.from('recipes').update({
+      steps_1bowl: newSteps,
+      updated_at: new Date().toISOString(),
+    }).eq('id', id)
+    if (!error) {
+      setRecipe((r) => ({ ...r, steps_1bowl: newSteps }))
+    }
+    setEditing(false)
+    setEditStep(null)
   }
 
   async function handleFinish() {
@@ -132,6 +153,65 @@ export default function CookingMode() {
     )
   }
 
+  // Inline edit overlay
+  if (editing && editStep) {
+    return (
+      <div className="min-h-dvh bg-dark-bg text-dark-text flex flex-col">
+        <div className="flex justify-between items-center px-5 py-3 safe-top bg-dark-card border-b border-[#333] shrink-0">
+          <span className="text-[0.9em] font-semibold">Edit Step {current + 1}</span>
+          <button onClick={() => { setEditing(false); setEditStep(null) }} className="text-dark-text-dim text-sm min-h-0 bg-transparent">Cancel</button>
+        </div>
+
+        <div className="flex-1 px-5 py-4 flex flex-col gap-3 overflow-y-auto">
+          <div>
+            <label className="text-xs text-dark-text-dim uppercase tracking-wide mb-1 block">Action</label>
+            <input
+              value={editStep.action}
+              onChange={(e) => setEditStep({ ...editStep, action: e.target.value })}
+              className="w-full py-2.5 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-dark-text-dim uppercase tracking-wide mb-1 block">Detail</label>
+            <textarea
+              value={editStep.detail || ''}
+              onChange={(e) => setEditStep({ ...editStep, detail: e.target.value })}
+              rows={3}
+              className="w-full py-2.5 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none resize-none"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-dark-text-dim uppercase tracking-wide mb-1 block">Time</label>
+              <input value={editStep.time || ''} onChange={(e) => setEditStep({ ...editStep, time: e.target.value })} className="w-full py-2.5 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none text-center" />
+            </div>
+            <div>
+              <label className="text-xs text-dark-text-dim uppercase tracking-wide mb-1 block">Temp</label>
+              <input value={editStep.temp || ''} onChange={(e) => setEditStep({ ...editStep, temp: e.target.value })} className="w-full py-2.5 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none text-center" />
+            </div>
+            <div>
+              <label className="text-xs text-dark-text-dim uppercase tracking-wide mb-1 block">Speed</label>
+              <input value={editStep.speed || ''} onChange={(e) => setEditStep({ ...editStep, speed: e.target.value })} className="w-full py-2.5 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none text-center" />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-dark-text-dim">
+            <input type="checkbox" checked={editStep.reverse || false} onChange={(e) => setEditStep({ ...editStep, reverse: e.target.checked })} />
+            Reverse mode (&#8635;)
+          </label>
+        </div>
+
+        <div className="px-5 py-4 safe-bottom bg-dark-card border-t border-[#333] shrink-0">
+          <button
+            onClick={saveEditStep}
+            className="w-full py-3.5 rounded-xl bg-dark-accent text-white font-bold text-sm"
+          >
+            Save Step
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="min-h-dvh min-h-[100dvh] bg-dark-bg text-dark-text flex flex-col overflow-hidden select-none"
@@ -140,8 +220,13 @@ export default function CookingMode() {
     >
       {/* Top bar */}
       <div className="flex justify-between items-center px-5 py-3 safe-top bg-dark-card border-b border-[#333] shrink-0">
-        <span className="text-[0.9em] font-semibold max-w-[65%] truncate">{recipe.title}</span>
-        <span className="text-[0.8em] text-dark-accent font-bold tabular-nums">{current + 1} / {total}</span>
+        <span className="text-[0.9em] font-semibold max-w-[55%] truncate">{recipe.title}</span>
+        <div className="flex items-center gap-3">
+          <button onClick={startEditStep} className="text-dark-text-dim text-xs min-h-0 bg-transparent border border-[#444] rounded-lg px-2 py-1">
+            &#9998; Edit
+          </button>
+          <span className="text-[0.8em] text-dark-accent font-bold tabular-nums">{current + 1} / {total}</span>
+        </div>
       </div>
 
       {/* Progress bar */}

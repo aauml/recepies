@@ -28,13 +28,23 @@ export default function RecipeDetail() {
   const servings = bowlMode === 1 ? recipe.servings_1bowl : recipe.servings_2bowl
   const time = bowlMode === 1 ? recipe.time_1bowl : recipe.time_2bowl
 
+  const has2bowl = recipe.ingredients_2bowl && recipe.steps_2bowl
+
   return (
     <div className="min-h-dvh pb-24 bg-warm-bg">
       {/* Header */}
       <div className="bg-accent text-white px-5 pt-4 pb-5 safe-top">
-        <Link to="/recipes" className="text-white/80 text-sm no-underline mb-2 inline-block min-h-0 min-w-0">
-          &#8592; Back
-        </Link>
+        <div className="flex items-center justify-between mb-2">
+          <Link to="/recipes" className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0">
+            &#8592; Back
+          </Link>
+          <Link
+            to={`/recipes/${recipe.id}/edit`}
+            className="text-white/80 text-sm no-underline inline-block min-h-0 min-w-0 bg-white/15 px-3 py-1 rounded-lg"
+          >
+            &#9998; Edit
+          </Link>
+        </div>
         <h1 className="text-xl font-bold leading-tight">{recipe.title}</h1>
         {recipe.description && (
           <p className="text-white/70 text-sm mt-1">{recipe.description}</p>
@@ -42,25 +52,36 @@ export default function RecipeDetail() {
       </div>
 
       {/* Bowl toggle */}
-      <div className="mx-5 -mt-3 bg-accent-dark rounded-xl flex overflow-hidden">
-        {[1, 2].map((n) => (
-          <button
-            key={n}
-            onClick={() => setBowlMode(n)}
-            className={`flex-1 py-2.5 text-sm font-semibold min-h-0 transition-colors ${
-              bowlMode === n ? 'bg-white text-accent' : 'bg-transparent text-white/60'
-            }`}
-          >
-            {n === 1 ? '1 Bowl' : '2 Bowls'}
-          </button>
-        ))}
-      </div>
+      {has2bowl && (
+        <div className="mx-5 -mt-3 bg-accent-dark rounded-xl flex overflow-hidden">
+          {[1, 2].map((n) => (
+            <button
+              key={n}
+              onClick={() => setBowlMode(n)}
+              className={`flex-1 py-2.5 text-sm font-semibold min-h-0 transition-colors ${
+                bowlMode === n ? 'bg-white text-accent' : 'bg-transparent text-white/60'
+              }`}
+            >
+              {n === 1 ? '1 Bowl' : '2 Bowls'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Meta bar */}
       <div className="flex gap-4 px-5 py-3 text-sm text-warm-text-dim">
         {time && <span>&#9201; {time}</span>}
         {servings && <span>&#127860; {servings} servings</span>}
       </div>
+
+      {/* Tags */}
+      {recipe.tags?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-5 mb-3">
+          {recipe.tags.map((tag) => (
+            <span key={tag} className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-accent-light text-accent-dark">{tag}</span>
+          ))}
+        </div>
+      )}
 
       {/* Ingredients */}
       <section className="mx-5 mb-4">
@@ -114,6 +135,15 @@ export default function RecipeDetail() {
                       )}
                     </div>
                   )}
+                  {step.accessories?.length > 0 && (
+                    <div className="flex gap-1.5 mt-2 flex-wrap">
+                      {step.accessories.map((a, i) => (
+                        <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-warm-bg text-warm-text-dim border border-warm-border">
+                          &#128295; {a}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </li>
@@ -133,6 +163,33 @@ export default function RecipeDetail() {
               </div>
             ))}
           </div>
+          {recipe.insulin_load && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs text-warm-text-dim font-semibold">Insulin Load:</span>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <span key={n} className={`w-6 h-2.5 rounded-full ${n <= recipe.insulin_load ? 'bg-accent' : 'bg-warm-border'}`} />
+                ))}
+              </div>
+              <span className="text-xs font-bold text-accent">{recipe.insulin_load}/5</span>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Source URLs */}
+      {recipe.source_urls?.length > 0 && recipe.source_urls.some(u => u) && (
+        <section className="mx-5 mb-4">
+          <h2 className="text-base font-bold text-warm-text mb-2">Sources</h2>
+          <ul className="list-none p-0 flex flex-col gap-1">
+            {recipe.source_urls.filter(u => u).map((url, i) => (
+              <li key={i}>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-accent text-sm break-all">
+                  {url.replace(/^https?:\/\//, '').split('/')[0]}
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
