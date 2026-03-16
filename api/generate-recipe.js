@@ -24,14 +24,33 @@ export default async function handler(req, res) {
       if (ytMatch) videoId = ytMatch[1]
 
       let transcript = ''
+      let pageText = ''
+
       if (videoId) {
+        // Try oEmbed API first for reliable title
+        try {
+          const oembedResp = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`, {
+            signal: AbortSignal.timeout(5000),
+          })
+          if (oembedResp.ok) {
+            const oembed = await oembedResp.json()
+            pageText = oembed.title || ''
+          }
+        } catch {}
+
         try {
           // Try fetching YouTube transcript via timedtext API
           const langResp = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)' },
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
             signal: AbortSignal.timeout(8000),
           })
           const pageHtml = await langResp.text()
+
+          // Get title from page if oEmbed failed
+          if (!pageText) {
+            const titleMatch = pageHtml.match(/<title[^>]*>(.*?)<\/title>/i)
+            pageText = titleMatch ? titleMatch[1].replace(/ - YouTube$/, '') : ''
+          }
 
           // Extract captions track URL from page
           const captionMatch = pageHtml.match(/"captionTracks":\[.*?"baseUrl":"(.*?)"/s)
@@ -52,18 +71,6 @@ export default async function handler(req, res) {
           }
         } catch {}
       }
-
-      // Also fetch the page text for title/description
-      let pageText = ''
-      try {
-        const resp = await fetch(sourceUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)' },
-          signal: AbortSignal.timeout(8000),
-        })
-        const html = await resp.text()
-        const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i)
-        pageText = titleMatch ? titleMatch[1] : ''
-      } catch {}
 
       if (transcript) {
         context = `Convert this YouTube recipe video into a Thermomix recipe.\nVideo: ${sourceUrl}\nTitle: ${pageText}\n\nTranscript:\n${transcript}`
@@ -314,7 +321,9 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
     if (fenceMatch) jsonStr = fenceMatch[1]
     const braceMatch = jsonStr.match(/\{[\s\S]*\}/)
     if (!braceMatch) {
-      return res.status(500).json({ error: 'Could not parse recipe from AI response', raw: text.slice(0, 500) })
+      // AI returned text instead of JSON — pass its message to the user
+      const aiMessage = text.slice(0, 300).trim()
+      return res.status(500).json({ error: aiMessage || 'Could not parse recipe from AI response' })
     }
 
     const recipe = JSON.parse(braceMatch[0])
