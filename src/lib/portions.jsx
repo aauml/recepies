@@ -78,25 +78,29 @@ export function getMeasurements(name, qty, unit, estimate) {
   return result
 }
 
+// Visual-first: shows estimate first (green), then metric + imperial as secondary
 export function MeasurementBadges({ name, qty, unit, estimate, compact = false }) {
   const m = getMeasurements(name, qty, unit, estimate)
   if (!m.metric && !m.imperial && !m.visual) return null
 
+  const primary = m.visual || m.metric
+  const secondary = m.visual ? m.metric : ''
+
   if (compact) {
     return (
       <span className="text-xs tabular-nums">
-        <span className="font-semibold text-accent">{m.metric}</span>
-        {m.imperial && <span className="text-[#2563eb] ml-1">({m.imperial})</span>}
-        {m.visual && <span className="text-[#2e7d6f] ml-1">{m.visual}</span>}
+        <span className="font-semibold text-[#2e7d6f]">{primary}</span>
+        {secondary && <span className="text-accent ml-1">({secondary})</span>}
+        {m.imperial && <span className="text-[#2563eb] ml-1">{m.imperial}</span>}
       </span>
     )
   }
 
   return (
     <div className="flex flex-wrap gap-1.5 mt-0.5">
-      <span className="text-xs font-semibold text-accent tabular-nums">{m.metric}</span>
+      <span className="text-xs font-semibold text-[#2e7d6f] tabular-nums">{primary}</span>
+      {secondary && <span className="text-[0.65rem] text-accent font-mono tabular-nums">{secondary}</span>}
       {m.imperial && <span className="text-[0.65rem] text-[#2563eb] font-mono tabular-nums">{m.imperial}</span>}
-      {m.visual && <span className="text-[0.65rem] text-[#2e7d6f] font-mono">{m.visual}</span>}
     </div>
   )
 }
@@ -104,11 +108,15 @@ export function MeasurementBadges({ name, qty, unit, estimate, compact = false }
 export function MeasurementBadgesDark({ name, qty, unit, estimate }) {
   const m = getMeasurements(name, qty, unit, estimate)
   if (!m.metric && !m.imperial && !m.visual) return null
+
+  const primary = m.visual || m.metric
+  const secondary = m.visual ? m.metric : ''
+
   return (
     <div className="flex flex-wrap gap-1.5">
-      <span className="text-xs font-semibold text-dark-warm-light tabular-nums">{m.metric}</span>
+      <span className="text-xs font-semibold text-[#86efac] tabular-nums">{primary}</span>
+      {secondary && <span className="text-[0.65rem] text-dark-warm-light font-mono tabular-nums">{secondary}</span>}
       {m.imperial && <span className="text-[0.65rem] text-[#93c5fd] font-mono tabular-nums">{m.imperial}</span>}
-      {m.visual && <span className="text-[0.65rem] text-[#86efac] font-mono">{m.visual}</span>}
     </div>
   )
 }

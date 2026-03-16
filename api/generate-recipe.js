@@ -158,7 +158,7 @@ Search your knowledge for well-regarded variations. Synthesize the best elements
 
 ### If user provides a URL or recipe text:
 Extract the original recipe. Convert every step to ${appliance}-equivalent operations. Reorder for efficiency.
-${sourceUrl ? `\nIMPORTANT: The user provided this source URL: ${sourceUrl}\nThis URL MUST be included as the FIRST entry in source_urls. Then add 1-2 complementary source URLs from other reliable sites for comparison/verification.` : ''}
+${sourceUrl ? `\nIMPORTANT: The user provided this source URL: ${sourceUrl}\nThis URL MUST be included as the FIRST entry in source_urls.` : ''}
 
 ### If user provides a YouTube video:
 Extract the recipe from the video transcript. Convert to ${appliance} format. Include the YouTube URL as the first source.
@@ -167,13 +167,11 @@ Extract the recipe from the video transcript. Convert to ${appliance} format. In
 Propose a recipe maximizing those ingredients. Minimize additional items needed.
 
 ## Source URLs Rules
-- source_urls MUST contain direct, working links to SPECIFIC recipe pages
-- Use well-known, reliable sites: Serious Eats, Budget Bytes, Bon Appétit, BBC Good Food, Epicurious, Allrecipes, Food52, Cookie and Kate, Minimalist Baker
-- Each URL must be a direct link to a specific recipe page — NEVER a homepage, search page, or category page
-- Include the full URL path (e.g. "https://www.seriouseats.com/creamy-coconut-red-lentil-soup-recipe")
-- If the user provided a URL, always include it as the first source
-- Add 1-2 additional source URLs from other reliable sites
-- If you are not confident a URL points to a real specific recipe page, omit it
+- source_urls should ONLY contain URLs that the user actually provided
+- If the user gave a URL (website or YouTube), include it as the first (and possibly only) entry
+- Do NOT generate, guess, or invent URLs — you cannot verify they exist and hallucinated URLs lead to 404 errors
+- If the user provided no URL (just a dish name or ingredients), set source_urls to an empty array []
+- Never include URLs you are not 100% certain are real and provided by the user
 
 ## Core Defaults
 - **Vegetarian by default**: No meat, no fish, no gelatin. Eggs and dairy ARE allowed. Use vegetable stock always. Substitute meat with tofu, tempeh, seitan, legumes, or mushrooms.
