@@ -61,16 +61,32 @@ export function HouseholdProvider({ children }) {
       setMembers([])
     }
 
-    // Fetch pending invites for this user's email
+    // Fetch pending invites: invites for this user's email + outgoing invites from household
     const email = user.email
+    const inviteQueries = []
     if (email) {
-      const { data: invites } = await supabase
-        .from('household_invites')
-        .select('*, households(name)')
-        .eq('status', 'pending')
-        .ilike('email', email)
-      setPendingInvites(invites || [])
+      inviteQueries.push(
+        supabase
+          .from('household_invites')
+          .select('*, households(name)')
+          .eq('status', 'pending')
+          .ilike('email', email)
+      )
     }
+    if (membership?.household_id) {
+      inviteQueries.push(
+        supabase
+          .from('household_invites')
+          .select('*, households(name)')
+          .eq('status', 'pending')
+          .eq('household_id', membership.household_id)
+      )
+    }
+    const inviteResults = await Promise.all(inviteQueries)
+    const allInvites = inviteResults.flatMap(r => r.data || [])
+    // Deduplicate by invite id
+    const uniqueInvites = [...new Map(allInvites.map(i => [i.id, i])).values()]
+    setPendingInvites(uniqueInvites)
 
     setLoading(false)
   }, [user])
