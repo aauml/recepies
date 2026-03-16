@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thermomix® TM6 Recipes</title>
+<style>
+  :root {
+    --warm: #f5f0e8;
+    --card: #fffdf8;
+    --accent: #b8622e;
+    --accent-light: #e8d5c4;
+    --accent-dark: #8a4a1e;
+    --text: #2c2420;
+    --text-light: #6b5e56;
+    --border: #e0d6ca;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--warm);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 40px 24px 32px;
+    text-align: center;
+  }
+
+  header h1 {
+    font-size: 2.2em;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  header .tagline {
+    font-style: italic;
+    opacity: 0.9;
+    font-size: 1.05em;
+  }
+
+  .filter-bar {
+    max-width: 900px;
+    margin: 24px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-bar input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95em;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .filter-bar input:focus {
+    border-color: var(--accent);
+  }
+
+  .filter-bar .tag-btn {
+    padding: 6px 14px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    color: var(--text-light);
+    font-family: inherit;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-bar .tag-btn:hover,
+  .filter-bar .tag-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .recipe-grid {
+    max-width: 900px;
+    margin: 24px auto 48px;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 20px;
+  }
+
+  .recipe-card {
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .recipe-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+
+  .card-color-bar {
+    height: 6px;
+    background: var(--accent);
+  }
+
+  .card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-body h2 {
+    font-size: 1.15em;
+    margin-bottom: 8px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-body .description {
+    font-size: 0.88em;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    flex: 1;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.8em;
+    color: var(--text-light);
+  }
+
+  .card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .card-tags .tag {
+    font-size: 0.72em;
+    padding: 2px 8px;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-light);
+    font-style: italic;
+  }
+
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 0.82em;
+    color: var(--text-light);
+    border-top: 1px solid var(--border);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 520px) {
+    header h1 { font-size: 1.6em; }
+    .recipe-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-6px;margin-right:6px;"><path d="M6 5h12l-1.2 14.5c-.1.8-.7 1.5-1.5 1.5H8.7c-.8 0-1.4-.7-1.5-1.5L6 5z"/><path d="M5 5h14"/><path d="M18.5 8.5h1.5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.3"/></svg>Thermomix® TM6 Recipes</h1>
+  <div class="tagline">Vegetarian · Metric · Cookidoo®-style</div>
+</header>
+
+<div class="filter-bar">
+  <input type="text" id="search" placeholder="Search recipes..." autocomplete="off">
+  <button class="tag-btn" data-tag="all" onclick="filterTag('all')">All</button>
+  <button class="tag-btn" data-tag="soup" onclick="filterTag('soup')">Soups</button>
+  <button class="tag-btn" data-tag="main" onclick="filterTag('main')">Mains</button>
+  <button class="tag-btn" data-tag="side" onclick="filterTag('side')">Sides</button>
+  <button class="tag-btn" data-tag="dessert" onclick="filterTag('dessert')">Desserts</button>
+  <button class="tag-btn" data-tag="bread" onclick="filterTag('bread')">Breads</button>
+  <button class="tag-btn" data-tag="sauce" onclick="filterTag('sauce')">Sauces</button>
+</div>
+
+<div class="recipe-grid" id="recipeGrid">
+  <!-- Recipes are defined in the array below and rendered by JS -->
+</div>
+
+<footer>
+  Thermomix® is a registered trademark of Vorwerk. This is a personal recipe collection, not affiliated with Vorwerk or Cookidoo®.
+</footer>
+
+<script>
+// ============================================================
+// RECIPE REGISTRY — Add new recipes here
+// ============================================================
+// Each recipe needs: file, title, description, time, servings, tags
+// Tags: soup, main, side, dessert, bread, sauce, snack, breakfast
+// ============================================================
+const recipes = [
+  {
+    file: "recipes/spiced-vegetable-lentil-soup.html",
+    title: "Spiced Vegetable Lentil Soup",
+    description: "Hearty brown lentil soup with fire-roasted tomatoes, kale, and lemon. 1-bowl or 2-bowl toggle.",
+    time: "45–75 min",
+    servings: "6–12",
+    tags: ["soup", "vegan", "meal-prep"]
+  },
+  {
+    file: "recipes/mediterranean-lentil-soup.html",
+    title: "Mediterranean Lentil Soup",
+    description: "Browned onions, preserved lemon, Aleppo pepper — finished with a herby oil drizzle. 1-bowl or 2-bowl toggle.",
+    time: "60–90 min",
+    servings: "4–8",
+    tags: ["soup", "vegan", "meal-prep"]
+  },
+  {
+    file: "recipes/vegetarian-pho.html",
+    title: "Vegetarian Phở Chay",
+    description: "Charred aromatics, whole spices, shiitake umami, Varoma-steamed tofu. 1-bowl or 2-bowl toggle.",
+    time: "50–80 min",
+    servings: "4–8",
+    tags: ["soup", "vegan"]
+  },
+];
+
+// ============================================================
+// Render & filter logic
+// ============================================================
+let activeTag = 'all';
+
+function renderCards(filtered) {
+  const grid = document.getElementById('recipeGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No recipes match your search.</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(r => `
+    <a class="recipe-card" href="${r.file}" data-tags="${r.tags.join(' ')}">
+      <div class="card-color-bar"></div>
+      <div class="card-body">
+        <h2>${r.title}</h2>
+        <div class="description">${r.description}</div>
+        <div class="card-meta">
+          <span>⏱ ${r.time}</span>
+          <span>🍽 ${r.servings} servings</span>
+        </div>
+        <div class="card-tags">
+          ${r.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+      </div>
+    </a>
+  `).join('');
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = recipes.filter(r => {
+    const matchTag = activeTag === 'all' || r.tags.includes(activeTag);
+    const matchSearch = !q ||
+      r.title.toLowerCase().includes(q) ||
+      r.description.toLowerCase().includes(q) ||
+      r.tags.some(t => t.includes(q));
+    return matchTag && matchSearch;
+  });
+  renderCards(filtered);
+}
+
+function filterTag(tag) {
+  activeTag = tag;
+  document.querySelectorAll('.tag-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tag === tag);
+  });
+  applyFilters();
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+
+// Initial render
+filterTag('all');
+</script>
+
+</body>
+</html>

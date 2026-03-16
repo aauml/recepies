@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warm theme (browse/home) */
+  --color-warm-bg: #f5f0e8;
+  --color-warm-card: #fffdf8;
+  --color-accent: #b8622e;
+  --color-accent-light: #e8d5c4;
+  --color-accent-dark: #8a4a1e;
+  --color-green: #2e7d6f;
+  --color-green-light: #d0ece7;
+  --color-warm-text: #2c2420;
+  --color-warm-text-dim: #6b5e56;
+  --color-warm-border: #e0d6ca;
+  --color-tab-bg: #ede6dc;
+
+  /* Bowl colors */
+  --color-bowl1: #2e7d6f;
+  --color-bowl1-light: #d0ece7;
+  --color-bowl2: #c0562b;
+  --color-bowl2-light: #f5ddd1;
+  --color-swap-bg: #e8e3dc;
+  --color-swap-text: #6b5e56;
+
+  /* Dark theme (cooking mode) */
+  --color-dark-bg: #1a1a1a;
+  --color-dark-card: #242424;
+  --color-dark-accent: #4CAF50;
+  --color-dark-accent-dim: #2e7d32;
+  --color-dark-warm: #b8622e;
+  --color-dark-warm-light: #e8a06a;
+  --color-dark-text: #f0f0f0;
+  --color-dark-text-dim: #888888;
+  --color-speed-ring: #4CAF50;
+  --color-temp: #ff6b35;
+}
+
+/* Base styles */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  background: var(--color-warm-bg);
+  color: var(--color-warm-text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe area spacing utility */
+.safe-top {
+  padding-top: max(0px, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+}
+
+/* Touch target minimum */
+button, a, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Scrollbar hide for horizontal scrolling */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

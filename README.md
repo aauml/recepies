@@ -1,43 +1,16 @@
-# 🍲 Thermomix® TM6 Recipe Collection
+# React + Vite
 
-Personal vegetarian recipe collection optimized for the Thermomix® TM6. All recipes use accurate Thermomix settings (speed, temperature, time) and follow Cookidoo®-style formatting.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Structure
+Currently, two official plugins are available:
 
-```
-index.html              ← Recipe index with search/filter
-recipes/
-  recipe-name.html      ← Individual recipe cards (self-contained)
-```
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Adding a New Recipe
+## React Compiler
 
-1. Generate the recipe HTML using the Claude Thermomix project
-2. Save it as `recipes/recipe-name.html` (lowercase, hyphens)
-3. Add an entry to the `recipes` array in `index.html`:
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-```js
-{
-  file: "recipes/recipe-name.html",
-  title: "Recipe Title",
-  description: "Short description.",
-  time: "30 min",
-  servings: "4",
-  tags: ["main", "vegan"]
-}
-```
+## Expanding the ESLint configuration
 
-4. Commit and push
-
-## Tags
-
-`soup` · `main` · `side` · `dessert` · `bread` · `sauce` · `snack` · `breakfast` · `vegan` · `meal-prep`
-
-## Hosting
-
-Enable GitHub Pages (Settings → Pages → Source: main branch) to serve at:  
-`https://aauml.github.io/recepies/`
-
----
-
-*Thermomix® is a registered trademark of Vorwerk. This is a personal recipe collection.*
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
