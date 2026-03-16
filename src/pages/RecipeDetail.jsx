@@ -1,12 +1,60 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+
+function getPortionInfo(name, qty, unit) {
+  const g = parseFloat(qty)
+  if (!g || isNaN(g)) return null
+  const parts = []
+  if (unit === 'g') parts.push(`${(g / 28.35).toFixed(1)} oz`)
+  else if (unit === 'ml') parts.push(`${(g / 29.57).toFixed(1)} fl oz`)
+
+  const lower = (name || '').toLowerCase()
+  const estimates = [
+    [/onion/, 150, 'medium onion'],
+    [/garlic/, 5, 'clove'],
+    [/potato/, 180, 'medium potato'],
+    [/carrot/, 120, 'medium carrot'],
+    [/tomato/, 150, 'medium tomato'],
+    [/egg/, 55, 'egg'],
+    [/pepper|bell/, 170, 'pepper'],
+    [/zucchini|courgette/, 200, 'medium zucchini'],
+    [/lemon/, 60, 'lemon'],
+    [/lime/, 45, 'lime'],
+    [/cilantro|coriander.*fresh/, 30, 'bunch'],
+    [/parsley/, 30, 'bunch'],
+    [/basil/, 20, 'bunch'],
+    [/ginger/, 15, 'thumb piece'],
+    [/avocado/, 170, 'avocado'],
+    [/banana/, 120, 'banana'],
+    [/apple/, 180, 'apple'],
+    [/celery/, 60, 'stalk'],
+  ]
+  if (unit === 'g') {
+    for (const [regex, weight, label] of estimates) {
+      if (regex.test(lower)) {
+        const count = g / weight
+        const rounded = Math.round(count * 2) / 2
+        if (rounded >= 0.5) {
+          const plural = rounded !== 1 && !label.includes('bunch') && !label.includes('piece') ? 's' : ''
+          parts.push(`~${rounded} ${label}${plural}`)
+        }
+        break
+      }
+    }
+  }
+  return parts.length > 0 ? parts.join(', ') : null
+}
 
 export default function RecipeDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [recipe, setRecipe] = useState(null)
   const [bowlMode, setBowlMode] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [addedToShopping, setAddedToShopping] = useState(false)
 
   useEffect(() => {
     supabase
@@ -14,11 +62,35 @@ export default function RecipeDetail() {
       .select('*')
       .eq('id', id)
       .single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) console.error('Recipe fetch error:', error)
         setRecipe(data)
         setLoading(false)
       })
   }, [id])
+
+  async function addToShopping() {
+    const ings = bowlMode === 1 ? recipe.ingredients_1bowl : recipe.ingredients_2bowl
+    if (!ings || !user) return
+    const rows = []
+    for (const group of ings) {
+      for (const item of (group.items || [])) {
+        if (!item.name?.trim()) continue
+        rows.push({
+          user_id: user.id,
+          item_name: item.name,
+          quantity: `${item.qty || ''}${item.unit || ''}`,
+          category: item.category || 'other',
+          recipe_id: recipe.id,
+        })
+      }
+    }
+    if (rows.length > 0) {
+      await supabase.from('shopping_list').insert(rows)
+      setAddedToShopping(true)
+      setTimeout(() => setAddedToShopping(false), 3000)
+    }
+  }
 
   if (loading) return <div className="flex items-center justify-center min-h-dvh text-warm-text-dim">Loading...</div>
   if (!recipe) return <div className="flex items-center justify-center min-h-dvh text-warm-text-dim">Recipe not found</div>
@@ -92,12 +164,20 @@ export default function RecipeDetail() {
               <h3 className="text-xs uppercase tracking-wide text-warm-text-dim font-semibold mb-1.5">{group.group}</h3>
             )}
             <ul className="list-none p-0 flex flex-col gap-1">
-              {(group.items || []).map((item, ii) => (
-                <li key={ii} className="flex justify-between text-sm bg-warm-card rounded-lg px-3 py-2">
-                  <span>{item.name}</span>
-                  <span className="font-semibold text-accent tabular-nums">{item.qty}{item.unit}</span>
-                </li>
-              ))}
+              {(group.items || []).map((item, ii) => {
+                const estimate = item.estimate || getPortionInfo(item.name, item.qty, item.unit)
+                return (
+                  <li key={ii} className="bg-warm-card rounded-lg px-3 py-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{item.name}</span>
+                      <span className="font-semibold text-accent tabular-nums">{item.qty}{item.unit}</span>
+                    </div>
+                    {estimate && (
+                      <div className="text-[0.65rem] text-warm-text-dim mt-0.5">{estimate}</div>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </div>
         ))}
@@ -142,6 +222,28 @@ export default function RecipeDetail() {
                           &#128295; {a}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {/* Step ingredients with portions */}
+                  {step.ingredients?.length > 0 && (
+                    <div className="mt-2 bg-warm-bg rounded-lg px-3 py-2">
+                      {step.ingredients.map((ing, i) => {
+                        const est = ing.estimate || getPortionInfo(ing.name, ing.qty?.replace(/[^\d.]/g, ''), ing.qty?.replace(/[\d.]/g, '') || 'g')
+                        return (
+                          <div key={i} className="flex justify-between text-xs py-0.5">
+                            <span className="text-warm-text-dim">{ing.name}</span>
+                            <div className="text-right">
+                              <span className="font-semibold text-accent">{ing.qty}</span>
+                              {est && <span className="text-warm-text-dim ml-1">({est})</span>}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {step.note && (
+                    <div className="mt-2 bg-[#fff9e6] rounded-lg px-3 py-1.5 text-xs text-[#8a6d00]">
+                      &#128221; {step.note}
                     </div>
                   )}
                 </div>
@@ -194,13 +296,27 @@ export default function RecipeDetail() {
       )}
 
       {/* Actions */}
-      <div className="mx-5 flex gap-3">
+      <div className="mx-5 flex flex-col gap-2">
         <Link
           to={`/recipes/${recipe.id}/cook`}
-          className="flex-1 py-3.5 rounded-xl bg-accent text-white text-center font-bold text-sm no-underline active:scale-[0.98] transition-transform"
+          className="w-full py-3.5 rounded-xl bg-accent text-white text-center font-bold text-sm no-underline active:scale-[0.98] transition-transform"
         >
           &#128293; Cook this recipe
         </Link>
+        <button
+          onClick={addToShopping}
+          disabled={addedToShopping}
+          className={`w-full py-3 rounded-xl font-semibold text-sm border transition-all ${
+            addedToShopping
+              ? 'bg-green-50 border-green-300 text-green-700'
+              : 'bg-warm-card border-warm-border text-warm-text active:scale-[0.98]'
+          }`}
+        >
+          {addedToShopping
+            ? `\u2713 Added ${bowlMode === 2 ? '2-bowl' : ''} ingredients to shopping`
+            : `\uD83D\uDED2 Add to shopping list${has2bowl ? ` (${bowlMode === 1 ? '1 Bowl' : '2 Bowls'})` : ''}`
+          }
+        </button>
       </div>
     </div>
   )

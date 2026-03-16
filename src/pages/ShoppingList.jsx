@@ -13,14 +13,26 @@ const CATEGORY_LABELS = {
   other: '\uD83D\uDCE6 Other',
 }
 
+function matchInventory(itemName, inventory) {
+  const lower = itemName.toLowerCase().replace(/[,.].*$/, '').trim()
+  return inventory.find((inv) => {
+    const invLower = inv.item_name.toLowerCase().trim()
+    return lower.includes(invLower) || invLower.includes(lower)
+  })
+}
+
 export default function ShoppingList() {
   const { user } = useAuth()
   const [items, setItems] = useState([])
+  const [inventory, setInventory] = useState([])
   const [newItem, setNewItem] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) fetchItems()
+    if (user) {
+      fetchItems()
+      fetchInventory()
+    }
   }, [user])
 
   async function fetchItems() {
@@ -31,6 +43,14 @@ export default function ShoppingList() {
       .order('added_at', { ascending: true })
     setItems(data || [])
     setLoading(false)
+  }
+
+  async function fetchInventory() {
+    const { data } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('user_id', user.id)
+    setInventory(data || [])
   }
 
   async function addItem(e) {
@@ -83,7 +103,7 @@ export default function ShoppingList() {
     <div className="min-h-dvh pb-24 bg-warm-bg">
       <header className="bg-accent text-white px-5 pt-4 pb-4 safe-top">
         <h1 className="text-lg font-bold">Shopping List</h1>
-        <p className="text-white/60 text-xs mt-0.5">{unchecked.length} items</p>
+        <p className="text-white/60 text-xs mt-0.5">{unchecked.length} items needed</p>
       </header>
 
       {/* Add item */}
@@ -123,21 +143,29 @@ export default function ShoppingList() {
                 {CATEGORY_LABELS[cat] || cat}
               </h3>
               <div className="flex flex-col gap-1">
-                {grouped[cat].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => toggleItem(item)}
-                    className="flex items-center gap-3 bg-warm-card rounded-xl px-3 py-2.5 text-left min-h-0 w-full"
-                  >
-                    <span className="w-5 h-5 rounded-md border-2 border-warm-border shrink-0 flex items-center justify-center text-xs">
-                      {item.checked ? '\u2713' : ''}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm">{item.item_name}</span>
-                      {item.quantity && <span className="text-xs text-accent ml-2">{item.quantity}</span>}
-                    </div>
-                  </button>
-                ))}
+                {grouped[cat].map((item) => {
+                  const inStock = matchInventory(item.item_name, inventory)
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => toggleItem(item)}
+                      className="flex items-center gap-3 bg-warm-card rounded-xl px-3 py-2.5 text-left min-h-0 w-full"
+                    >
+                      <span className="w-5 h-5 rounded-md border-2 border-warm-border shrink-0 flex items-center justify-center text-xs">
+                        {item.checked ? '\u2713' : ''}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm">{item.item_name}</span>
+                        {item.quantity && <span className="text-xs text-accent font-semibold ml-2">{item.quantity}</span>}
+                      </div>
+                      {inStock && (
+                        <span className="text-[0.65rem] px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 font-semibold shrink-0">
+                          Have{inStock.quantity ? `: ${inStock.quantity}` : ''}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           ))}

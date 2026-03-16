@@ -52,7 +52,7 @@ The JSON must match this exact schema:
     {
       "group": "Base",
       "items": [
-        { "name": "Onion, quartered", "qty": "150", "unit": "g", "category": "produce" }
+        { "name": "Onion, quartered", "qty": "150", "unit": "g", "category": "produce", "estimate": "1 medium onion" }
       ]
     }
   ],
@@ -107,6 +107,7 @@ Propose a recipe maximizing those ingredients. Minimize additional items needed.
 - **Oil**: Olive oil unless dish requires otherwise (sesame for Asian, neutral for baking).
 - **Serving size**: Maximum practical yield for the 2.2L bowl — typically 4-6 for soups, 4 for denser dishes. Working capacity with heat ~1.5L.
 - **Units**: Metric (grams, milliliters, °C). Every ingredient MUST have exact gram/ml weight.
+- **Estimates**: Every ingredient MUST include an "estimate" field with a practical description (e.g. "1 medium onion", "3 cloves", "1 bunch", "2 thumb-sized pieces"). This helps users who shop without a scale.
 - **Language**: English
 
 ## Dual Bowl

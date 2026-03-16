@@ -3,6 +3,44 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
+function getPortionInfo(name, qty, unit) {
+  const g = parseFloat(qty)
+  if (!g || isNaN(g)) return null
+  const parts = []
+  if (unit === 'g') parts.push(`${(g / 28.35).toFixed(1)} oz`)
+  else if (unit === 'ml') parts.push(`${(g / 29.57).toFixed(1)} fl oz`)
+  const lower = (name || '').toLowerCase()
+  const estimates = [
+    [/onion/, 150, 'medium onion'],
+    [/garlic/, 5, 'clove'],
+    [/potato/, 180, 'medium potato'],
+    [/carrot/, 120, 'medium carrot'],
+    [/tomato/, 150, 'medium tomato'],
+    [/egg/, 55, 'egg'],
+    [/pepper|bell/, 170, 'pepper'],
+    [/zucchini/, 200, 'medium zucchini'],
+    [/lemon/, 60, 'lemon'],
+    [/lime/, 45, 'lime'],
+    [/cilantro/, 30, 'bunch'],
+    [/parsley/, 30, 'bunch'],
+    [/ginger/, 15, 'thumb piece'],
+  ]
+  if (unit === 'g') {
+    for (const [regex, weight, label] of estimates) {
+      if (regex.test(lower)) {
+        const count = g / weight
+        const rounded = Math.round(count * 2) / 2
+        if (rounded >= 0.5) {
+          const plural = rounded !== 1 && !label.includes('bunch') && !label.includes('piece') ? 's' : ''
+          parts.push(`~${rounded} ${label}${plural}`)
+        }
+        break
+      }
+    }
+  }
+  return parts.length > 0 ? parts.join(', ') : null
+}
+
 export default function CookingMode() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -15,11 +53,16 @@ export default function CookingMode() {
   const [feedback, setFeedback] = useState('')
   const [editing, setEditing] = useState(false)
   const [editStep, setEditStep] = useState(null)
+  const [saving, setSaving] = useState(false)
   const touchStartX = useRef(0)
 
   useEffect(() => {
     supabase.from('recipes').select('*').eq('id', id).single()
-      .then(({ data }) => { setRecipe(data); setLoading(false) })
+      .then(({ data, error }) => {
+        if (error) console.error('Recipe fetch error:', error)
+        setRecipe(data)
+        setLoading(false)
+      })
   }, [id])
 
   // Wake Lock
@@ -73,11 +116,16 @@ export default function CookingMode() {
   }
 
   function startEditStep() {
-    setEditStep({ ...step })
+    setEditStep({
+      ...step,
+      ingredients: step.ingredients ? step.ingredients.map(i => ({ ...i })) : [],
+      note: step.note || '',
+    })
     setEditing(true)
   }
 
   async function saveEditStep() {
+    setSaving(true)
     const newSteps = [...steps]
     newSteps[current] = editStep
     const { error } = await supabase.from('recipes').update({
@@ -87,21 +135,44 @@ export default function CookingMode() {
     if (!error) {
       setRecipe((r) => ({ ...r, steps_1bowl: newSteps }))
     }
+    setSaving(false)
     setEditing(false)
     setEditStep(null)
   }
 
+  function addEditIngredient() {
+    setEditStep({
+      ...editStep,
+      ingredients: [...(editStep.ingredients || []), { name: '', qty: '' }],
+    })
+  }
+
+  function removeEditIngredient(index) {
+    setEditStep({
+      ...editStep,
+      ingredients: editStep.ingredients.filter((_, i) => i !== index),
+    })
+  }
+
+  function updateEditIngredient(index, field, value) {
+    const updated = [...editStep.ingredients]
+    updated[index] = { ...updated[index], [field]: value }
+    setEditStep({ ...editStep, ingredients: updated })
+  }
+
   async function handleFinish() {
+    setSaving(true)
     if (user) {
       await supabase.from('cook_log').insert({
-        recipe_id: recipe.id,
+        recipe_id: id,
         user_id: user.id,
         rating: rating || null,
         feedback: feedback || null,
         bowl_mode: 1,
       })
     }
-    navigate(`/recipes/${recipe.id}`)
+    setSaving(false)
+    navigate(`/recipes/${id}`)
   }
 
   function onTouchStart(e) { touchStartX.current = e.touches[0].clientX }
@@ -139,12 +210,13 @@ export default function CookingMode() {
 
         <button
           onClick={handleFinish}
-          className="w-full max-w-sm py-3.5 rounded-xl bg-dark-warm text-white font-bold text-sm"
+          disabled={saving}
+          className="w-full max-w-sm py-3.5 rounded-xl bg-dark-warm text-white font-bold text-sm disabled:opacity-50"
         >
-          Save & Finish
+          {saving ? 'Saving...' : 'Save & Finish'}
         </button>
         <button
-          onClick={() => navigate(`/recipes/${recipe.id}`)}
+          onClick={() => navigate(`/recipes/${id}`)}
           className="text-dark-text-dim text-sm mt-3 min-h-0"
         >
           Skip
@@ -198,14 +270,52 @@ export default function CookingMode() {
             <input type="checkbox" checked={editStep.reverse || false} onChange={(e) => setEditStep({ ...editStep, reverse: e.target.checked })} />
             Reverse mode (&#8635;)
           </label>
+
+          {/* Ingredients */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-xs text-dark-text-dim uppercase tracking-wide">Ingredients</label>
+              <button onClick={addEditIngredient} className="text-xs text-dark-accent min-h-0 bg-transparent">+ Add</button>
+            </div>
+            {(editStep.ingredients || []).map((ing, i) => (
+              <div key={i} className="flex gap-2 mb-2 items-center">
+                <input
+                  value={ing.name}
+                  onChange={(e) => updateEditIngredient(i, 'name', e.target.value)}
+                  placeholder="Name"
+                  className="flex-1 py-2 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none"
+                />
+                <input
+                  value={ing.qty}
+                  onChange={(e) => updateEditIngredient(i, 'qty', e.target.value)}
+                  placeholder="Qty"
+                  className="w-24 py-2 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none text-center"
+                />
+                <button onClick={() => removeEditIngredient(i)} className="text-red-400 text-xs min-h-0 min-w-0 bg-transparent">&#10005;</button>
+              </div>
+            ))}
+          </div>
+
+          {/* Note */}
+          <div>
+            <label className="text-xs text-dark-text-dim uppercase tracking-wide mb-1 block">Note</label>
+            <textarea
+              value={editStep.note || ''}
+              onChange={(e) => setEditStep({ ...editStep, note: e.target.value })}
+              rows={2}
+              placeholder="Add a personal note for this step..."
+              className="w-full py-2.5 px-3 rounded-xl bg-dark-card border border-[#444] text-dark-text text-sm outline-none resize-none"
+            />
+          </div>
         </div>
 
         <div className="px-5 py-4 safe-bottom bg-dark-card border-t border-[#333] shrink-0">
           <button
             onClick={saveEditStep}
-            className="w-full py-3.5 rounded-xl bg-dark-accent text-white font-bold text-sm"
+            disabled={saving}
+            className="w-full py-3.5 rounded-xl bg-dark-accent text-white font-bold text-sm disabled:opacity-50"
           >
-            Save Step
+            {saving ? 'Saving...' : 'Save Step'}
           </button>
         </div>
       </div>
@@ -315,20 +425,36 @@ export default function CookingMode() {
           {step.detail && <p className="text-[0.88em] text-dark-text-dim leading-relaxed">{step.detail}</p>}
         </div>
 
-        {/* Step ingredients */}
+        {/* Step ingredients with portions */}
         {step.ingredients?.length > 0 && (
           <div className="bg-dark-card rounded-xl p-3 px-4 w-full max-w-[360px]">
             <div className="text-[0.72em] uppercase tracking-widest text-dark-text-dim mb-2">
               Ingredients for this step
             </div>
             <ul className="list-none p-0 flex flex-col gap-1">
-              {step.ingredients.map((ing, i) => (
-                <li key={i} className="flex justify-between text-[0.88em]">
-                  <span>{ing.name}</span>
-                  <span className="font-semibold text-dark-warm-light tabular-nums">{ing.qty}</span>
-                </li>
-              ))}
+              {step.ingredients.map((ing, i) => {
+                const qtyNum = ing.qty?.replace(/[^\d.]/g, '') || ''
+                const qtyUnit = ing.qty?.replace(/[\d.\s]/g, '') || 'g'
+                const est = ing.estimate || getPortionInfo(ing.name, qtyNum, qtyUnit)
+                return (
+                  <li key={i} className="text-[0.88em]">
+                    <div className="flex justify-between">
+                      <span>{ing.name}</span>
+                      <span className="font-semibold text-dark-warm-light tabular-nums">{ing.qty}</span>
+                    </div>
+                    {est && <div className="text-[0.75em] text-dark-text-dim">{est}</div>}
+                  </li>
+                )
+              })}
             </ul>
+          </div>
+        )}
+
+        {/* Step note */}
+        {step.note && (
+          <div className="bg-[#2a2515] border border-[#5a4a2a] rounded-xl p-3 px-4 w-full max-w-[360px]">
+            <div className="text-[0.72em] uppercase tracking-widest text-dark-text-dim mb-1">&#128221; Note</div>
+            <p className="text-[0.85em] text-[#e8d8a0]">{step.note}</p>
           </div>
         )}
       </div>
