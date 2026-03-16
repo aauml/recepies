@@ -191,8 +191,19 @@ export function HouseholdProvider({ children }) {
     await refresh()
   }
 
+  async function cancelInvite(inviteId) {
+    if (!household) return
+    await supabase
+      .from('household_invites')
+      .delete()
+      .eq('id', inviteId)
+    await refresh()
+  }
+
   async function deleteHousehold() {
     if (!household) return
+    await supabase.from('household_invites').delete().eq('household_id', household.id)
+    await supabase.from('household_members').delete().eq('household_id', household.id)
     await supabase.from('households').delete().eq('id', household.id)
     await refresh()
   }
@@ -211,6 +222,7 @@ export function HouseholdProvider({ children }) {
         declineInvite,
         leaveHousehold,
         removeMember,
+        cancelInvite,
         deleteHousehold,
         refresh,
       }}

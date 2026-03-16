@@ -8,7 +8,7 @@ export default function Household() {
   const {
     household, members, pendingInvites,
     inviteByEmail, acceptInvite, declineInvite,
-    leaveHousehold, removeMember, deleteHousehold,
+    leaveHousehold, removeMember, cancelInvite, deleteHousehold,
   } = useHousehold()
 
   const [inviteEmail, setInviteEmail] = useState('')
@@ -143,7 +143,12 @@ export default function Household() {
             .map((inv) => (
               <div key={inv.id} className="flex items-center justify-between bg-warm-card rounded-xl px-4 py-3 mb-1.5">
                 <p className="text-sm text-warm-text-dim">{inv.email}</p>
-                <span className="text-xs text-accent font-semibold">Pending</span>
+                <button
+                  onClick={() => cancelInvite(inv.id)}
+                  className="text-red-400 text-xs bg-transparent p-1"
+                >
+                  Cancel
+                </button>
               </div>
             ))}
         </div>
