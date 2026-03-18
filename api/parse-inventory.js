@@ -8,24 +8,31 @@ export default async function handler(req, res) {
   const { text } = req.body
   if (!text?.trim()) return res.status(400).json({ error: 'Text is required' })
 
-  const systemPrompt = `You parse natural language descriptions of food inventory into structured JSON.
+  const systemPrompt = `You parse natural language descriptions of inventory items into structured JSON.
 
 Return ONLY a valid JSON object with this format:
 {
   "items": [
-    { "name": "Onion", "quantity": "2", "category": "produce" },
-    { "name": "Rice", "quantity": "500g", "category": "pantry" }
+    { "name": "Onion", "quantity": "2", "category": "produce", "section": "fresh" },
+    { "name": "Cumin", "quantity": "1 jar", "category": "spices", "section": "spices" },
+    { "name": "Toilet paper", "quantity": "4 rolls", "category": "other", "section": "household" }
   ]
 }
 
 Categories: produce, dairy, protein, pantry, spices, frozen, other
 
+Sections (choose the best fit for each item):
+- "fresh": perishable food — fruits, vegetables, dairy, meat substitutes, bread, eggs, fresh herbs, tofu, yogurt, cheese, milk, cream, butter
+- "spices": spices, dried herbs, condiments, sauces, oils, vinegars, baking supplies, canned goods, pasta, rice, flour, sugar, grains, legumes, nuts, seeds, pantry staples
+- "household": non-food items — cleaning products, toilet paper, paper towels, soap, detergent, trash bags, batteries, light bulbs, personal care, pet supplies
+
 Rules:
 - Extract each distinct item
 - Normalize names to standard English (e.g. "cilantro" not "fresh coriander leaves")
+- Do NOT include preparation instructions (no "quartered", "diced", "grated", etc.)
 - Include quantity if mentioned (keep units: "2", "500g", "1L", "half bag")
 - If quantity is vague, include the description (e.g. "some", "a little", "half bag")
-- Assign the most appropriate category
+- Assign the most appropriate category and section
 - No markdown, no explanation, just the JSON`
 
   try {

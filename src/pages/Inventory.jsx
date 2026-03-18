@@ -10,7 +10,6 @@ export default function Inventory() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [newName, setNewName] = useState('')
-  const [newQty, setNewQty] = useState('')
   const [aiText, setAiText] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('fresh')
@@ -48,7 +47,7 @@ export default function Inventory() {
       .insert({
         user_id: user.id,
         item_name: newName.trim(),
-        quantity: newQty.trim() || null,
+        quantity: null,
         category: 'other',
         section: activeTab,
         in_stock: true,
@@ -57,7 +56,6 @@ export default function Inventory() {
       .single()
     if (data) setItems((prev) => [...prev, data])
     setNewName('')
-    setNewQty('')
   }
 
   async function toggleOutOfStock(item) {
@@ -133,7 +131,7 @@ export default function Inventory() {
               item_name: p.name,
               quantity: p.quantity || null,
               category: p.category || 'other',
-              section: activeTab,
+              section: p.section || 'fresh',
               in_stock: true,
             })
           }
@@ -209,7 +207,7 @@ export default function Inventory() {
             <textarea
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
-              placeholder="Type or narrate what you have, e.g.: &quot;I have 2 onions, half a bag of rice about 500g, some milk&quot;"
+              placeholder="Type anything — items go to the right section automatically.&#10;&#10;e.g. &quot;2 onions, cumin, toilet paper, 500g rice, milk&quot;"
               rows={3}
               className="w-full py-2 px-3 rounded-lg bg-warm-bg border border-warm-border text-sm text-warm-text outline-none focus:border-accent resize-none"
             />
@@ -224,11 +222,10 @@ export default function Inventory() {
         )}
       </div>
 
-      {/* Manual add */}
+      {/* Manual add — adds to active tab */}
       <form onSubmit={addItem} className="flex gap-2 px-5 pb-3">
-        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Item name" className="flex-1 py-2.5 px-3 rounded-xl bg-warm-card border border-warm-border text-sm outline-none focus:border-accent" />
-        <input value={newQty} onChange={(e) => setNewQty(e.target.value)} placeholder="Qty" className="w-20 py-2.5 px-3 rounded-xl bg-warm-card border border-warm-border text-sm outline-none focus:border-accent text-center" />
-        <button type="submit" className="px-4 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold min-w-0">Add</button>
+        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={`Add to ${activeTab === 'fresh' ? 'Fresh' : activeTab === 'spices' ? 'Spices' : 'Household'}...`} className="flex-1 py-2.5 px-3 rounded-xl bg-warm-card border border-warm-border text-sm outline-none focus:border-accent" />
+        <button type="submit" disabled={!newName.trim()} className="px-4 py-2.5 rounded-xl bg-accent text-white text-sm font-semibold min-w-0 disabled:opacity-50">+</button>
       </form>
 
       {/* Item list */}
