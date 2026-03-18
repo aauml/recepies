@@ -281,23 +281,29 @@ export default function Inventory() {
                 {outOfStock.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 bg-warm-card/50 rounded-xl px-3 py-2.5 opacity-60"
+                    className="flex items-center rounded-xl overflow-hidden"
                   >
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm text-warm-text-dim">{item.item_name}</span>
-                    </div>
+                    {/* Main area: tap to add to shopping */}
                     <button
                       onClick={() => addToShoppingList(item)}
                       disabled={addedToShopping[item.id]}
-                      className={`text-sm min-h-0 min-w-8 bg-transparent transition-colors ${
-                        addedToShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'
+                      className={`flex items-center gap-2 flex-1 min-w-0 px-3 py-2.5 min-h-0 text-left transition-colors ${
+                        addedToShopping[item.id]
+                          ? 'bg-accent/10'
+                          : 'bg-warm-card/50 active:bg-warm-card/70'
                       }`}
                     >
-                      {addedToShopping[item.id] ? '\uD83D\uDED2' : '\uD83D\uDED2'}
+                      <span className={`text-sm ${addedToShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'}`}>
+                        {addedToShopping[item.id] ? '\u2713 \uD83D\uDED2' : '\uD83D\uDED2'}
+                      </span>
+                      <span className={`text-sm ${addedToShopping[item.id] ? 'text-accent font-semibold' : 'text-warm-text-dim'}`}>
+                        {item.item_name}
+                      </span>
                     </button>
+                    {/* Delete button: separate, visually distinct */}
                     <button
                       onClick={() => deleteItem(item)}
-                      className="text-red-400 text-xs min-h-0 min-w-6 bg-transparent"
+                      className="px-3 py-2.5 min-h-0 bg-red-50 text-red-400 text-xs border-l border-warm-border"
                     >
                       &#10005;
                     </button>
