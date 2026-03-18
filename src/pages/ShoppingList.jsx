@@ -135,6 +135,18 @@ export default function ShoppingList() {
     const updated = { ...item, checked: !item.checked }
     await supabase.from('shopping_list').update({ checked: updated.checked }).eq('id', item.id)
     setItems(items.map((i) => (i.id === item.id ? updated : i)))
+
+    // Auto-reactivate spice inventory items when checked off (purchased)
+    if (updated.checked && item.source_inventory_id) {
+      const inv = inventory.find((i) => i.id === item.source_inventory_id)
+      if (inv && inv.section === 'spices') {
+        await supabase
+          .from('inventory')
+          .update({ in_stock: true, updated_at: new Date().toISOString() })
+          .eq('id', inv.id)
+        setInventory((prev) => prev.map((i) => i.id === inv.id ? { ...i, in_stock: true } : i))
+      }
+    }
   }
 
   async function clearChecked() {
