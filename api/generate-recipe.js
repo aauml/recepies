@@ -10,7 +10,8 @@ export default async function handler(req, res) {
   if (!input?.trim() && (!images || images.length === 0)) return res.status(400).json({ error: 'Input or images required' })
 
   // If input looks like a URL, try to fetch its content
-  let context = (input || '').trim()
+  // Truncate long text input to avoid API limits
+  let context = (input || '').trim().slice(0, 15000)
   let sourceUrl = null
   const urlMatch = context.match(/^https?:\/\/\S+/)
   if (urlMatch) {
@@ -297,7 +298,6 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 16000,
-        thinking: { type: 'enabled', budget_tokens: 5000 },
         system: systemPrompt,
         messages: [{ role: 'user', content: userContent }],
       }),
@@ -310,8 +310,6 @@ Use from: soup, main, side, dessert, bread, sauce, snack, breakfast, vegan, meal
     }
 
     const data = await response.json()
-    const thinkingBlock = data.content?.find(b => b.type === 'thinking')
-    if (thinkingBlock) console.log('AI thinking trace:', thinkingBlock.thinking?.slice(0, 2000))
     const textBlock = data.content?.find(b => b.type === 'text')
     const text = textBlock?.text || ''
 

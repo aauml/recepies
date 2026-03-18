@@ -19,15 +19,25 @@ export default function AddRecipe() {
     if (files.length === 0) return
 
     files.forEach((file) => {
-      if (!file.type.startsWith('image/')) return
-      const reader = new FileReader()
-      reader.onload = () => {
-        const dataUrl = reader.result
-        const base64 = dataUrl.split(',')[1]
-        const mediaType = file.type
-        setImages((prev) => [...prev, { dataUrl, base64, mediaType, name: file.name }])
+      if (file.type.startsWith('image/')) {
+        // Image file — send as base64 for vision
+        const reader = new FileReader()
+        reader.onload = () => {
+          const dataUrl = reader.result
+          const base64 = dataUrl.split(',')[1]
+          const mediaType = file.type
+          setImages((prev) => [...prev, { dataUrl, base64, mediaType, name: file.name }])
+        }
+        reader.readAsDataURL(file)
+      } else {
+        // Document file (txt, pdf, doc) — read as text and append to input
+        const reader = new FileReader()
+        reader.onload = () => {
+          const text = reader.result
+          setAiInput((prev) => prev ? `${prev}\n\n--- ${file.name} ---\n${text}` : text)
+        }
+        reader.readAsText(file)
       }
-      reader.readAsDataURL(file)
     })
     // Reset input so same file can be selected again
     e.target.value = ''
@@ -152,9 +162,8 @@ export default function AddRecipe() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,.pdf,.doc,.docx,.txt"
               multiple
-              capture="environment"
               onChange={handleImageSelect}
               className="hidden"
             />
@@ -184,7 +193,7 @@ export default function AddRecipe() {
               onClick={() => fileInputRef.current?.click()}
               className="w-full py-2.5 rounded-xl border-2 border-dashed border-warm-border text-warm-text-dim text-sm font-semibold bg-transparent active:bg-warm-bg flex items-center justify-center gap-2"
             >
-              &#128247; Add photo of dish or ingredients
+              &#128206; Add photos or documents
             </button>
           </div>
 
