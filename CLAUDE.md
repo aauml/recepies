@@ -27,7 +27,25 @@
 - **DNS to supabase.co fails** from CLI — use Chrome MCP for Supabase dashboard/SQL
 - **All UI in English**
 
+## Task Board (Google Sheet API)
+
+When the user says "check tasks" or "work on tasks", fetch pending tasks from the API:
+
+```
+GET <APPS_SCRIPT_URL>?action=list&status=pending
+```
+
+After completing a task, mark it done:
+
+```
+POST <APPS_SCRIPT_URL>
+{"action": "update", "id": <ID>, "status": "done", "notes": "commit <hash>"}
+```
+
+The API URL will be set in `.claude/docs/PROJECT.md` once deployed.
+
 ## After Any Work
 
 - Update `.claude/docs/CHANGELOG.md` with what was done
 - If you learned something new/surprising, add it to `.claude/docs/LESSONS.md`
+- Mark completed tasks as "done" in the Task Board
