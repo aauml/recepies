@@ -42,7 +42,7 @@ POST https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_
 {"action": "update", "id": <ID>, "status": "done", "notes": "commit <hash>"}
 ```
 
-The API URL will be set in `docs/PROJECT.md` once deployed.
+Note: POST returns 302 redirect — extract Location header, GET that URL for JSON response.
 
 ## After ANY Work — Mandatory Checklist
 
