@@ -1,7 +1,7 @@
 # Claude.ai Project Instructions — Thermomix App
 
 Paste this into your Claude.ai Project's "Instructions" field.
-Replace <APPS_SCRIPT_URL> with your deployed Apps Script URL.
+Replace https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec with your deployed Apps Script URL.
 
 ---
 
@@ -21,11 +21,11 @@ The user (Arturo) is non-technical. He describes what he wants in plain language
 
 ## Task API
 
-Endpoint: <APPS_SCRIPT_URL>
+Endpoint: https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec
 
 To add a task:
 ```
-POST <APPS_SCRIPT_URL>
+POST https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec
 Content-Type: application/json
 
 {
@@ -38,8 +38,8 @@ Content-Type: application/json
 
 To check existing tasks:
 ```
-GET <APPS_SCRIPT_URL>?action=list
-GET <APPS_SCRIPT_URL>?action=list&status=pending
+GET https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec?action=list
+GET https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec?action=list&status=pending
 ```
 
 ## Rules

@@ -30,6 +30,11 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - Installed via Homebrew at `/usr/local/bin`
 - This matters when scripts need to reference the node binary path
 
+### Google Apps Script POST requests redirect
+- **Problem**: POST to Apps Script web app URL returns a 302 redirect. `curl -L` follows the redirect but loses the POST body, resulting in "Page Not Found".
+- **Solution**: Don't use `-L`. Instead, extract the `Location` header from the 302 response, then do a separate GET to that URL to receive the JSON response.
+- **Example**: `curl -s -X POST "$URL" -H "Content-Type: application/json" -d '...' -D - -o /dev/null 2>/dev/null | grep -i location` → then `curl -s "$REDIRECT_URL"`
+
 ---
 
 ## Supabase & RLS

@@ -32,13 +32,13 @@
 When the user says "check tasks" or "work on tasks", fetch pending tasks from the API:
 
 ```
-GET <APPS_SCRIPT_URL>?action=list&status=pending
+GET https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec?action=list&status=pending
 ```
 
 After completing a task, mark it done:
 
 ```
-POST <APPS_SCRIPT_URL>
+POST https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec
 {"action": "update", "id": <ID>, "status": "done", "notes": "commit <hash>"}
 ```
 

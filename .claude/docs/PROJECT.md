@@ -141,6 +141,23 @@ Configured in two places:
 - **Build**: `npm run build`
 - **`.npmrc`**: `legacy-peer-deps=true` (needed for Tailwind v4 + Vite 8)
 
+## Task Board (Google Sheet + Apps Script API)
+
+- **Sheet**: Recepies_App → https://docs.google.com/spreadsheets/d/1DOfub0rSA4pbwuVwT43OVPzrhBQUnIN1BKllFMZ9wZA
+- **API URL**: `https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_NcEEwQVkMajqGm_MxIVuAx4l3Rlj61ka/exec`
+- **Purpose**: Shared task board between Claude.ai (phone) and Claude Code (Mac)
+- **Note**: POST requests return a 302 redirect — extract the redirect URL and GET it for the JSON response
+
+### API Endpoints
+| Method | Params | Action |
+|--------|--------|--------|
+| GET | `?action=list` | List all tasks |
+| GET | `?action=list&status=pending` | List pending tasks |
+| GET | `?action=get&id=3` | Get single task |
+| POST | `{"action":"add","task":"...","priority":"...","notes":"..."}` | Add task |
+| POST | `{"action":"update","id":3,"status":"done"}` | Update task |
+| POST | `{"action":"delete","id":3}` | Delete task |
+
 ## Legacy
 
 - `legacy/` folder contains 3 original static HTML recipes (Mediterranean Lentil Soup, Spiced Vegetable Lentil Soup, Vegetarian Pho)

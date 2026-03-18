@@ -6,6 +6,18 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-17
 
+### Task board system (Google Sheet + Apps Script API)
+- **Created**: Google Sheet "Recepies_App" with Apps Script web API for task management
+- **Purpose**: Shared task board between Claude.ai (phone/web) and Claude Code (Mac)
+- **API**: GET/POST endpoints for list, add, update, delete tasks
+- **Sheet ID**: `1DOfub0rSA4pbwuVwT43OVPzrhBQUnIN1BKllFMZ9wZA`
+- **Deployed**: Web app with "Anyone" access
+
+### Project documentation system created
+- **Created**: `CLAUDE.md` + `.claude/docs/` with 6 files (PROJECT, ARCHITECTURE, CHANGELOG, LESSONS, RULES, plus Apps Script and Claude.ai instructions)
+- **Purpose**: Account-independent knowledge base — any Claude session reads it automatically
+- **Commit**: `20256a8`, `fc57575`
+
 ### Household recipe permissions opened up
 - **Changed**: All household members can now edit and delete any recipe in the household (not just the creator)
 - **RLS**: Updated `recipes_update` and `recipes_delete` policies to use `get_my_household_member_ids()`
