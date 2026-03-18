@@ -6,6 +6,12 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Inventory out-of-stock UX + Shopping "Add all to inventory"
+- **Changed**: Out-of-stock items now have a cart icon that turns accent color when added to shopping (stays visible, no timeout)
+- **Added**: Delete (x) button on out-of-stock items to permanently remove them
+- **Added**: "All to inventory" button in Shopping List Purchased section — moves all checked items to inventory at once
+- **Commit**: `799b938`
+
 ### Inventory: AI quick-add auto-detects section
 - **Changed**: AI quick-add now assigns items to the correct tab automatically (fresh/spices/household) based on what the item is
 - **Changed**: Manual add simplified to just name + button, adds to active tab as fallback
