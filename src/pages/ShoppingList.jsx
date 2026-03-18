@@ -80,6 +80,7 @@ export default function ShoppingList() {
   const [editInvQty, setEditInvQty] = useState('')
   const [aiText, setAiText] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     if (user) {
@@ -157,7 +158,7 @@ export default function ShoppingList() {
     setItems(items.filter((i) => !ids.includes(i.id)))
   }
 
-  // Copy only what's needed (after inventory subtraction)
+  // Copy only what's needed (after inventory subtraction) — WhatsApp-friendly format
   async function copyList() {
     const unchecked = items.filter((i) => !i.checked)
     const lines = []
@@ -167,9 +168,18 @@ export default function ShoppingList() {
       if (info.covered) return // fully covered by inventory
       const visual = getVisualLabel(item.item_name, qty, unit, item.estimate)
       const display = info.needLabel || visual || item.quantity || ''
-      lines.push(`${item.item_name}${display ? ` - ${display}` : ''}`)
+      // Format: "400g pasta" or "1 bunch cilantro" — quantity first, then name
+      if (display) {
+        lines.push(`${display} ${item.item_name}`)
+      } else {
+        lines.push(item.item_name)
+      }
     })
-    try { await navigator.clipboard.writeText(lines.join('\n')) } catch {}
+    try {
+      await navigator.clipboard.writeText(lines.join('\n'))
+      setToast('Copied to clipboard')
+      setTimeout(() => setToast(''), 2000)
+    } catch {}
   }
 
   // AI add to shopping
@@ -507,6 +517,13 @@ export default function ShoppingList() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-[#333] text-white text-sm px-5 py-2.5 rounded-full shadow-lg animate-[slideUp_0.2s_ease-out] z-50">
+          {toast}
         </div>
       )}
     </div>
