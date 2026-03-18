@@ -61,7 +61,7 @@ src/
 └── pages/
     ├── Login.jsx                # Google OAuth + email login/signup
     ├── Recipes.jsx              # Recipe list with search + tag filter
-    ├── AddRecipe.jsx            # AI recipe generation (text/URL/YouTube/photo)
+    ├── AddRecipe.jsx            # AI recipe generation (text/URL/YouTube/photos/documents)
     ├── RecipeDetail.jsx         # Full recipe view + AI edit + delete
     ├── EditRecipe.jsx           # Manual recipe editor (all fields)
     ├── CookingMode.jsx          # Step-by-step dark cooking UI + wake lock
@@ -91,11 +91,11 @@ src/
 ## API Endpoints (Vercel Serverless)
 
 ### POST /api/generate-recipe
-- **Input**: `{ input: string, images?: base64[], appliance?: string }`
+- **Input**: `{ input: string (max 15000 chars), images?: base64[], appliance?: string }`
 - **Process**: Detects URL/YouTube/text → fetches content → Claude generates structured recipe
 - **YouTube handling**: oEmbed API for title, HTML fetch for captions
 - **Output**: Full recipe JSON (title, description, ingredients_1bowl/2bowl, steps_1bowl/2bowl, nutrition, etc.)
-- **Model**: Claude Sonnet 4 with extended thinking (5000 tokens)
+- **Model**: Claude Sonnet 4 (no extended thinking)
 - **Timeout**: 60 seconds
 
 ### POST /api/edit-recipe

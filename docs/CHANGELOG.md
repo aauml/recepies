@@ -6,6 +6,14 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Speed up recipe generation, fix text paste error, add document upload
+- **Fixed**: Removed extended thinking from Claude API call — was adding 10-20 seconds per recipe. Quality is the same without it.
+- **Fixed**: Long text paste error — added 15000 char truncation on text input to prevent API/body size limits
+- **Added**: Document upload (.pdf, .doc, .txt) in AddRecipe — documents are read as text and appended to the input field
+- **Changed**: Upload button now says "Add photos or documents" and removed `capture` attribute so file picker shows gallery + camera on iPhone
+- **Note**: Multiple photo upload was already working — no change needed
+- **Commit**: `2de3121`
+
 ### Reusable project bootstrap skill
 - **Created**: `docs/SKILL-project-bootstrap.md` — a complete template for setting up the same documentation + task board system on any new project
 - **Self-improving**: Includes a meta-lessons section and self-improvement protocol that grows with each project

@@ -123,15 +123,15 @@ Configured in two places:
 - **Config** (`vercel.json`):
   - API routes: `/api/(.*)` → pass-through to serverless functions
   - All other routes: rewrite to `/` (SPA)
-  - `generate-recipe.js`: 60-second max duration (extended thinking)
+  - `generate-recipe.js`: 60-second max duration (safety margin for slow URL fetches)
 
 ## AI / Claude API
 
-- **Model for generation**: `claude-sonnet-4-20250514`
+- **Model for generation**: `claude-sonnet-4-20250514` (no extended thinking — removed for speed)
 - **Model for editing**: `claude-sonnet-4-20250514`
 - **Model for inventory parsing**: `claude-haiku-4-5-20251001`
-- **Extended thinking**: Enabled for recipe generation (5000 token budget)
-- **Cost**: ~$0.02-0.05 per recipe generation
+- **Input truncation**: Text input capped at 15000 chars, URL content at 12000 chars
+- **Cost**: ~$0.01-0.03 per recipe generation (cheaper without thinking)
 - **API key**: Stored in Vercel env vars
 
 ## Local Development

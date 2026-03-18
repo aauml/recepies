@@ -34,7 +34,7 @@ User preferences, coding conventions, and constraints that must be followed in a
 - **Vercel serverless functions** in `api/` directory
 - **Claude API** via `@anthropic-ai/sdk` package
 - **Always return JSON** responses with proper error handling
-- **Recipe generation** uses extended thinking (5000 token budget)
+- **Recipe generation** uses Claude Sonnet 4 (no extended thinking — removed for speed)
 - **System prompts** must include vegetarian constraint and source URL rules
 
 ### Database

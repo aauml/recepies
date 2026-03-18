@@ -101,6 +101,16 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - Must be requested in response to a user gesture.
 - Release on component unmount.
 
+### Extended thinking adds latency without quality gain for structured JSON
+- **Problem**: Recipe generation was slow (30-40s). Extended thinking (5000 token budget) added 10-20s.
+- **Solution**: Removed `thinking: { type: 'enabled', budget_tokens: 5000 }` from the API call. Recipe quality is the same — Claude Sonnet generates good structured JSON without needing to "think first."
+- **Pattern**: Only use extended thinking when the task genuinely benefits from reasoning (complex logic, math). For structured output generation, it's overhead.
+
+### Long text input can exceed API/body limits
+- **Problem**: Pasting a full recipe text into the input field caused errors — the request body was too large.
+- **Solution**: Truncate text input to 15000 characters with `.slice(0, 15000)`. URLs already had truncation (12000 for HTML, 15000 for transcripts), but raw text didn't.
+- **Pattern**: Always truncate user input before sending to AI APIs.
+
 ### Supabase auth state
 - Use `onAuthStateChange` listener in AuthContext to stay synced.
 - Don't rely on `getSession()` alone — it can be stale.
@@ -111,8 +121,8 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 
 ### Serverless function timeout
 - Default timeout is 10 seconds on free plan.
-- Recipe generation with extended thinking needs up to 60 seconds.
-- Set `maxDuration: 60` in `vercel.json` for the generate-recipe function.
+- Recipe generation (without extended thinking) typically takes 10-20 seconds, but URL fetches can be slow.
+- Set `maxDuration: 60` in `vercel.json` for the generate-recipe function as safety margin.
 - Free plan allows up to 60 seconds max.
 
 ### Environment variables
