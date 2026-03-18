@@ -130,6 +130,11 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - **Solution**: Add `onPaste` event handler that checks `e.clipboardData.items` for files (`kind === 'file'`). Images get read as base64, documents as text. Only `preventDefault()` when files are found — regular text paste still works.
 - **Pattern**: Always handle paste events explicitly when you want to accept non-text clipboard content.
 
+### Inventory↔Shopping sync via source_inventory_id
+- **Pattern**: Use `source_inventory_id` on shopping_list rows to link back to inventory items. On page load, fetch shopping items with non-null `source_inventory_id` to build a map of which inventory items are already in the cart.
+- **Lesson**: Don't use local state (`useState`) for cross-page sync — query the actual table. Local state resets on navigation.
+- **Lesson**: Don't copy quantities when moving items between shopping and inventory — the user knows what they need from the recipe amounts. Inventory is just a have/don't have tracker.
+
 ### AI section auto-detection for inventory items
 - **Pattern**: When building an AI-powered categorizer, include clear section definitions with examples in the system prompt. The AI reliably maps "toilet paper" → household, "cucumbers" → fresh, "cumin" → spices.
 - **Lesson**: Don't hard-code the section from the active tab — let the AI decide per item. Keep manual add as a simple fallback for edge cases.

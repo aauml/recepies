@@ -6,6 +6,14 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Inventory/Shopping sync overhaul
+- **Changed**: Inventory out-of-stock items are now toggleable — tap to add to shopping, tap again to remove
+- **Changed**: State syncs with actual `shopping_list` table via `source_inventory_id`, persists across sessions
+- **Changed**: Shopping list inventory column → simple Have/Need indicator (no amounts to enter)
+- **Changed**: Adding from shopping to inventory no longer copies quantities
+- **Removed**: Inventory quantity editing from shopping list rows
+- **Commit**: `9b83aba`
+
 ### Inventory out-of-stock UX + Shopping "Add all to inventory"
 - **Changed**: Out-of-stock items now have a cart icon that turns accent color when added to shopping (stays visible, no timeout)
 - **Added**: Delete (x) button on out-of-stock items to permanently remove them
