@@ -4,6 +4,16 @@ All notable changes, decisions, and work sessions documented here.
 
 ---
 
+## 2026-03-18
+
+### Shopping list copy: toast + WhatsApp-friendly format (Task #1)
+- **Added**: Toast notification "Copied to clipboard" shown for 2 seconds after copying
+- **Changed**: Copied text format from "name - quantity" to "quantity name" (e.g. "400g pasta", "1 bunch cilantro") — cleaner for WhatsApp pasting
+- **Source**: First task from the Google Sheet task board (created via Claude.ai)
+- **Commit**: `46cce4d`
+
+---
+
 ## 2026-03-17
 
 ### Task board system (Google Sheet + Apps Script API)
