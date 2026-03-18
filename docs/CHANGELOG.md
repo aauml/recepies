@@ -6,6 +6,19 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Recipe-to-shopping comparison screen
+- **Added**: When adding recipe ingredients to shopping list, a modal shows each ingredient with Need/Have columns
+- **Added**: Items in stock are pre-marked as Skip, user can toggle any row
+- **Added**: Only non-skipped items get added to shopping list
+- **Commit**: `a44bf19`
+
+### Inventory + Shopping List redesign (phase 2)
+- **Changed**: Greyed-out inventory items no longer reactivate on tap — tap now adds to shopping list
+- **Changed**: Shopping list check-off no longer auto-reactivates spice inventory items
+- **Added**: "Add to inventory" button on each purchased shopping list item — reactivates linked inventory item or creates new one
+- **Added**: Household tab in inventory for non-food items (toilet paper, soap, etc.) — `section='household'`
+- **Commit**: `b399221`
+
 ### Inventory overhaul: tabs, stock states, fresh count, shopping cart integration
 - **DB Migration**: Added `in_stock` (boolean), `section` (text: 'fresh'/'spices') columns to `inventory`, `source_inventory_id` (FK) to `shopping_list`
 - **Added**: Fresh / Spices & Pantry tab navigation with item counts

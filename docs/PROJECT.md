@@ -42,7 +42,7 @@ Personal Thermomix TM6 recipe management Progressive Web App (PWA). Allows users
 | cook_log | Cooking history with ratings | Household members |
 | recipe_notes | Per-step notes on recipes | Household members |
 | shopping_list | Shopping items linked to recipes + inventory | Household members |
-| inventory | Pantry inventory (in_stock, section: fresh/spices) | Household members |
+| inventory | Pantry inventory (in_stock, section: fresh/spices/household) | Household members |
 | households | Household groups | Members only |
 | household_members | User-household relationships | Members only |
 | household_invites | Email invites (pending/accepted/declined) | Involved parties |

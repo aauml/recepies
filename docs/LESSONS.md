@@ -54,6 +54,16 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - **Solution**: Normalize both names: lowercase, trim, remove trailing 's' for plurals. Match against existing items before inserting new ones.
 - **Edge case**: More complex plurals (potatoes→potato) need smarter matching. Could enhance by passing existing item names to the AI prompt.
 
+### Don't auto-sync inventory — let the user decide
+- **Design decision**: Originally spice items auto-reactivated in inventory when checked off the shopping list. This was changed to require explicit "Add to inventory" action.
+- **Why**: Auto-sync can create phantom inventory (item checked off but not actually put away). The user should decide when something enters inventory.
+- **Pattern**: Purchased items stay in a Purchased section until user explicitly taps "Add to inventory".
+
+### Recipe-to-shopping comparison prevents over-buying
+- **Design decision**: Instead of blindly adding all recipe ingredients to the shopping list, show a comparison screen with inventory quantities.
+- **Why**: Users complained about buying items they already had. The comparison lets them skip in-stock items with one tap.
+- **Important**: Don't try to auto-calculate "need" amounts by subtracting inventory. Units are incompatible (recipe says "3 cloves", inventory says "1 head"). Just show both and let the user decide.
+
 ### Backfill section based on category has edge cases
 - **Problem**: Items like "Bay leaves" had `category=other` but should be in `section=spices`. The automatic backfill only moved `category IN ('spices', 'pantry')`.
 - **Solution**: After migration, manually fix miscategorized items. Consider having the AI assign section when adding new items.
