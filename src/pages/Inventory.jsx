@@ -131,22 +131,22 @@ export default function Inventory() {
     }
   }
 
-  async function startFreshCount() {
-    const freshIds = items.filter((i) => i.section === 'fresh').map((i) => i.id)
-    if (freshIds.length === 0) return
+  async function resetTab() {
+    const tabIds = items.filter((i) => i.section === activeTab).map((i) => i.id)
+    if (tabIds.length === 0) return
     const { error } = await supabase
       .from('inventory')
       .update({ in_stock: false, quantity: null, updated_at: new Date().toISOString() })
-      .in('id', freshIds)
+      .in('id', tabIds)
     if (!error) {
-      setItems((prev) => prev.map((i) => i.section === 'fresh' ? { ...i, in_stock: false, quantity: null } : i))
+      setItems((prev) => prev.map((i) => i.section === activeTab ? { ...i, in_stock: false, quantity: null } : i))
       // Also remove any shopping list entries linked to these items
-      const shoppingIdsToRemove = freshIds.map((id) => inShopping[id]).filter(Boolean)
+      const shoppingIdsToRemove = tabIds.map((id) => inShopping[id]).filter(Boolean)
       if (shoppingIdsToRemove.length > 0) {
         await supabase.from('shopping_list').delete().in('id', shoppingIdsToRemove)
         setInShopping((prev) => {
           const n = { ...prev }
-          freshIds.forEach((id) => delete n[id])
+          tabIds.forEach((id) => delete n[id])
           return n
         })
       }
@@ -356,19 +356,19 @@ export default function Inventory() {
         )}
       </div>
 
-      {/* Start Fresh Count button — only on Fresh tab */}
-      {activeTab === 'fresh' && inStock.length > 0 && (
+      {/* Reset button — all tabs */}
+      {inStock.length > 0 && (
         <div className="px-5 mt-4">
           {showFreshConfirm ? (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-              <p className="text-sm text-amber-800 font-semibold mb-1">Mark all fresh items as out of stock?</p>
+              <p className="text-sm text-amber-800 font-semibold mb-1">Mark all {activeTab === 'fresh' ? 'fresh' : activeTab === 'spices' ? 'spices' : 'household'} items as out of stock?</p>
               <p className="text-xs text-amber-600 mb-3">You can then re-add what you currently have.</p>
               <div className="flex gap-2">
                 <button
-                  onClick={startFreshCount}
+                  onClick={resetTab}
                   className="px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-semibold min-h-0"
                 >
-                  Yes, start fresh
+                  Yes, reset
                 </button>
                 <button
                   onClick={() => setShowFreshConfirm(false)}
@@ -383,7 +383,7 @@ export default function Inventory() {
               onClick={() => setShowFreshConfirm(true)}
               className="w-full py-3 rounded-xl bg-warm-card border border-warm-border text-sm font-semibold text-warm-text active:scale-[0.98] transition-transform"
             >
-              &#128260; Start Fresh Count
+              &#128260; Reset All
             </button>
           )}
         </div>
