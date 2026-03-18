@@ -6,6 +6,11 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Paste support for images and documents in AddRecipe
+- **Added**: `onPaste` handler on the textarea — pasting a copied image from clipboard adds it to photo previews, pasting a document adds its text to the input field
+- **Changed**: Placeholder text updated to mention pasting
+- **Commit**: `0daa18d`
+
 ### Speed up recipe generation, fix text paste error, add document upload
 - **Fixed**: Removed extended thinking from Claude API call — was adding 10-20 seconds per recipe. Quality is the same without it.
 - **Fixed**: Long text paste error — added 15000 char truncation on text input to prevent API/body size limits

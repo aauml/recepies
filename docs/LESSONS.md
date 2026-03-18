@@ -101,6 +101,11 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - Must be requested in response to a user gesture.
 - Release on component unmount.
 
+### Clipboard paste on iPhone requires onPaste handler
+- **Problem**: Copying an image or document on iPhone and pasting into a textarea does nothing by default — the browser only pastes text.
+- **Solution**: Add `onPaste` event handler that checks `e.clipboardData.items` for files (`kind === 'file'`). Images get read as base64, documents as text. Only `preventDefault()` when files are found — regular text paste still works.
+- **Pattern**: Always handle paste events explicitly when you want to accept non-text clipboard content.
+
 ### Extended thinking adds latency without quality gain for structured JSON
 - **Problem**: Recipe generation was slow (30-40s). Extended thinking (5000 token budget) added 10-20s.
 - **Solution**: Removed `thinking: { type: 'enabled', budget_tokens: 5000 }` from the API call. Recipe quality is the same — Claude Sonnet generates good structured JSON without needing to "think first."
