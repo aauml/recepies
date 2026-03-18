@@ -44,8 +44,16 @@ POST https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_
 
 The API URL will be set in `docs/PROJECT.md` once deployed.
 
-## After Any Work
+## After ANY Work — Mandatory Checklist
 
-- Update `docs/CHANGELOG.md` with what was done
-- If you learned something new/surprising, add it to `docs/LESSONS.md`
-- Mark completed tasks as "done" in the Task Board
+**YOU MUST complete this checklist after every task. No exceptions.**
+
+- [ ] `docs/CHANGELOG.md` — Add entry: date, what was done, why, commit hash
+- [ ] `docs/LESSONS.md` — Add entry if anything surprising, tricky, or failure-prone was discovered
+- [ ] `docs/PROJECT.md` — Update if services, credentials, config, tables, or API changed
+- [ ] `docs/ARCHITECTURE.md` — Update if files, routes, components, or data flows changed
+- [ ] `docs/RULES.md` — Update if new conventions or constraints were established
+- [ ] **Task Board** — If work came from the Google Sheet, mark task as "done" via API
+- [ ] **Commit docs** — Stage and push all doc updates (can be same commit or follow-up)
+
+Skip a file only if genuinely nothing changed for it. When in doubt, update it.
