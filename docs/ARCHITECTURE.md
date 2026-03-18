@@ -65,7 +65,7 @@ src/
     ├── RecipeDetail.jsx         # Full recipe view + AI edit + delete
     ├── EditRecipe.jsx           # Manual recipe editor (all fields)
     ├── CookingMode.jsx          # Step-by-step dark cooking UI + wake lock
-    ├── ShoppingList.jsx         # Shopping list with inventory matching
+    ├── ShoppingList.jsx         # Shopping list with inventory matching + WhatsApp copy
     ├── Inventory.jsx            # Pantry inventory tracker
     ├── History.jsx              # Cook log with ratings
     ├── Household.jsx            # Household management + invites

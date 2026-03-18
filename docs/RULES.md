@@ -74,11 +74,18 @@ All recipes must follow this exact JSON structure:
 - Reverse mode: slower mixing, for delicate ingredients
 - Accessories: butterfly whisk, steaming basket, Varoma, spatula
 
+### Shopping List Copy Rules
+- Copied text must be WhatsApp-friendly: plain text, one item per line
+- Format: "quantity name" (e.g. "400g pasta"), not "name - quantity"
+- Strip prep instructions (quartered, cubed, grated, chopped, sliced, etc.) — only the ingredient name matters for shopping
+- Skip items fully covered by inventory
+- Show toast confirmation after copy
+
 ## Workflow Rules
 
 1. **Read docs first** — always read `docs/` files before starting work
-2. **Update CHANGELOG** — after any work, add entry to `docs/CHANGELOG.md`
-3. **Update LESSONS** — if something surprising or tricky is discovered, add it to `docs/LESSONS.md`
+2. **Update ALL relevant docs** — after any work, update CHANGELOG, LESSONS, and any other docs that changed (PROJECT, ARCHITECTURE, RULES). Don't wait to be asked.
+3. **Mark tasks done** — if the work came from the Google Sheet task board, mark it done via the API
 4. **Supabase via browser** — use Chrome MCP for all Supabase dashboard operations (SQL Editor, table view, auth settings). CLI DNS fails.
 5. **npm via /tmp** — use `/tmp` worktree for any npm operations. The "My Drive" path with spaces breaks npm.
 6. **Commit and push** — after completing work, commit to main and push. Vercel auto-deploys.
