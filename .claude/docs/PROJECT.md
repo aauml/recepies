@@ -71,12 +71,51 @@ Personal Thermomix TM6 recipe management Progressive Web App (PWA). Allows users
 
 - **Primary**: Google OAuth
 - **Google Cloud project**: "Thermomix App"
-- **Client ID**: `580392882951-65sn7r58obquer128saqaq8p932v8bc3.apps.googleusercontent.com`
+- **Client ID**: Found in Google Cloud Console → APIs & Services → Credentials
 - **OAuth consent screen**: External, Testing mode, app name "My Thermomix"
 - **Test users**: ayalaax@gmail.com
 - **Callback URI**: `https://dwnuqwysyxmiayfsxofk.supabase.co/auth/v1/callback`
 - **Site URL**: `https://recepies-mu.vercel.app`
 - **Redirect URLs**: `https://recepies-mu.vercel.app/**`, `http://localhost:5173/**`
+
+## Credentials & Environment Variables
+
+### .env file (local, gitignored)
+This file must exist at the project root for local development:
+```
+VITE_SUPABASE_URL=https://dwnuqwysyxmiayfsxofk.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3bnVxd3lzeXhtaWF5ZnN4b2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MzUyOTksImV4cCI6MjA4OTIxMTI5OX0.oyrpsewRcfemW3kLQYzknglLI-9PvvDpnFmq5Qh5Mh0
+```
+Note: The anon key is a public key (safe to document). It only grants access allowed by RLS policies.
+
+### Vercel Environment Variables
+Set in Vercel project dashboard (Settings → Environment Variables):
+- `ANTHROPIC_API_KEY` — Claude API key for recipe generation/editing/parsing. **Private.** If lost, generate a new one at console.anthropic.com.
+
+### Google OAuth Credentials
+Configured in two places:
+1. **Google Cloud Console** (console.cloud.google.com → "Thermomix App" project):
+   - Client ID and secret are in the OAuth 2.0 credentials section
+   - Old secret `****GVJg` still exists (should be cleaned up)
+2. **Supabase Auth** (Dashboard → Authentication → Providers → Google):
+   - The same Client ID and secret from Google Cloud must be entered there
+   - Callback URI: `https://dwnuqwysyxmiayfsxofk.supabase.co/auth/v1/callback`
+
+### Supabase Dashboard Access
+- **URL**: https://supabase.com/dashboard/project/dwnuqwysyxmiayfsxofk
+- **Org**: ademas.ai
+- **Login**: Use the Supabase account that owns the project
+- **SQL Editor**: https://supabase.com/dashboard/project/dwnuqwysyxmiayfsxofk/sql/new
+
+### Where to find/reset credentials if lost
+| Credential | Where to get it |
+|-----------|----------------|
+| Supabase URL + anon key | Supabase Dashboard → Settings → API |
+| Supabase service role key | Supabase Dashboard → Settings → API (keep secret!) |
+| ANTHROPIC_API_KEY | console.anthropic.com → API Keys |
+| Google OAuth Client ID | console.cloud.google.com → APIs & Services → Credentials |
+| Google OAuth Client Secret | Same as above → edit the OAuth 2.0 client |
+| Vercel env vars | vercel.com → Project → Settings → Environment Variables |
 
 ## Vercel
 
@@ -85,11 +124,6 @@ Personal Thermomix TM6 recipe management Progressive Web App (PWA). Allows users
   - API routes: `/api/(.*)` → pass-through to serverless functions
   - All other routes: rewrite to `/` (SPA)
   - `generate-recipe.js`: 60-second max duration (extended thinking)
-
-### Environment Variables (Vercel)
-
-- `ANTHROPIC_API_KEY` — Claude API key for recipe generation
-- Supabase credentials are in frontend `.env` (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
 
 ## AI / Claude API
 
