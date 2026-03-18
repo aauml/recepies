@@ -356,7 +356,7 @@ export default function Inventory() {
         )}
       </div>
 
-      {/* Reset button — all tabs */}
+      {/* Reset button — all tabs, only when there are in-stock items */}
       {inStock.length > 0 && (
         <div className="px-5 mt-4">
           {showFreshConfirm ? (
