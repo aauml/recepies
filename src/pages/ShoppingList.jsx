@@ -168,11 +168,12 @@ export default function ShoppingList() {
       if (info.covered) return // fully covered by inventory
       const visual = getVisualLabel(item.item_name, qty, unit, item.estimate)
       const display = info.needLabel || visual || item.quantity || ''
-      // Format: "400g pasta" or "1 bunch cilantro" — quantity first, then name
+      // Strip prep instructions (quartered, cubed, grated, etc.) from name
+      const cleanName = item.item_name.replace(/,\s*(quartered|cubed|grated|chopped|diced|sliced|minced|peeled|crushed|halved|julienned|shredded|torn|trimmed|deseeded|cored|finely\s+\w+|roughly\s+\w+|thinly\s+\w+).*$/i, '').trim()
       if (display) {
-        lines.push(`${display} ${item.item_name}`)
+        lines.push(`${display} ${cleanName}`)
       } else {
-        lines.push(item.item_name)
+        lines.push(cleanName)
       }
     })
     try {
