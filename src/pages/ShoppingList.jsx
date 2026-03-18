@@ -202,6 +202,21 @@ export default function ShoppingList() {
   const unchecked = items.filter((i) => !i.checked)
   const checked = items.filter((i) => i.checked)
 
+  async function toggleHaveNeed(itemName) {
+    const invMatch = matchInventory(itemName, inventory)
+    if (invMatch) {
+      const newStatus = !invMatch.in_stock
+      await supabase.from('inventory').update({ in_stock: newStatus, updated_at: new Date().toISOString() }).eq('id', invMatch.id)
+      setInventory((prev) => prev.map((i) => i.id === invMatch.id ? { ...i, in_stock: newStatus } : i))
+    } else {
+      // Create as in_stock (no quantity)
+      const { data } = await supabase.from('inventory')
+        .insert({ user_id: user.id, item_name: itemName, quantity: null, category: 'other', section: 'fresh', in_stock: true })
+        .select().single()
+      if (data) setInventory((prev) => [...prev, data])
+    }
+  }
+
   // Render a single shopping row with have/need toggle
   function ShoppingRow({ item }) {
     const { qty, unit } = parseQtyUnit(item.quantity)
@@ -224,12 +239,15 @@ export default function ShoppingList() {
           </div>
         </button>
 
-        {/* Right: have/need indicator */}
-        <div className={`w-14 shrink-0 border-l border-warm-border flex items-center justify-center text-xs font-semibold ${
-          have ? 'bg-green-50 text-[#2e7d6f]' : 'bg-transparent text-warm-text-dim'
-        }`}>
+        {/* Right: have/need toggle */}
+        <button
+          onClick={() => toggleHaveNeed(item.item_name)}
+          className={`w-14 shrink-0 border-l border-warm-border flex items-center justify-center text-xs font-semibold min-h-0 transition-colors ${
+            have ? 'bg-green-50 text-[#2e7d6f] active:bg-green-100' : 'bg-transparent text-warm-text-dim active:bg-warm-card'
+          }`}
+        >
           {have ? 'Have' : 'Need'}
-        </div>
+        </button>
       </div>
     )
   }

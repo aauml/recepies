@@ -140,6 +140,16 @@ export default function Inventory() {
       .in('id', freshIds)
     if (!error) {
       setItems((prev) => prev.map((i) => i.section === 'fresh' ? { ...i, in_stock: false, quantity: null } : i))
+      // Also remove any shopping list entries linked to these items
+      const shoppingIdsToRemove = freshIds.map((id) => inShopping[id]).filter(Boolean)
+      if (shoppingIdsToRemove.length > 0) {
+        await supabase.from('shopping_list').delete().in('id', shoppingIdsToRemove)
+        setInShopping((prev) => {
+          const n = { ...prev }
+          freshIds.forEach((id) => delete n[id])
+          return n
+        })
+      }
     }
     setShowFreshConfirm(false)
   }
@@ -164,12 +174,12 @@ export default function Inventory() {
           const normalizedName = p.name.toLowerCase().trim().replace(/s$/, '')
           const match = items.find((i) => i.item_name.toLowerCase().trim().replace(/s$/, '') === normalizedName)
           if (match) {
-            toUpdate.push({ id: match.id, quantity: p.quantity || null })
+            toUpdate.push({ id: match.id })
           } else {
             toInsert.push({
               user_id: user.id,
               item_name: p.name,
-              quantity: p.quantity || null,
+              quantity: null,
               category: p.category || 'other',
               section: p.section || 'fresh',
               in_stock: true,
@@ -181,7 +191,7 @@ export default function Inventory() {
         for (const u of toUpdate) {
           await supabase
             .from('inventory')
-            .update({ in_stock: true, quantity: u.quantity, updated_at: new Date().toISOString() })
+            .update({ in_stock: true, quantity: null, updated_at: new Date().toISOString() })
             .eq('id', u.id)
         }
 
@@ -196,7 +206,7 @@ export default function Inventory() {
         setItems((prev) => {
           const updated = prev.map((i) => {
             const match = toUpdate.find((u) => u.id === i.id)
-            return match ? { ...i, in_stock: true, quantity: match.quantity } : i
+            return match ? { ...i, in_stock: true, quantity: null } : i
           })
           return [...updated, ...newData]
         })
@@ -284,7 +294,6 @@ export default function Inventory() {
                   <div key={item.id} className="flex items-center gap-3 bg-warm-card rounded-xl px-3 py-2.5">
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-semibold">{item.item_name}</span>
-                      {item.quantity && <span className="text-xs text-accent font-semibold ml-2">{item.quantity}</span>}
                     </div>
                     {/* Spices: show cart icon on active items */}
                     {activeTab === 'spices' && (
