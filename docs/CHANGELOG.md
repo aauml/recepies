@@ -6,6 +6,11 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Reusable project bootstrap skill
+- **Created**: `docs/SKILL-project-bootstrap.md` — a complete template for setting up the same documentation + task board system on any new project
+- **Self-improving**: Includes a meta-lessons section and self-improvement protocol that grows with each project
+- **Commit**: `e639957`
+
 ### Strip prep instructions from copied shopping list
 - **Changed**: When copying shopping list, remove prep words like "quartered", "cubed", "grated", "chopped", "sliced", "minced", "peeled", etc. from item names. "Potatoes, quartered" copies as just "Potatoes".
 - **Commit**: `92f7eff`
