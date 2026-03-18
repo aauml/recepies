@@ -124,6 +124,22 @@ export default function Inventory() {
     }
   }
 
+  async function restockItem(item) {
+    // Move out-of-stock item back to in-stock, remove from shopping if linked
+    const { error } = await supabase
+      .from('inventory')
+      .update({ in_stock: true, quantity: null, updated_at: new Date().toISOString() })
+      .eq('id', item.id)
+    if (!error) {
+      setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: true, quantity: null } : i))
+      // Remove from shopping list if it was there
+      if (inShopping[item.id]) {
+        await supabase.from('shopping_list').delete().eq('id', inShopping[item.id])
+        setInShopping((prev) => { const n = { ...prev }; delete n[item.id]; return n })
+      }
+    }
+  }
+
   async function deleteItem(item) {
     const { error } = await supabase.from('inventory').delete().eq('id', item.id)
     if (!error) {
@@ -323,28 +339,38 @@ export default function Inventory() {
                 {outOfStock.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center rounded-xl overflow-hidden"
+                    className={`flex items-center gap-1 rounded-xl px-3 py-2 transition-colors ${
+                      inShopping[item.id] ? 'bg-accent/10' : 'bg-warm-card/50'
+                    }`}
                   >
-                    {/* Main area: tap to toggle shopping */}
+                    <span className={`flex-1 min-w-0 text-sm ${inShopping[item.id] ? 'text-accent font-semibold' : 'text-warm-text-dim'}`}>
+                      {item.item_name}
+                    </span>
+                    {/* Restock: move to in-stock */}
+                    <button
+                      onClick={() => restockItem(item)}
+                      className="w-10 h-10 flex items-center justify-center rounded-lg bg-green-50 text-green-600 text-sm min-h-0 active:scale-95 transition-transform"
+                      title="Move to in stock"
+                    >
+                      &#10003;
+                    </button>
+                    {/* Shopping: toggle add/remove from shopping list */}
                     <button
                       onClick={() => toggleShopping(item)}
-                      className={`flex items-center gap-2 flex-1 min-w-0 px-3 py-2.5 min-h-0 text-left transition-colors ${
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm min-h-0 active:scale-95 transition-transform ${
                         inShopping[item.id]
-                          ? 'bg-accent/10'
-                          : 'bg-warm-card/50 active:bg-warm-card/70'
+                          ? 'bg-accent text-white'
+                          : 'bg-accent/10 text-accent'
                       }`}
+                      title={inShopping[item.id] ? 'Remove from shopping' : 'Add to shopping'}
                     >
-                      <span className={`text-sm ${inShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'}`}>
-                        {inShopping[item.id] ? '\u2713 \uD83D\uDED2' : '\uD83D\uDED2'}
-                      </span>
-                      <span className={`text-sm ${inShopping[item.id] ? 'text-accent font-semibold' : 'text-warm-text-dim'}`}>
-                        {item.item_name}
-                      </span>
+                      &#128722;
                     </button>
-                    {/* Delete button: separate, visually distinct */}
+                    {/* Delete permanently */}
                     <button
                       onClick={() => deleteItem(item)}
-                      className="px-3 py-2.5 min-h-0 bg-red-50 text-red-400 text-xs border-l border-warm-border"
+                      className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 text-red-400 text-xs min-h-0 active:scale-95 transition-transform"
+                      title="Delete"
                     >
                       &#10005;
                     </button>
