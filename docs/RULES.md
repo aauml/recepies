@@ -76,9 +76,9 @@ All recipes must follow this exact JSON structure:
 
 ## Workflow Rules
 
-1. **Read docs first** — always read `.claude/docs/` files before starting work
-2. **Update CHANGELOG** — after any work, add entry to `.claude/docs/CHANGELOG.md`
-3. **Update LESSONS** — if something surprising or tricky is discovered, add it to `.claude/docs/LESSONS.md`
+1. **Read docs first** — always read `docs/` files before starting work
+2. **Update CHANGELOG** — after any work, add entry to `docs/CHANGELOG.md`
+3. **Update LESSONS** — if something surprising or tricky is discovered, add it to `docs/LESSONS.md`
 4. **Supabase via browser** — use Chrome MCP for all Supabase dashboard operations (SQL Editor, table view, auth settings). CLI DNS fails.
 5. **npm via /tmp** — use `/tmp` worktree for any npm operations. The "My Drive" path with spaces breaks npm.
 6. **Commit and push** — after completing work, commit to main and push. Vercel auto-deploys.

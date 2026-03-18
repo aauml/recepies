@@ -1,6 +1,6 @@
 # Thermomix App — Claude Instructions
 
-**MANDATORY: Read all files in `.claude/docs/` before starting any work.**
+**MANDATORY: Read all files in `docs/` before starting any work.**
 
 ## Quick Reference
 
@@ -11,11 +11,11 @@
 
 ## Before You Code
 
-1. Read `.claude/docs/PROJECT.md` — services, credentials, config
-2. Read `.claude/docs/ARCHITECTURE.md` — how everything connects
-3. Read `.claude/docs/RULES.md` — user preferences and constraints
-4. Read `.claude/docs/LESSONS.md` — known gotchas and past failures
-5. Check `.claude/docs/CHANGELOG.md` — what was done and when
+1. Read `docs/PROJECT.md` — services, credentials, config
+2. Read `docs/ARCHITECTURE.md` — how everything connects
+3. Read `docs/RULES.md` — user preferences and constraints
+4. Read `docs/LESSONS.md` — known gotchas and past failures
+5. Check `docs/CHANGELOG.md` — what was done and when
 
 ## Critical Constraints
 
@@ -42,10 +42,10 @@ POST https://script.google.com/macros/s/AKfycbxsyeXkZ3ieFLWXJFrfBrLoYc-31glycOK_
 {"action": "update", "id": <ID>, "status": "done", "notes": "commit <hash>"}
 ```
 
-The API URL will be set in `.claude/docs/PROJECT.md` once deployed.
+The API URL will be set in `docs/PROJECT.md` once deployed.
 
 ## After Any Work
 
-- Update `.claude/docs/CHANGELOG.md` with what was done
-- If you learned something new/surprising, add it to `.claude/docs/LESSONS.md`
+- Update `docs/CHANGELOG.md` with what was done
+- If you learned something new/surprising, add it to `docs/LESSONS.md`
 - Mark completed tasks as "done" in the Task Board

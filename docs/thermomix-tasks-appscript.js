@@ -11,7 +11,7 @@
  *    - Execute as: Me
  *    - Who has access: Anyone
  * 7. Copy the deployment URL
- * 8. Add the URL to your Claude.ai Project instructions and to .claude/docs/PROJECT.md
+ * 8. Add the URL to your Claude.ai Project instructions and to docs/PROJECT.md
  *
  * API Usage:
  *

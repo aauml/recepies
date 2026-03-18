@@ -14,7 +14,7 @@ All notable changes, decisions, and work sessions documented here.
 - **Deployed**: Web app with "Anyone" access
 
 ### Project documentation system created
-- **Created**: `CLAUDE.md` + `.claude/docs/` with 6 files (PROJECT, ARCHITECTURE, CHANGELOG, LESSONS, RULES, plus Apps Script and Claude.ai instructions)
+- **Created**: `CLAUDE.md` + `docs/` with 6 files (PROJECT, ARCHITECTURE, CHANGELOG, LESSONS, RULES, plus Apps Script and Claude.ai instructions)
 - **Purpose**: Account-independent knowledge base — any Claude session reads it automatically
 - **Commit**: `20256a8`, `fc57575`
 
