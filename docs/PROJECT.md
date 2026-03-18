@@ -41,8 +41,8 @@ Personal Thermomix TM6 recipe management Progressive Web App (PWA). Allows users
 | recipes | All recipe data (JSON columns) | Household members read/update/delete, self insert |
 | cook_log | Cooking history with ratings | Household members |
 | recipe_notes | Per-step notes on recipes | Household members |
-| shopping_list | Shopping items linked to recipes | Household members |
-| inventory | Pantry inventory items | Household members |
+| shopping_list | Shopping items linked to recipes + inventory | Household members |
+| inventory | Pantry inventory (in_stock, section: fresh/spices) | Household members |
 | households | Household groups | Members only |
 | household_members | User-household relationships | Members only |
 | household_invites | Email invites (pending/accepted/declined) | Involved parties |
@@ -63,6 +63,15 @@ Personal Thermomix TM6 recipe management Progressive Web App (PWA). Allows users
 
 **shopping_list, inventory, cook_log, recipe_notes:**
 - All operations: `user_id = ANY(get_my_household_member_ids())` — shared within household
+
+### Key Columns Added (2026-03-18)
+
+**inventory:**
+- `in_stock` (boolean, default true) — whether item is currently in stock
+- `section` (text, default 'fresh') — 'fresh' or 'spices', determines which tab the item lives in
+
+**shopping_list:**
+- `source_inventory_id` (uuid, FK to inventory.id) — links shopping items back to inventory for auto-sync
 
 **household_members:**
 - DELETE: `user_id = auth.uid() OR household_id = get_my_household_id()` — self-remove or owner removes

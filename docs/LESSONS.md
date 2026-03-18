@@ -44,6 +44,20 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - **Solution**: Always use `{ count: 'exact' }` option: `supabase.from('table').delete({ count: 'exact' }).eq('id', id)` then check `if (count === 0)` to detect blocked deletes.
 - **This applies to all tables with RLS** — not just recipes.
 
+### Inventory items should never be deleted — use in_stock toggle
+- **Design decision**: Inventory items are persistent templates. The X button sets `in_stock = false` and clears quantity, but does NOT delete from the database.
+- **Why**: Over time the inventory grows into a complete template of everything the household buys. Greyed-out items become quick-add targets during the next count.
+- **Spice lifecycle**: active → tap cart → greyed + on shopping list → buy → check off → auto-reactivated in inventory.
+
+### AI fuzzy matching for inventory — normalize and depluralize
+- **Problem**: When user dictates "3 onions", the AI creates a new item instead of matching existing "Onion".
+- **Solution**: Normalize both names: lowercase, trim, remove trailing 's' for plurals. Match against existing items before inserting new ones.
+- **Edge case**: More complex plurals (potatoes→potato) need smarter matching. Could enhance by passing existing item names to the AI prompt.
+
+### Backfill section based on category has edge cases
+- **Problem**: Items like "Bay leaves" had `category=other` but should be in `section=spices`. The automatic backfill only moved `category IN ('spices', 'pantry')`.
+- **Solution**: After migration, manually fix miscategorized items. Consider having the AI assign section when adding new items.
+
 ### RLS self-referencing subqueries cause infinite recursion
 - **Problem**: A DELETE policy on `household_members` that queried `household_members` in its own USING clause caused infinite recursion.
 - **Solution**: Use helper functions (`get_my_household_id()`, `get_my_household_member_ids()`) that are `SECURITY DEFINER` to avoid the circular dependency. These functions bypass RLS.

@@ -6,6 +6,24 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Inventory overhaul: tabs, stock states, fresh count, shopping cart integration
+- **DB Migration**: Added `in_stock` (boolean), `section` (text: 'fresh'/'spices') columns to `inventory`, `source_inventory_id` (FK) to `shopping_list`
+- **Added**: Fresh / Spices & Pantry tab navigation with item counts
+- **Added**: In Stock / Not in Stock sections — items toggle between states, never deleted
+- **Added**: X button marks items out of stock (clears qty), tapping grey item reactivates it
+- **Added**: Cart icon on out-of-stock items (and active spice items) adds to shopping list with `source_inventory_id` link
+- **Added**: "Start Fresh Count" button on Fresh tab — greys all fresh items for re-counting
+- **Added**: AI fuzzy matching — dictated items match existing inventory before creating new ones (normalize names, depluralize)
+- **Changed**: AI quick-add collapsed by default, manual add always visible
+- **Added**: Auto-reactivate spice inventory items when checked off shopping list (purchased)
+- **Migration script**: `scripts/migration-inventory-v2.sql`
+- **Commits**: `39680a1`, `354768e`
+
+### Allow all household members to edit and delete any recipe
+- **Changed**: RLS policies `recipes_update` and `recipes_delete` now use `get_my_household_member_ids()` — any household member can edit/delete any household recipe
+- **Changed**: Removed `isCreator` check in RecipeDetail.jsx — Edit and Delete buttons show for all household members
+- **Commit**: `ec30f49`
+
 ### Paste support for images and documents in AddRecipe
 - **Added**: `onPaste` handler on the textarea — pasting a copied image from clipboard adds it to photo previews, pasting a document adds its text to the input field
 - **Changed**: Placeholder text updated to mention pasting
