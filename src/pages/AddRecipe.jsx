@@ -47,6 +47,35 @@ export default function AddRecipe() {
     setImages((prev) => prev.filter((_, i) => i !== index))
   }
 
+  function handlePaste(e) {
+    const items = Array.from(e.clipboardData?.items || [])
+    const files = items
+      .filter((item) => item.kind === 'file')
+      .map((item) => item.getAsFile())
+      .filter(Boolean)
+
+    if (files.length === 0) return // just text paste, let default handle it
+
+    e.preventDefault() // prevent default only when we have files
+    files.forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const dataUrl = reader.result
+          const base64 = dataUrl.split(',')[1]
+          setImages((prev) => [...prev, { dataUrl, base64, mediaType: file.type, name: file.name || 'pasted image' }])
+        }
+        reader.readAsDataURL(file)
+      } else {
+        const reader = new FileReader()
+        reader.onload = () => {
+          setAiInput((prev) => prev ? `${prev}\n\n${reader.result}` : reader.result)
+        }
+        reader.readAsText(file)
+      }
+    })
+  }
+
   async function handleGenerate() {
     if (!aiInput.trim() && images.length === 0) return
     setGenerating(true)
@@ -152,9 +181,10 @@ export default function AddRecipe() {
           <textarea
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
+            onPaste={handlePaste}
             className="w-full py-3 px-3 rounded-xl bg-warm-bg border border-warm-border text-warm-text text-sm outline-none focus:border-accent resize-y min-h-[100px]"
             rows={4}
-            placeholder={'Describe a dish, paste a URL, or list ingredients...\n\ne.g. "lentil soup with coconut milk"\ne.g. "I have potatoes, leeks, cream, garlic"'}
+            placeholder={'Describe a dish, paste a URL, recipe text, or images...\n\ne.g. "lentil soup with coconut milk"\ne.g. paste a copied recipe or photo'}
           />
 
           {/* Photo upload area */}
