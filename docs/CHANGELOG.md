@@ -6,6 +6,23 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Redesign out-of-stock inventory items with three action buttons
+- **Changed**: Out-of-stock items now have three separate 40x40 buttons: restock (green ✓), shop (🛒), delete (red ✕)
+- **Added**: `restockItem()` function — moves item to in-stock and removes from shopping list if linked
+- **Fixed**: Delete button now works on greyed-out items (was broken before)
+- **Fixed**: Shopping cart button and delete button no longer overlap — proper spacing with gaps
+- **Commit**: `80932c9`
+
+### Paste support for images and documents in AddRecipe
+- **Added**: `onPaste` handler on the textarea — pasting a copied image from clipboard adds it to photo previews, pasting a document adds its text to the input field
+- **Changed**: Placeholder text updated to mention pasting
+- **Commit**: `0daa18d`
+
+### Allow all household members to edit and delete any household recipe
+- **Changed**: RLS policies `recipes_update` and `recipes_delete` now use `get_my_household_member_ids()` — any household member can edit/delete any recipe in the household
+- **Changed**: Removed `isCreator` check in RecipeDetail.jsx — Edit and Delete buttons show for all household members
+- **Commit**: `ec30f49`
+
 ### Fix shopping Have/Need toggle, strip all quantities from inventory
 - **Fixed**: Shopping list Have/Need is now a tappable toggle button (was a static div)
 - **Changed**: All quantities removed from inventory — items are name-only status trackers
