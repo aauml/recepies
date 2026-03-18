@@ -527,9 +527,17 @@ export default function ShoppingList() {
 
               {checked.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-xs font-bold text-warm-text-dim uppercase tracking-wide mb-1">
-                    Purchased ({checked.length})
-                  </h3>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-xs font-bold text-warm-text-dim uppercase tracking-wide">
+                      Purchased ({checked.length})
+                    </h3>
+                    <button
+                      onClick={async () => { for (const item of checked) await addToInventory(item) }}
+                      className="text-xs px-2.5 py-1 rounded-lg bg-accent text-white font-semibold min-h-0 min-w-0"
+                    >
+                      &#10133; All to inventory
+                    </button>
+                  </div>
                   <div className="flex flex-col gap-1">
                     {checked.map((item) => (
                       <div

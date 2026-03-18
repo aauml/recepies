@@ -70,6 +70,7 @@ export default function Inventory() {
   }
 
   async function addToShoppingList(item) {
+    if (addedToShopping[item.id]) return
     const { error } = await supabase.from('shopping_list').insert({
       user_id: user.id,
       item_name: item.item_name,
@@ -87,7 +88,13 @@ export default function Inventory() {
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: false, quantity: null } : i))
       }
       setAddedToShopping((prev) => ({ ...prev, [item.id]: true }))
-      setTimeout(() => setAddedToShopping((prev) => ({ ...prev, [item.id]: false })), 2000)
+    }
+  }
+
+  async function deleteItem(item) {
+    const { error } = await supabase.from('inventory').delete().eq('id', item.id)
+    if (!error) {
+      setItems((prev) => prev.filter((i) => i.id !== item.id))
     }
   }
 
@@ -274,15 +281,26 @@ export default function Inventory() {
                 {outOfStock.map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => !addedToShopping[item.id] && addToShoppingList(item)}
-                    className="flex items-center gap-3 bg-warm-card/50 rounded-xl px-3 py-2.5 opacity-50 cursor-pointer active:opacity-70"
+                    className="flex items-center gap-2 bg-warm-card/50 rounded-xl px-3 py-2.5 opacity-60"
                   >
                     <div className="flex-1 min-w-0">
                       <span className="text-sm text-warm-text-dim">{item.item_name}</span>
                     </div>
-                    <span className={`text-sm min-w-8 text-center ${addedToShopping[item.id] ? 'text-green-500' : 'text-warm-text-dim'}`}>
-                      {addedToShopping[item.id] ? '\u2713' : '\uD83D\uDED2'}
-                    </span>
+                    <button
+                      onClick={() => addToShoppingList(item)}
+                      disabled={addedToShopping[item.id]}
+                      className={`text-sm min-h-0 min-w-8 bg-transparent transition-colors ${
+                        addedToShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'
+                      }`}
+                    >
+                      {addedToShopping[item.id] ? '\uD83D\uDED2' : '\uD83D\uDED2'}
+                    </button>
+                    <button
+                      onClick={() => deleteItem(item)}
+                      className="text-red-400 text-xs min-h-0 min-w-6 bg-transparent"
+                    >
+                      &#10005;
+                    </button>
                   </div>
                 ))}
               </>
