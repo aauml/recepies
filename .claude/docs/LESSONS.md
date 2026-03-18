@@ -6,6 +6,11 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 
 ## Environment & Tooling
 
+### Local project is a git clone on Google Drive
+- `~/My Drive/Thermomix App` is just a local clone of the GitHub repo, synced via Google Drive.
+- **GitHub is the single source of truth.** If this folder is lost, just `git clone` the repo again anywhere.
+- Nothing unique lives only locally — the `.env` file would need to be recreated, but values are in `.claude/docs/PROJECT.md`.
+
 ### npm fails in "My Drive" path
 - **Problem**: The project lives in `~/My Drive/Thermomix App` (Google Drive). The spaces in the path cause npm commands to fail.
 - **Workaround**: Use a `/tmp` worktree for any npm operations (install, build).
