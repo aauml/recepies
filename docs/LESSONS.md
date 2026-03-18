@@ -130,6 +130,11 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - **Solution**: Add `onPaste` event handler that checks `e.clipboardData.items` for files (`kind === 'file'`). Images get read as base64, documents as text. Only `preventDefault()` when files are found — regular text paste still works.
 - **Pattern**: Always handle paste events explicitly when you want to accept non-text clipboard content.
 
+### AI section auto-detection for inventory items
+- **Pattern**: When building an AI-powered categorizer, include clear section definitions with examples in the system prompt. The AI reliably maps "toilet paper" → household, "cucumbers" → fresh, "cumin" → spices.
+- **Lesson**: Don't hard-code the section from the active tab — let the AI decide per item. Keep manual add as a simple fallback for edge cases.
+- **Lesson**: Exclude preparation instructions ("quartered", "diced") from inventory item names — they don't belong in a stock tracker.
+
 ### Extended thinking adds latency without quality gain for structured JSON
 - **Problem**: Recipe generation was slow (30-40s). Extended thinking (5000 token budget) added 10-20s.
 - **Solution**: Removed `thinking: { type: 'enabled', budget_tokens: 5000 }` from the API call. Recipe quality is the same — Claude Sonnet generates good structured JSON without needing to "think first."

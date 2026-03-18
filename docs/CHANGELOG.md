@@ -6,6 +6,21 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Inventory: AI quick-add auto-detects section
+- **Changed**: AI quick-add now assigns items to the correct tab automatically (fresh/spices/household) based on what the item is
+- **Changed**: Manual add simplified to just name + button, adds to active tab as fallback
+- **Changed**: API prompt updated to exclude preparation instructions (no "quartered", "diced", etc.)
+- **Commit**: `c558a90`
+
+### Paste support for images and documents in AddRecipe
+- **Added**: `onPaste` handler — pasting images from clipboard adds to photo previews, documents add text to input
+- **Commit**: `0daa18d`
+
+### All household members can edit/delete any recipe
+- **Changed**: RLS policies `recipes_update` and `recipes_delete` now use `get_my_household_member_ids()` — any household member can edit/delete
+- **Changed**: Removed `isCreator` check in RecipeDetail.jsx — Edit/Delete buttons show for everyone
+- **Commit**: `ec30f49`
+
 ### Recipe-to-shopping comparison screen
 - **Added**: When adding recipe ingredients to shopping list, a modal shows each ingredient with Need/Have columns
 - **Added**: Items in stock are pre-marked as Skip, user can toggle any row
