@@ -38,6 +38,7 @@ export default function Inventory() {
   const outOfStock = tabItems.filter((i) => !i.in_stock)
   const freshCount = items.filter((i) => i.section === 'fresh').length
   const spicesCount = items.filter((i) => i.section === 'spices').length
+  const householdCount = items.filter((i) => i.section === 'household').length
 
   async function addItem(e) {
     e.preventDefault()
@@ -67,17 +68,6 @@ export default function Inventory() {
       .eq('id', item.id)
     if (!error) {
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: false, quantity: null } : i))
-    }
-  }
-
-  async function toggleInStock(item) {
-    // Reactivate item
-    const { error } = await supabase
-      .from('inventory')
-      .update({ in_stock: true, updated_at: new Date().toISOString() })
-      .eq('id', item.id)
-    if (!error) {
-      setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: true } : i))
     }
   }
 
@@ -188,22 +178,21 @@ export default function Inventory() {
 
       {/* Tab bar */}
       <div className="mx-5 -mt-3 bg-accent-dark rounded-xl flex overflow-hidden mb-3">
-        <button
-          onClick={() => setActiveTab('fresh')}
-          className={`flex-1 py-2.5 text-sm font-semibold min-h-0 transition-colors ${
-            activeTab === 'fresh' ? 'bg-white text-accent' : 'bg-transparent text-white/60'
-          }`}
-        >
-          &#129388; Fresh ({freshCount})
-        </button>
-        <button
-          onClick={() => setActiveTab('spices')}
-          className={`flex-1 py-2.5 text-sm font-semibold min-h-0 transition-colors ${
-            activeTab === 'spices' ? 'bg-white text-accent' : 'bg-transparent text-white/60'
-          }`}
-        >
-          &#129474; Spices & Pantry ({spicesCount})
-        </button>
+        {[
+          { key: 'fresh', label: '\uD83E\uDD6C', count: freshCount },
+          { key: 'spices', label: '\uD83E\uDDC2', count: spicesCount },
+          { key: 'household', label: '\uD83C\uDFE0', count: householdCount },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setActiveTab(t.key)}
+            className={`flex-1 py-2.5 text-xs font-semibold min-h-0 transition-colors ${
+              activeTab === t.key ? 'bg-white text-accent' : 'bg-transparent text-white/60'
+            }`}
+          >
+            {t.label} {t.count}
+          </button>
+        ))}
       </div>
 
       {/* AI quick-add (collapsible) */}
@@ -247,7 +236,7 @@ export default function Inventory() {
         {loading ? (
           <p className="text-center text-warm-text-dim py-10 text-sm">Loading...</p>
         ) : tabItems.length === 0 ? (
-          <p className="text-center text-warm-text-dim py-10 text-sm">No items in {activeTab === 'fresh' ? 'fresh' : 'spices & pantry'}</p>
+          <p className="text-center text-warm-text-dim py-10 text-sm">No items in {activeTab === 'fresh' ? 'fresh' : activeTab === 'spices' ? 'spices & pantry' : 'household'}</p>
         ) : (
           <>
             {/* In Stock section */}
@@ -288,19 +277,15 @@ export default function Inventory() {
                 {outOfStock.map((item) => (
                   <div
                     key={item.id}
-                    onClick={() => toggleInStock(item)}
+                    onClick={() => !addedToShopping[item.id] && addToShoppingList(item)}
                     className="flex items-center gap-3 bg-warm-card/50 rounded-xl px-3 py-2.5 opacity-50 cursor-pointer active:opacity-70"
                   >
                     <div className="flex-1 min-w-0">
                       <span className="text-sm text-warm-text-dim">{item.item_name}</span>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); addToShoppingList(item) }}
-                      className={`text-sm min-h-0 min-w-8 bg-transparent ${addedToShopping[item.id] ? 'text-green-500' : 'text-warm-text-dim'}`}
-                      disabled={addedToShopping[item.id]}
-                    >
+                    <span className={`text-sm min-w-8 text-center ${addedToShopping[item.id] ? 'text-green-500' : 'text-warm-text-dim'}`}>
                       {addedToShopping[item.id] ? '\u2713' : '\uD83D\uDED2'}
-                    </button>
+                    </span>
                   </div>
                 ))}
               </>

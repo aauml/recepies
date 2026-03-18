@@ -135,18 +135,36 @@ export default function ShoppingList() {
     const updated = { ...item, checked: !item.checked }
     await supabase.from('shopping_list').update({ checked: updated.checked }).eq('id', item.id)
     setItems(items.map((i) => (i.id === item.id ? updated : i)))
+  }
 
-    // Auto-reactivate spice inventory items when checked off (purchased)
-    if (updated.checked && item.source_inventory_id) {
-      const inv = inventory.find((i) => i.id === item.source_inventory_id)
-      if (inv && inv.section === 'spices') {
+  async function addToInventory(item) {
+    if (item.source_inventory_id) {
+      // Linked to existing inventory item — reactivate it
+      await supabase
+        .from('inventory')
+        .update({ in_stock: true, updated_at: new Date().toISOString() })
+        .eq('id', item.source_inventory_id)
+      setInventory((prev) => prev.map((i) => i.id === item.source_inventory_id ? { ...i, in_stock: true } : i))
+    } else {
+      // No linked inventory item — match or create
+      const normalizedName = item.item_name.toLowerCase().trim().replace(/s$/, '')
+      const match = inventory.find((i) => i.item_name.toLowerCase().trim().replace(/s$/, '') === normalizedName)
+      if (match) {
         await supabase
           .from('inventory')
-          .update({ in_stock: true, updated_at: new Date().toISOString() })
-          .eq('id', inv.id)
-        setInventory((prev) => prev.map((i) => i.id === inv.id ? { ...i, in_stock: true } : i))
+          .update({ in_stock: true, quantity: item.quantity || match.quantity, updated_at: new Date().toISOString() })
+          .eq('id', match.id)
+        setInventory((prev) => prev.map((i) => i.id === match.id ? { ...i, in_stock: true, quantity: item.quantity || match.quantity } : i))
+      } else {
+        const { data } = await supabase.from('inventory')
+          .insert({ user_id: user.id, item_name: item.item_name, quantity: item.quantity || null, category: item.category || 'other', section: 'fresh', in_stock: true })
+          .select().single()
+        if (data) setInventory((prev) => [...prev, data])
       }
     }
+    // Remove from shopping list
+    await supabase.from('shopping_list').delete().eq('id', item.id)
+    setItems((prev) => prev.filter((i) => i.id !== item.id))
   }
 
   async function clearChecked() {
@@ -509,21 +527,29 @@ export default function ShoppingList() {
 
               {checked.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-xs font-bold text-warm-text-dim uppercase tracking-wide mb-1 opacity-50">
-                    Purchased
+                  <h3 className="text-xs font-bold text-warm-text-dim uppercase tracking-wide mb-1">
+                    Purchased ({checked.length})
                   </h3>
-                  <div className="flex flex-col gap-1 opacity-40">
+                  <div className="flex flex-col gap-1">
                     {checked.map((item) => (
-                      <button
+                      <div
                         key={item.id}
-                        onClick={() => toggleItem(item)}
-                        className="flex items-center gap-2 bg-warm-card rounded-xl px-3 py-2 text-left min-h-0 w-full"
+                        className="flex items-center gap-2 bg-warm-card/60 rounded-xl px-3 py-2"
                       >
-                        <span className="w-4 h-4 rounded border-2 border-accent bg-accent text-white shrink-0 flex items-center justify-center text-[0.6rem]">
+                        <button
+                          onClick={() => toggleItem(item)}
+                          className="w-4 h-4 rounded border-2 border-accent bg-accent text-white shrink-0 flex items-center justify-center text-[0.6rem] min-h-0 min-w-0"
+                        >
                           &#10003;
-                        </span>
-                        <span className="text-sm line-through">{item.item_name}</span>
-                      </button>
+                        </button>
+                        <span className="flex-1 text-sm text-warm-text-dim line-through min-w-0">{item.item_name}</span>
+                        <button
+                          onClick={() => addToInventory(item)}
+                          className="text-xs px-2 py-1 rounded-lg bg-accent/10 text-accent font-semibold min-h-0 min-w-0 shrink-0"
+                        >
+                          &#10133; Inventory
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
