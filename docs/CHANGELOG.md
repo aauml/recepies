@@ -6,6 +6,12 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Fix shopping Have/Need toggle, strip all quantities from inventory
+- **Fixed**: Shopping list Have/Need is now a tappable toggle button (was a static div)
+- **Changed**: All quantities removed from inventory — items are name-only status trackers
+- **Changed**: Fresh count reset also clears linked shopping list entries and deselects items
+- **Commit**: `3d16b4e`
+
 ### Inventory/Shopping sync overhaul
 - **Changed**: Inventory out-of-stock items are now toggleable — tap to add to shopping, tap again to remove
 - **Changed**: State syncs with actual `shopping_list` table via `source_inventory_id`, persists across sessions
