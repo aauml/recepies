@@ -6,6 +6,10 @@ All notable changes, decisions, and work sessions documented here.
 
 ## 2026-03-18
 
+### Strip prep instructions from copied shopping list
+- **Changed**: When copying shopping list, remove prep words like "quartered", "cubed", "grated", "chopped", "sliced", "minced", "peeled", etc. from item names. "Potatoes, quartered" copies as just "Potatoes".
+- **Commit**: `92f7eff`
+
 ### Shopping list copy: toast + WhatsApp-friendly format (Task #1)
 - **Added**: Toast notification "Copied to clipboard" shown for 2 seconds after copying
 - **Changed**: Copied text format from "name - quantity" to "quantity name" (e.g. "400g pasta", "1 bunch cilantro") — cleaner for WhatsApp pasting

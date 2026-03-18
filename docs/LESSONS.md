@@ -85,6 +85,11 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 
 ## Frontend / React
 
+### Shopping list copy should be human-friendly
+- **Problem**: Copied shopping list included prep instructions ("Potatoes, quartered", "Carrots, grated") which are irrelevant for a grocery list shared via WhatsApp.
+- **Solution**: Strip prep words (quartered, cubed, grated, chopped, sliced, minced, peeled, diced, etc.) using regex on the item name before adding to clipboard text. Also format as "quantity name" not "name - quantity" for cleaner reading.
+- **Pattern**: Prep instructions come after a comma in ingredient names. The regex matches `, followed by prep word` and strips everything after.
+
 ### Safe area insets for iPhone
 - Use `env(safe-area-inset-top)`, `env(safe-area-inset-bottom)` for the notch and home indicator.
 - `min-h-dvh` instead of `min-h-screen` for proper mobile viewport.
