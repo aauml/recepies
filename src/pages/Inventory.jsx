@@ -15,10 +15,13 @@ export default function Inventory() {
   const [activeTab, setActiveTab] = useState('fresh')
   const [aiExpanded, setAiExpanded] = useState(false)
   const [showFreshConfirm, setShowFreshConfirm] = useState(false)
-  const [addedToShopping, setAddedToShopping] = useState({}) // {itemId: true}
+  const [inShopping, setInShopping] = useState({}) // {inventoryId: shoppingListId}
 
   useEffect(() => {
-    if (user) fetchItems()
+    if (user) {
+      fetchItems()
+      fetchShoppingLinks()
+    }
   }, [user])
 
   async function fetchItems() {
@@ -29,6 +32,17 @@ export default function Inventory() {
       .order('item_name', { ascending: true })
     setItems(data || [])
     setLoading(false)
+  }
+
+  async function fetchShoppingLinks() {
+    const { data } = await supabase
+      .from('shopping_list')
+      .select('id, source_inventory_id')
+      .in('user_id', householdUserIds)
+      .not('source_inventory_id', 'is', null)
+    const map = {}
+    ;(data || []).forEach((s) => { map[s.source_inventory_id] = s.id })
+    setInShopping(map)
   }
 
   // Filter items by active tab and stock status
@@ -69,17 +83,37 @@ export default function Inventory() {
     }
   }
 
+  async function toggleShopping(item) {
+    if (inShopping[item.id]) {
+      // Already in shopping — remove it
+      await supabase.from('shopping_list').delete().eq('id', inShopping[item.id])
+      setInShopping((prev) => { const n = { ...prev }; delete n[item.id]; return n })
+    } else {
+      // Add to shopping
+      const { data } = await supabase.from('shopping_list').insert({
+        user_id: user.id,
+        item_name: item.item_name,
+        quantity: null,
+        category: item.category || 'other',
+        source_inventory_id: item.id,
+      }).select('id').single()
+      if (data) {
+        setInShopping((prev) => ({ ...prev, [item.id]: data.id }))
+      }
+    }
+  }
+
   async function addToShoppingList(item) {
-    if (addedToShopping[item.id]) return
-    const { error } = await supabase.from('shopping_list').insert({
+    // For in-stock spices: grey out and add to shopping
+    const { data } = await supabase.from('shopping_list').insert({
       user_id: user.id,
       item_name: item.item_name,
-      quantity: item.quantity || null,
+      quantity: null,
       category: item.category || 'other',
       source_inventory_id: item.id,
-    })
-    if (!error) {
-      // For spices: also grey out the item
+    }).select('id').single()
+    if (data) {
+      setInShopping((prev) => ({ ...prev, [item.id]: data.id }))
       if (item.section === 'spices' && item.in_stock) {
         await supabase
           .from('inventory')
@@ -87,7 +121,6 @@ export default function Inventory() {
           .eq('id', item.id)
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: false, quantity: null } : i))
       }
-      setAddedToShopping((prev) => ({ ...prev, [item.id]: true }))
     }
   }
 
@@ -257,10 +290,10 @@ export default function Inventory() {
                     {activeTab === 'spices' && (
                       <button
                         onClick={() => addToShoppingList(item)}
-                        className={`text-sm min-h-0 min-w-8 bg-transparent ${addedToShopping[item.id] ? 'text-green-500' : 'text-warm-text-dim'}`}
-                        disabled={addedToShopping[item.id]}
+                        className={`text-sm min-h-0 min-w-8 bg-transparent ${inShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'}`}
+                        disabled={!!inShopping[item.id]}
                       >
-                        {addedToShopping[item.id] ? '\u2713' : '\uD83D\uDED2'}
+                        {inShopping[item.id] ? '\u2713' : '\uD83D\uDED2'}
                       </button>
                     )}
                     <button
@@ -283,20 +316,19 @@ export default function Inventory() {
                     key={item.id}
                     className="flex items-center rounded-xl overflow-hidden"
                   >
-                    {/* Main area: tap to add to shopping */}
+                    {/* Main area: tap to toggle shopping */}
                     <button
-                      onClick={() => addToShoppingList(item)}
-                      disabled={addedToShopping[item.id]}
+                      onClick={() => toggleShopping(item)}
                       className={`flex items-center gap-2 flex-1 min-w-0 px-3 py-2.5 min-h-0 text-left transition-colors ${
-                        addedToShopping[item.id]
+                        inShopping[item.id]
                           ? 'bg-accent/10'
                           : 'bg-warm-card/50 active:bg-warm-card/70'
                       }`}
                     >
-                      <span className={`text-sm ${addedToShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'}`}>
-                        {addedToShopping[item.id] ? '\u2713 \uD83D\uDED2' : '\uD83D\uDED2'}
+                      <span className={`text-sm ${inShopping[item.id] ? 'text-accent' : 'text-warm-text-dim'}`}>
+                        {inShopping[item.id] ? '\u2713 \uD83D\uDED2' : '\uD83D\uDED2'}
                       </span>
-                      <span className={`text-sm ${addedToShopping[item.id] ? 'text-accent font-semibold' : 'text-warm-text-dim'}`}>
+                      <span className={`text-sm ${inShopping[item.id] ? 'text-accent font-semibold' : 'text-warm-text-dim'}`}>
                         {item.item_name}
                       </span>
                     </button>

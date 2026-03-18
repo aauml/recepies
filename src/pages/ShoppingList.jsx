@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useHousehold } from '../contexts/HouseholdContext'
-import { getMeasurements, MeasurementBadges } from '../lib/portions'
+import { MeasurementBadges } from '../lib/portions'
 import AppHeader from '../components/AppHeader'
 
 const CATEGORY_ORDER = ['produce', 'dairy', 'protein', 'pantry', 'spices', 'frozen', 'other']
@@ -32,40 +32,6 @@ function parseQtyUnit(quantityStr) {
   return { qty: quantityStr, unit: '' }
 }
 
-// Get the visual/friendly label for display
-function getVisualLabel(name, qty, unit, estimate) {
-  const m = getMeasurements(name, qty, unit, estimate)
-  return m.visual || m.metric || ''
-}
-
-// Compute need after subtracting inventory
-function computeNeed(itemName, itemQty, itemUnit, itemEstimate, inventory) {
-  const inv = matchInventory(itemName, inventory)
-  if (!inv || !inv.quantity) return { have: null, need: null, invItem: inv }
-
-  const m = getMeasurements(itemName, itemQty, itemUnit, itemEstimate)
-  const visual = m.visual // e.g. "~3 medium potatoes"
-  const invQty = inv.quantity // e.g. "1" or "2 medium potatoes"
-
-  // Try numeric comparison from visual estimates
-  const needNum = visual ? parseFloat(visual.replace(/^~/, '')) : parseFloat(itemQty)
-  const haveNum = parseFloat(invQty)
-
-  if (!isNaN(needNum) && !isNaN(haveNum) && needNum > 0) {
-    const remaining = Math.max(0, needNum - haveNum)
-    // Extract the unit label from visual
-    const unitLabel = visual ? visual.replace(/^~[\d.]+\s*/, '') : (itemUnit || '')
-    return {
-      have: haveNum,
-      need: remaining,
-      needLabel: remaining > 0 ? `${remaining} ${unitLabel}`.trim() : null,
-      covered: remaining === 0,
-      invItem: inv,
-    }
-  }
-
-  return { have: invQty, need: null, invItem: inv }
-}
 
 export default function ShoppingList() {
   const { user } = useAuth()
@@ -76,8 +42,6 @@ export default function ShoppingList() {
   const [newItem, setNewItem] = useState('')
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('ingredient')
-  const [editingInvFor, setEditingInvFor] = useState(null) // item id being inventory-edited
-  const [editInvQty, setEditInvQty] = useState('')
   const [aiText, setAiText] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [toast, setToast] = useState('')
@@ -139,25 +103,25 @@ export default function ShoppingList() {
 
   async function addToInventory(item) {
     if (item.source_inventory_id) {
-      // Linked to existing inventory item — reactivate it
+      // Linked to existing inventory item — reactivate it (no quantity)
       await supabase
         .from('inventory')
-        .update({ in_stock: true, updated_at: new Date().toISOString() })
+        .update({ in_stock: true, quantity: null, updated_at: new Date().toISOString() })
         .eq('id', item.source_inventory_id)
-      setInventory((prev) => prev.map((i) => i.id === item.source_inventory_id ? { ...i, in_stock: true } : i))
+      setInventory((prev) => prev.map((i) => i.id === item.source_inventory_id ? { ...i, in_stock: true, quantity: null } : i))
     } else {
-      // No linked inventory item — match or create
+      // No linked inventory item — match or create (no quantity)
       const normalizedName = item.item_name.toLowerCase().trim().replace(/s$/, '')
       const match = inventory.find((i) => i.item_name.toLowerCase().trim().replace(/s$/, '') === normalizedName)
       if (match) {
         await supabase
           .from('inventory')
-          .update({ in_stock: true, quantity: item.quantity || match.quantity, updated_at: new Date().toISOString() })
+          .update({ in_stock: true, quantity: null, updated_at: new Date().toISOString() })
           .eq('id', match.id)
-        setInventory((prev) => prev.map((i) => i.id === match.id ? { ...i, in_stock: true, quantity: item.quantity || match.quantity } : i))
+        setInventory((prev) => prev.map((i) => i.id === match.id ? { ...i, in_stock: true, quantity: null } : i))
       } else {
         const { data } = await supabase.from('inventory')
-          .insert({ user_id: user.id, item_name: item.item_name, quantity: item.quantity || null, category: item.category || 'other', section: 'fresh', in_stock: true })
+          .insert({ user_id: user.id, item_name: item.item_name, quantity: null, category: item.category || 'other', section: 'fresh', in_stock: true })
           .select().single()
         if (data) setInventory((prev) => [...prev, data])
       }
@@ -188,23 +152,16 @@ export default function ShoppingList() {
     setItems(items.filter((i) => !ids.includes(i.id)))
   }
 
-  // Copy only what's needed (after inventory subtraction) — WhatsApp-friendly format
+  // Copy list — WhatsApp-friendly format
   async function copyList() {
     const unchecked = items.filter((i) => !i.checked)
     const lines = []
     unchecked.forEach((item) => {
-      const { qty, unit } = parseQtyUnit(item.quantity)
-      const info = computeNeed(item.item_name, qty, unit, item.estimate, inventory)
-      if (info.covered) return // fully covered by inventory
-      const visual = getVisualLabel(item.item_name, qty, unit, item.estimate)
-      const display = info.needLabel || visual || item.quantity || ''
-      // Strip prep instructions (quartered, cubed, grated, etc.) from name
+      // Strip prep instructions from name
       const cleanName = item.item_name.replace(/,\s*(quartered|cubed|grated|chopped|diced|sliced|minced|peeled|crushed|halved|julienned|shredded|torn|trimmed|deseeded|cored|finely\s+\w+|roughly\s+\w+|thinly\s+\w+).*$/i, '').trim()
-      if (display) {
-        lines.push(`${display} ${cleanName}`)
-      } else {
-        lines.push(cleanName)
-      }
+      const { qty, unit } = parseQtyUnit(item.quantity)
+      const display = qty ? `${qty}${unit} ${cleanName}` : cleanName
+      lines.push(display)
     })
     try {
       await navigator.clipboard.writeText(lines.join('\n'))
@@ -242,31 +199,14 @@ export default function ShoppingList() {
     setAiLoading(false)
   }
 
-  // Inventory editing per shopping row
-  async function saveInvQtyForItem(itemName) {
-    const inv = matchInventory(itemName, inventory)
-    if (inv) {
-      await supabase.from('inventory').update({ quantity: editInvQty.trim() || null }).eq('id', inv.id)
-      setInventory(inventory.map(i => i.id === inv.id ? { ...i, quantity: editInvQty.trim() || null } : i))
-    } else if (editInvQty.trim()) {
-      // Create new inventory entry
-      const { data } = await supabase.from('inventory')
-        .insert({ user_id: user.id, item_name: itemName, quantity: editInvQty.trim(), category: 'other' })
-        .select().single()
-      if (data) setInventory([data, ...inventory])
-    }
-    setEditingInvFor(null)
-    setEditInvQty('')
-  }
-
   const unchecked = items.filter((i) => !i.checked)
   const checked = items.filter((i) => i.checked)
 
-  // Render a single shopping row with inventory column
+  // Render a single shopping row with have/need toggle
   function ShoppingRow({ item }) {
     const { qty, unit } = parseQtyUnit(item.quantity)
-    const info = computeNeed(item.item_name, qty, unit, item.estimate, inventory)
-    const isEditing = editingInvFor === item.id
+    const invMatch = matchInventory(item.item_name, inventory)
+    const have = invMatch?.in_stock || false
 
     return (
       <div className="flex items-stretch bg-warm-card rounded-xl overflow-hidden">
@@ -284,46 +224,11 @@ export default function ShoppingList() {
           </div>
         </button>
 
-        {/* Right: inventory cell */}
-        <div className="w-[90px] shrink-0 border-l border-warm-border flex items-center px-2">
-          {isEditing ? (
-            <form
-              onSubmit={(e) => { e.preventDefault(); saveInvQtyForItem(item.item_name) }}
-              className="flex-1"
-            >
-              <input
-                value={editInvQty}
-                onChange={(e) => setEditInvQty(e.target.value)}
-                placeholder="have..."
-                autoFocus
-                onBlur={() => saveInvQtyForItem(item.item_name)}
-                className="w-full py-0.5 px-1 rounded bg-warm-bg border border-accent text-[0.65rem] outline-none text-center"
-              />
-            </form>
-          ) : (
-            <button
-              onClick={() => {
-                setEditingInvFor(item.id)
-                setEditInvQty(info.invItem?.quantity || '')
-              }}
-              className="flex-1 min-h-0 bg-transparent p-0 text-center"
-            >
-              {info.have !== null ? (
-                <div>
-                  <div className="text-[0.6rem] text-[#2e7d6f]">have {info.have}</div>
-                  {info.covered ? (
-                    <div className="text-[0.55rem] text-[#2e7d6f] font-bold">&#10003; covered</div>
-                  ) : info.needLabel ? (
-                    <div className="text-[0.55rem] text-accent font-semibold">buy {info.needLabel}</div>
-                  ) : null}
-                </div>
-              ) : info.invItem ? (
-                <div className="text-[0.6rem] text-[#2e7d6f]">&#10003; have</div>
-              ) : (
-                <div className="text-[0.55rem] text-warm-text-dim">tap to set</div>
-              )}
-            </button>
-          )}
+        {/* Right: have/need indicator */}
+        <div className={`w-14 shrink-0 border-l border-warm-border flex items-center justify-center text-xs font-semibold ${
+          have ? 'bg-green-50 text-[#2e7d6f]' : 'bg-transparent text-warm-text-dim'
+        }`}>
+          {have ? 'Have' : 'Need'}
         </div>
       </div>
     )
@@ -359,10 +264,6 @@ export default function ShoppingList() {
     return (
       <div className="flex flex-col gap-3">
         {/* Column headers */}
-        <div className="flex text-[0.6rem] uppercase tracking-wide text-warm-text-dim font-bold px-1">
-          <span className="flex-1">Item</span>
-          <span className="w-[90px] text-center shrink-0">Inventory</span>
-        </div>
         {sortedCats.map((cat) => (
           <div key={cat}>
             <h3 className="text-xs font-bold text-warm-text-dim uppercase tracking-wide mb-1">
@@ -393,10 +294,6 @@ export default function ShoppingList() {
 
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex text-[0.6rem] uppercase tracking-wide text-warm-text-dim font-bold px-1">
-          <span className="flex-1">Item</span>
-          <span className="w-[90px] text-center shrink-0">Inventory</span>
-        </div>
         {Object.entries(byRecipe).map(([rid, rItems]) => {
           const rec = recipes[rid]
           return (
