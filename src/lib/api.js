@@ -68,13 +68,13 @@ export const api = {
   },
 
   householdInvites: {
-    create: (email) => fetchWithAuth('/api/household-invites', { method: 'POST', body: JSON.stringify({ email }) }),
-    accept: (id) => fetchWithAuth('/api/household-invites', { method: 'PUT', body: JSON.stringify({ id, status: 'accepted' }) }),
-    decline: (id) => fetchWithAuth('/api/household-invites', { method: 'PUT', body: JSON.stringify({ id, status: 'declined' }) }),
-    delete: (id) => fetchWithAuth('/api/household-invites', { method: 'DELETE', body: JSON.stringify({ id }) }),
+    create: (email) => fetchWithAuth('/api/households', { method: 'POST', body: JSON.stringify({ action: 'invite', email }) }),
+    accept: (id) => fetchWithAuth('/api/households', { method: 'PUT', body: JSON.stringify({ action: 'respond-invite', id, status: 'accepted' }) }),
+    decline: (id) => fetchWithAuth('/api/households', { method: 'PUT', body: JSON.stringify({ action: 'respond-invite', id, status: 'declined' }) }),
+    delete: (id) => fetchWithAuth('/api/households', { method: 'DELETE', body: JSON.stringify({ action: 'delete-invite', id }) }),
   },
 
   householdMembers: {
-    delete: (userId) => fetchWithAuth('/api/household-members', { method: 'DELETE', body: JSON.stringify({ userId }) }),
+    delete: (userId) => fetchWithAuth('/api/households', { method: 'PUT', body: JSON.stringify({ action: 'remove-member', userId }) }),
   },
 }
