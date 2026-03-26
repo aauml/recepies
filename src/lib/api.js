@@ -25,10 +25,10 @@ async function fetchWithAuth(url, options = {}) {
 export const api = {
   recipes: {
     list: () => fetchWithAuth('/api/recipes'),
-    get: (id) => fetchWithAuth(`/api/recipes/${id}`),
+    get: (id) => fetchWithAuth(`/api/recipes?id=${id}`),
     create: (data) => fetchWithAuth('/api/recipes', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) => fetchWithAuth(`/api/recipes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id) => fetchWithAuth(`/api/recipes/${id}`, { method: 'DELETE' }),
+    update: (id, data) => fetchWithAuth(`/api/recipes?id=${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id) => fetchWithAuth(`/api/recipes?id=${id}`, { method: 'DELETE' }),
   },
 
   shoppingList: {
