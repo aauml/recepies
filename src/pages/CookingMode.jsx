@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { MeasurementBadgesDark } from '../lib/portions'
 
@@ -20,10 +20,13 @@ export default function CookingMode() {
   const touchStartX = useRef(0)
 
   useEffect(() => {
-    supabase.from('recipes').select('*').eq('id', id).single()
-      .then(({ data, error }) => {
-        if (error) console.error('Recipe fetch error:', error)
+    api.recipes.get(id)
+      .then((data) => {
         setRecipe(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error('Recipe fetch error:', err)
         setLoading(false)
       })
   }, [id])
@@ -91,12 +94,11 @@ export default function CookingMode() {
     setSaving(true)
     const newSteps = [...steps]
     newSteps[current] = editStep
-    const { error } = await supabase.from('recipes').update({
-      steps_1bowl: newSteps,
-      updated_at: new Date().toISOString(),
-    }).eq('id', id)
-    if (!error) {
+    try {
+      await api.recipes.update(id, { steps_1bowl: newSteps, updated_at: new Date().toISOString() })
       setRecipe((r) => ({ ...r, steps_1bowl: newSteps }))
+    } catch (err) {
+      console.error('Save step error:', err)
     }
     setSaving(false)
     setEditing(false)
@@ -126,9 +128,8 @@ export default function CookingMode() {
   async function handleFinish() {
     setSaving(true)
     if (user) {
-      await supabase.from('cook_log').insert({
+      await api.cookLog.create({
         recipe_id: id,
-        user_id: user.id,
         rating: rating || null,
         feedback: feedback || null,
         bowl_mode: 1,

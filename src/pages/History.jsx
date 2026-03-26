@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useHousehold } from '../contexts/HouseholdContext'
 import AppHeader from '../components/AppHeader'
@@ -17,24 +17,24 @@ export default function History() {
   }, [user])
 
   async function fetchLogs() {
-    const { data } = await supabase
-      .from('cook_log')
-      .select('*, recipes(title, thumbnail_emoji)')
-      .in('user_id', householdUserIds)
-      .order('cooked_at', { ascending: false })
-    setLogs(data || [])
+    try {
+      const data = await api.cookLog.list()
+      setLogs(data || [])
+    } catch (err) {
+      console.error('Fetch logs error:', err)
+    }
     setLoading(false)
   }
 
   async function deleteLog(id) {
-    await supabase.from('cook_log').delete().eq('id', id)
+    await api.cookLog.delete(id)
     setLogs(logs.filter((l) => l.id !== id))
   }
 
   async function clearAll() {
     const ids = logs.map((l) => l.id)
     if (ids.length === 0) return
-    await supabase.from('cook_log').delete().in('id', ids)
+    await api.cookLog.deleteBatch(ids)
     setLogs([])
     setConfirmClear(false)
   }

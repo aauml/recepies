@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 const TAG_OPTIONS = ['soup', 'main', 'side', 'dessert', 'bread', 'sauce', 'snack', 'breakfast', 'vegan', 'meal-prep']
 const emptyIngredient = () => ({ name: '', qty: '', unit: 'g', category: 'produce' })
@@ -14,7 +14,7 @@ export default function EditRecipe() {
   const [form, setForm] = useState(null)
 
   useEffect(() => {
-    supabase.from('recipes').select('*').eq('id', id).single().then(({ data }) => {
+    api.recipes.get(id).then((data) => {
       if (data) {
         setForm({
           title: data.title || '',
@@ -102,23 +102,27 @@ export default function EditRecipe() {
       speed: s.speed ? Number(s.speed) : null,
     }))
 
-    const { error } = await supabase.from('recipes').update({
-      title: form.title.trim(),
-      description: form.description.trim() || null,
-      servings_1bowl: form.servings_1bowl || null,
-      time_1bowl: form.time_1bowl || null,
-      tags: form.tags,
-      thumbnail_emoji: form.thumbnail_emoji || '🍽',
-      source_urls: form.source_urls.filter((u) => u.trim()),
-      ingredients_1bowl: ingredients,
-      steps_1bowl: steps,
-      nutrition: form.nutrition,
-      insulin_load: form.insulin_load,
-      updated_at: new Date().toISOString(),
-    }).eq('id', id)
-
-    setSaving(false)
-    if (!error) navigate(`/recipes/${id}`)
+    try {
+      await api.recipes.update(id, {
+        title: form.title.trim(),
+        description: form.description.trim() || null,
+        servings_1bowl: form.servings_1bowl || null,
+        time_1bowl: form.time_1bowl || null,
+        tags: form.tags,
+        thumbnail_emoji: form.thumbnail_emoji || '🍽',
+        source_urls: form.source_urls.filter((u) => u.trim()),
+        ingredients_1bowl: ingredients,
+        steps_1bowl: steps,
+        nutrition: form.nutrition,
+        insulin_load: form.insulin_load,
+        updated_at: new Date().toISOString(),
+      })
+      setSaving(false)
+      navigate(`/recipes/${id}`)
+    } catch (err) {
+      console.error('Save error:', err)
+      setSaving(false)
+    }
   }
 
   const inputClass = 'w-full py-2.5 px-3 rounded-xl bg-warm-card border border-warm-border text-warm-text text-sm outline-none focus:border-accent'

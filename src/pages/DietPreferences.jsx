@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import AppHeader from '../components/AppHeader'
 
@@ -19,17 +19,14 @@ export default function DietPreferences() {
 
   useEffect(() => {
     if (user) {
-      supabase
-        .from('profiles')
-        .select('diet_preferences')
-        .eq('id', user.id)
-        .single()
-        .then(({ data }) => {
+      api.profiles.get()
+        .then((data) => {
           if (data?.diet_preferences && Object.keys(data.diet_preferences).length > 0) {
             setPrefs(data.diet_preferences)
           }
           setLoading(false)
         })
+        .catch(() => setLoading(false))
     }
   }, [user])
 
@@ -37,7 +34,7 @@ export default function DietPreferences() {
     const updated = { ...prefs, [key]: !prefs[key] }
     setPrefs(updated)
     setSaved(false)
-    await supabase.from('profiles').update({ diet_preferences: updated }).eq('id', user.id)
+    await api.profiles.update({ diet_preferences: updated })
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
   }

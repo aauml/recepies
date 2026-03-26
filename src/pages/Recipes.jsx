@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import AppHeader from '../components/AppHeader'
 import ProfileMenu from '../components/ProfileMenu'
@@ -21,7 +21,6 @@ const TAG_FILTERS = [
 export default function Recipes() {
   const { user } = useAuth()
   const [recipes, setRecipes] = useState([])
-  const [profiles, setProfiles] = useState({})
   const [search, setSearch] = useState('')
   const [activeTag, setActiveTag] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -32,23 +31,11 @@ export default function Recipes() {
   }, [])
 
   async function fetchRecipes() {
-    const { data, error } = await supabase
-      .from('recipes')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (!error) {
+    try {
+      const data = await api.recipes.list()
       setRecipes(data || [])
-      // Fetch creator profiles
-      const creatorIds = [...new Set((data || []).filter(r => r.created_by).map(r => r.created_by))]
-      if (creatorIds.length > 0) {
-        const { data: profs } = await supabase
-          .from('profiles')
-          .select('id, display_name, avatar_url')
-          .in('id', creatorIds)
-        const map = {}
-        ;(profs || []).forEach(p => { map[p.id] = p })
-        setProfiles(map)
-      }
+    } catch (err) {
+      console.error('Fetch recipes error:', err)
     }
     setLoading(false)
   }
@@ -57,7 +44,6 @@ export default function Recipes() {
     const ingredients = recipe.ingredients_1bowl || []
     const items = ingredients.flatMap((group) =>
       (group.items || []).map((item) => ({
-        user_id: user.id,
         item_name: item.name,
         quantity: `${item.qty || ''}${item.unit || ''}`.trim(),
         category: item.category || 'other',
@@ -66,7 +52,7 @@ export default function Recipes() {
       }))
     )
     if (items.length > 0) {
-      await supabase.from('shopping_list').insert(items)
+      await api.shoppingList.createBatch(items)
     }
   }
 
@@ -156,7 +142,6 @@ export default function Recipes() {
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              creator={profiles[recipe.created_by]}
               onShop={() => addToShoppingList(recipe)}
             />
           ))
@@ -166,7 +151,7 @@ export default function Recipes() {
   )
 }
 
-function RecipeCard({ recipe, creator, onShop }) {
+function RecipeCard({ recipe, onShop }) {
   const [shopMsg, setShopMsg] = useState(false)
 
   const handleShop = async () => {
@@ -180,9 +165,9 @@ function RecipeCard({ recipe, creator, onShop }) {
         <div className="flex gap-3.5 p-4">
           <div className="w-[72px] h-[72px] rounded-xl bg-accent-light flex items-center justify-center text-[2em] shrink-0 relative">
             {recipe.thumbnail_emoji || '\uD83C\uDF7D'}
-            {creator?.avatar_url && (
+            {recipe.creator_avatar && (
               <img
-                src={creator.avatar_url}
+                src={recipe.creator_avatar}
                 alt=""
                 className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-warm-card object-cover"
               />
@@ -200,7 +185,7 @@ function RecipeCard({ recipe, creator, onShop }) {
       <div className="flex gap-3 px-4 pb-2.5 text-[0.75em] text-warm-text-dim">
         {recipe.time_1bowl && <span>&#9201; {recipe.time_1bowl}</span>}
         {recipe.servings_1bowl && <span>&#127860; {recipe.servings_1bowl}</span>}
-        {creator && <span>by {creator.display_name}</span>}
+        {recipe.creator_name && <span>by {recipe.creator_name}</span>}
       </div>
 
       {(recipe.tags || []).length > 0 && (

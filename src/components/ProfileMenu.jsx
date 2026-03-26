@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useHousehold } from '../contexts/HouseholdContext'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 export default function ProfileMenu({ isOpen, onClose }) {
   const navigate = useNavigate()
@@ -26,10 +26,7 @@ export default function ProfileMenu({ isOpen, onClose }) {
   async function saveName() {
     const trimmed = displayName.trim()
     if (trimmed) {
-      // Update profiles table
-      await supabase.from('profiles').update({ display_name: trimmed }).eq('id', user.id)
-      // Update auth user metadata so it reflects immediately
-      await supabase.auth.updateUser({ data: { full_name: trimmed } })
+      await api.profiles.update({ display_name: trimmed })
       setSavedName(trimmed)
     }
     setEditingName(false)

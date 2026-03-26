@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ClerkProvider, AuthenticateWithRedirectCallback } from '@clerk/clerk-react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { HouseholdProvider } from './contexts/HouseholdContext'
 import TabBar from './components/TabBar'
@@ -13,6 +14,8 @@ import Inventory from './pages/Inventory'
 import History from './pages/History'
 import Household from './pages/Household'
 import DietPreferences from './pages/DietPreferences'
+
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
 function AppRoutes() {
   const { user, loading } = useAuth()
@@ -41,10 +44,12 @@ function AppRoutes() {
         <Route path="/history" element={<History />} />
         <Route path="/household" element={<Household />} />
         <Route path="/diet" element={<DietPreferences />} />
+        <Route path="/sso-callback" element={<AuthenticateWithRedirectCallback />} />
         <Route path="*" element={<Navigate to="/recipes" replace />} />
       </Routes>
       <Routes>
         <Route path="/recipes/:id/cook" element={null} />
+        <Route path="/sso-callback" element={null} />
         <Route path="*" element={<TabBar />} />
       </Routes>
     </>
@@ -53,12 +58,14 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <HouseholdProvider>
-          <AppRoutes />
-        </HouseholdProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ClerkProvider publishableKey={CLERK_KEY}>
+      <BrowserRouter>
+        <AuthProvider>
+          <HouseholdProvider>
+            <AppRoutes />
+          </HouseholdProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ClerkProvider>
   )
 }

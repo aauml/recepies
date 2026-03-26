@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from './AuthContext'
 
 const HouseholdContext = createContext({})
@@ -25,69 +25,16 @@ export function HouseholdProvider({ children }) {
       return
     }
 
-    // Fetch membership
-    const { data: membership } = await supabase
-      .from('household_members')
-      .select('household_id, role')
-      .eq('user_id', user.id)
-      .limit(1)
-      .maybeSingle()
-
-    if (membership?.household_id) {
-      // Fetch household
-      const { data: hh } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', membership.household_id)
-        .single()
-      setHousehold(hh)
-
-      // Fetch all members with profiles
-      const { data: mems } = await supabase
-        .from('household_members')
-        .select('user_id, role, joined_at, profiles(display_name, avatar_url)')
-        .eq('household_id', membership.household_id)
-      setMembers(
-        (mems || []).map((m) => ({
-          user_id: m.user_id,
-          role: m.role,
-          joined_at: m.joined_at,
-          display_name: m.profiles?.display_name || 'Unknown',
-          avatar_url: m.profiles?.avatar_url || null,
-        }))
-      )
-    } else {
+    try {
+      const data = await api.households.get(user.email)
+      setHousehold(data.household || null)
+      setMembers(data.members || [])
+      setPendingInvites(data.pendingInvites || [])
+    } catch {
       setHousehold(null)
       setMembers([])
+      setPendingInvites([])
     }
-
-    // Fetch pending invites: invites for this user's email + outgoing invites from household
-    const email = user.email
-    const inviteQueries = []
-    if (email) {
-      inviteQueries.push(
-        supabase
-          .from('household_invites')
-          .select('*, households(name)')
-          .eq('status', 'pending')
-          .ilike('email', email)
-      )
-    }
-    if (membership?.household_id) {
-      inviteQueries.push(
-        supabase
-          .from('household_invites')
-          .select('*, households(name)')
-          .eq('status', 'pending')
-          .eq('household_id', membership.household_id)
-      )
-    }
-    const inviteResults = await Promise.all(inviteQueries)
-    const allInvites = inviteResults.flatMap(r => r.data || [])
-    // Deduplicate by invite id
-    const uniqueInvites = [...new Map(allInvites.map(i => [i.id, i])).values()]
-    setPendingInvites(uniqueInvites)
-
     setLoading(false)
   }, [user])
 
@@ -95,143 +42,84 @@ export function HouseholdProvider({ children }) {
     refresh()
   }, [refresh])
 
-  // Create household + add self as owner
   async function createHousehold(name = 'My Household') {
-    // Generate UUID client-side to avoid RLS SELECT issues
-    const hhId = crypto.randomUUID()
-    const { error: insertErr } = await supabase
-      .from('households')
-      .insert({ id: hhId, name, created_by: user.id })
-    if (insertErr) {
-      console.error('Create household error:', insertErr)
-      return { error: insertErr }
+    try {
+      const data = await api.households.create(name)
+      await refresh()
+      return { data }
+    } catch (err) {
+      return { error: { message: err.message } }
     }
-
-    const { error: memberErr } = await supabase.from('household_members').insert({
-      household_id: hhId,
-      user_id: user.id,
-      role: 'owner',
-    })
-    if (memberErr) {
-      console.error('Add owner member error:', memberErr)
-      return { error: memberErr }
-    }
-
-    await refresh()
-    return { data: { id: hhId, name } }
   }
 
-  // Invite by email — auto-creates household if none exists
   async function inviteByEmail(email) {
-    let hh = household
-    // Auto-create household if user doesn't have one
-    if (!hh) {
-      const result = await createHousehold('My Household')
-      if (result.error) return { error: result.error }
-      hh = result.data
+    try {
+      await api.householdInvites.create(email)
+      await refresh()
+      return {}
+    } catch (err) {
+      return { error: { message: err.message } }
     }
-    if (!hh) return { error: { message: 'Could not create household' } }
-
-    const { error } = await supabase.from('household_invites').insert({
-      household_id: hh.id,
-      email: email.toLowerCase().trim(),
-      invited_by: user.id,
-    })
-    if (error) {
-      console.error('Invite error:', error)
-      return { error }
-    }
-    await refresh()
-    return {}
   }
 
   async function acceptInvite(inviteId) {
-    const invite = pendingInvites.find((i) => i.id === inviteId)
-    if (!invite) {
-      console.error('acceptInvite: invite not found', inviteId)
-      return { error: { message: 'Invite not found' } }
+    try {
+      await api.householdInvites.accept(inviteId)
+      await refresh()
+      return {}
+    } catch (err) {
+      return { error: { message: err.message } }
     }
-
-    // If already in a household, leave it first
-    if (household) {
-      await supabase
-        .from('household_members')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('household_id', household.id)
-    }
-
-    const { error: updateErr } = await supabase
-      .from('household_invites')
-      .update({ status: 'accepted' })
-      .eq('id', inviteId)
-    if (updateErr) {
-      console.error('acceptInvite update error:', updateErr)
-      return { error: updateErr }
-    }
-
-    const { error: insertErr } = await supabase.from('household_members').insert({
-      household_id: invite.household_id,
-      user_id: user.id,
-      role: 'member',
-    })
-    if (insertErr) {
-      console.error('acceptInvite insert error:', insertErr)
-      return { error: insertErr }
-    }
-
-    await refresh()
-    return {}
   }
 
   async function declineInvite(inviteId) {
-    const { error } = await supabase
-      .from('household_invites')
-      .update({ status: 'declined' })
-      .eq('id', inviteId)
-    if (error) {
-      console.error('declineInvite error:', error)
-      return { error }
+    try {
+      await api.householdInvites.decline(inviteId)
+      await refresh()
+      return {}
+    } catch (err) {
+      return { error: { message: err.message } }
     }
-    await refresh()
-    return {}
   }
 
   async function leaveHousehold() {
     if (!household) return
-    await supabase
-      .from('household_members')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('household_id', household.id)
-    await refresh()
+    try {
+      await api.householdMembers.delete(user.id)
+      await refresh()
+    } catch (err) {
+      console.error('Leave household error:', err)
+    }
   }
 
   async function removeMember(userId) {
     if (!household) return
-    await supabase
-      .from('household_members')
-      .delete()
-      .eq('user_id', userId)
-      .eq('household_id', household.id)
-    await refresh()
+    try {
+      await api.householdMembers.delete(userId)
+      await refresh()
+    } catch (err) {
+      console.error('Remove member error:', err)
+    }
   }
 
   async function cancelInvite(inviteId) {
     if (!household) return
-    await supabase
-      .from('household_invites')
-      .delete()
-      .eq('id', inviteId)
-    await refresh()
+    try {
+      await api.householdInvites.delete(inviteId)
+      await refresh()
+    } catch (err) {
+      console.error('Cancel invite error:', err)
+    }
   }
 
   async function deleteHousehold() {
     if (!household) return
-    await supabase.from('household_invites').delete().eq('household_id', household.id)
-    await supabase.from('household_members').delete().eq('household_id', household.id)
-    await supabase.from('households').delete().eq('id', household.id)
-    await refresh()
+    try {
+      await api.households.delete()
+      await refresh()
+    } catch (err) {
+      console.error('Delete household error:', err)
+    }
   }
 
   return (

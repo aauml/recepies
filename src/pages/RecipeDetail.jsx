@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useHousehold } from '../contexts/HouseholdContext'
 import { MeasurementBadges } from '../lib/portions'
@@ -26,29 +26,24 @@ export default function RecipeDetail() {
   const [inventory, setInventory] = useState([])
 
   useEffect(() => {
-    supabase
-      .from('recipes')
-      .select('*')
-      .eq('id', id)
-      .single()
-      .then(({ data, error }) => {
-        if (error) console.error('Recipe fetch error:', error)
+    api.recipes.get(id)
+      .then((data) => {
         setRecipe(data)
         setLoading(false)
-        if (data?.created_by) {
-          supabase.from('profiles').select('display_name, avatar_url').eq('id', data.created_by).single()
-            .then(({ data: p }) => { if (p) setCreator(p) })
+        if (data?.creator_name) {
+          setCreator({ display_name: data.creator_name, avatar_url: data.creator_avatar })
         }
+      })
+      .catch((err) => {
+        console.error('Recipe fetch error:', err)
+        setLoading(false)
       })
   }, [id])
 
   async function openComparison() {
     // Fetch inventory
-    const { data: inv } = await supabase
-      .from('inventory')
-      .select('*')
-      .in('user_id', householdUserIds)
-    const invItems = inv || []
+    const invData = await api.inventory.list()
+    const invItems = invData?.items || invData || []
     setInventory(invItems)
 
     const ings = bowlMode === 1 ? recipe.ingredients_1bowl : recipe.ingredients_2bowl
@@ -97,7 +92,7 @@ export default function RecipeDetail() {
       category: item.category,
       recipe_id: recipe.id,
     }))
-    await supabase.from('shopping_list').insert(rows)
+    await api.shoppingList.createBatch(rows)
     setShowComparison(false)
     setAddedToShopping(true)
     setTimeout(() => setAddedToShopping(false), 3000)
@@ -108,20 +103,15 @@ export default function RecipeDetail() {
   async function deleteRecipe() {
     setDeleting(true)
     setDeleteError('')
-    const { error, count } = await supabase.from('recipes').delete({ count: 'exact' }).eq('id', id)
-    if (error) {
-      console.error('Delete recipe error:', error)
-      setDeleteError(error.message || 'Could not delete recipe')
+    try {
+      await api.recipes.delete(id)
       setDeleting(false)
-      return
-    }
-    if (count === 0) {
-      setDeleteError('Could not delete this recipe. Please try again.')
+      navigate('/recipes')
+    } catch (err) {
+      console.error('Delete recipe error:', err)
+      setDeleteError(err.message || 'Could not delete recipe')
       setDeleting(false)
-      return
     }
-    setDeleting(false)
-    navigate('/recipes')
   }
 
   async function handleAiEdit() {
@@ -137,14 +127,9 @@ export default function RecipeDetail() {
       if (!resp.ok) throw new Error('AI edit failed')
       const updated = await resp.json()
       // Save to DB
-      const { error } = await supabase.from('recipes').update({
-        ...updated,
-        updated_at: new Date().toISOString(),
-      }).eq('id', id)
-      if (!error) {
-        setRecipe((r) => ({ ...r, ...updated }))
-        setAiPrompt('')
-      }
+      await api.recipes.update(id, { ...updated, updated_at: new Date().toISOString() })
+      setRecipe((r) => ({ ...r, ...updated }))
+      setAiPrompt('')
     } catch (err) {
       setAiError(err.message)
     }

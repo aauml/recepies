@@ -1,40 +1,71 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { useUser, useAuth as useClerkAuth, useSignIn, useSignUp } from '@clerk/clerk-react'
+import { setGetToken } from '../lib/api'
 
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { user: clerkUser, isLoaded } = useUser()
+  const { signOut: clerkSignOut, getToken } = useClerkAuth()
+  const { signIn, isLoaded: signInLoaded } = useSignIn()
+  const { signUp, isLoaded: signUpLoaded } = useSignUp()
 
+  // Wire up the API client's token getter
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    setGetToken(getToken)
+  }, [getToken])
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null)
+  // Map Clerk user to our app's user shape (compatible with old Supabase shape)
+  const user = clerkUser
+    ? {
+        id: clerkUser.id,
+        email: clerkUser.primaryEmailAddress?.emailAddress,
+        user_metadata: {
+          full_name: clerkUser.fullName || clerkUser.firstName || '',
+          avatar_url: clerkUser.imageUrl || null,
+        },
       }
-    )
+    : null
 
-    return () => subscription.unsubscribe()
-  }, [])
+  const loading = !isLoaded
 
-  const signInWithGoogle = () =>
-    supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
+  const signInWithGoogle = useCallback(() => {
+    if (!signIn) return
+    signIn.authenticateWithRedirect({
+      strategy: 'oauth_google',
+      redirectUrl: '/sso-callback',
+      redirectUrlComplete: '/',
     })
+  }, [signIn])
 
-  const signInWithEmail = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password })
+  const signInWithEmail = useCallback(async (email, password) => {
+    if (!signIn) return { error: { message: 'Sign in not ready' } }
+    try {
+      const result = await signIn.create({ identifier: email, password })
+      if (result.status === 'complete') {
+        return { error: null }
+      }
+      return { error: { message: 'Sign in incomplete' } }
+    } catch (err) {
+      return { error: { message: err.errors?.[0]?.longMessage || err.message || 'Sign in failed' } }
+    }
+  }, [signIn])
 
-  const signUpWithEmail = (email, password) =>
-    supabase.auth.signUp({ email, password })
+  const signUpWithEmail = useCallback(async (email, password) => {
+    if (!signUp) return { error: { message: 'Sign up not ready' } }
+    try {
+      const result = await signUp.create({ emailAddress: email, password })
+      if (result.status === 'complete') {
+        return { error: null }
+      }
+      // May need email verification
+      return { error: { message: 'Please check your email to verify your account' } }
+    } catch (err) {
+      return { error: { message: err.errors?.[0]?.longMessage || err.message || 'Sign up failed' } }
+    }
+  }, [signUp])
 
-  const signOut = () => supabase.auth.signOut()
+  const signOut = useCallback(() => clerkSignOut(), [clerkSignOut])
 
   return (
     <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>

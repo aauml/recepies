@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useHousehold } from '../contexts/HouseholdContext'
 import AppHeader from '../components/AppHeader'
@@ -25,24 +25,22 @@ export default function Inventory() {
   }, [user])
 
   async function fetchItems() {
-    const { data } = await supabase
-      .from('inventory')
-      .select('*')
-      .in('user_id', householdUserIds)
-      .order('item_name', { ascending: true })
-    setItems(data || [])
+    try {
+      const result = await api.inventory.list()
+      const data = result?.items || result || []
+      setItems(data)
+      // Extract shopping links from result
+      const shopMap = {}
+      ;(result?.shoppingLinks || []).forEach((s) => { shopMap[s.source_inventory_id] = s.id })
+      setInShopping(shopMap)
+    } catch (err) {
+      console.error('Fetch inventory error:', err)
+    }
     setLoading(false)
   }
 
   async function fetchShoppingLinks() {
-    const { data } = await supabase
-      .from('shopping_list')
-      .select('id, source_inventory_id')
-      .in('user_id', householdUserIds)
-      .not('source_inventory_id', 'is', null)
-    const map = {}
-    ;(data || []).forEach((s) => { map[s.source_inventory_id] = s.id })
-    setInShopping(map)
+    // Shopping links are now fetched with inventory.list()
   }
 
   // Filter items by active tab and stock status
@@ -56,47 +54,41 @@ export default function Inventory() {
   async function addItem(e) {
     e.preventDefault()
     if (!newName.trim()) return
-    const { data } = await supabase
-      .from('inventory')
-      .insert({
-        user_id: user.id,
+    try {
+      const data = await api.inventory.create({
         item_name: newName.trim(),
         quantity: null,
         category: 'other',
         section: activeTab,
         in_stock: true,
       })
-      .select()
-      .single()
-    if (data) setItems((prev) => [...prev, data])
+      if (data) setItems((prev) => [...prev, data])
+    } catch (err) {
+      console.error('Add item error:', err)
+    }
     setNewName('')
   }
 
   async function toggleOutOfStock(item) {
-    // Mark as out of stock — clear quantity
-    const { error } = await supabase
-      .from('inventory')
-      .update({ in_stock: false, quantity: null, updated_at: new Date().toISOString() })
-      .eq('id', item.id)
-    if (!error) {
+    try {
+      await api.inventory.update(item.id, { in_stock: false, quantity: null, updated_at: new Date().toISOString() })
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: false, quantity: null } : i))
+    } catch (err) {
+      console.error('Toggle stock error:', err)
     }
   }
 
   async function toggleShopping(item) {
     if (inShopping[item.id]) {
-      // Already in shopping — remove it
-      await supabase.from('shopping_list').delete().eq('id', inShopping[item.id])
+      await api.shoppingList.delete(inShopping[item.id])
       setInShopping((prev) => { const n = { ...prev }; delete n[item.id]; return n })
     } else {
-      // Add to shopping
-      const { data } = await supabase.from('shopping_list').insert({
-        user_id: user.id,
+      const data = await api.shoppingList.create({
         item_name: item.item_name,
         quantity: null,
         category: item.category || 'other',
         source_inventory_id: item.id,
-      }).select('id').single()
+      })
       if (data) {
         setInShopping((prev) => ({ ...prev, [item.id]: data.id }))
       }
@@ -104,68 +96,60 @@ export default function Inventory() {
   }
 
   async function addToShoppingList(item) {
-    // For in-stock spices: grey out and add to shopping
-    const { data } = await supabase.from('shopping_list').insert({
-      user_id: user.id,
+    const data = await api.shoppingList.create({
       item_name: item.item_name,
       quantity: null,
       category: item.category || 'other',
       source_inventory_id: item.id,
-    }).select('id').single()
+    })
     if (data) {
       setInShopping((prev) => ({ ...prev, [item.id]: data.id }))
       if (item.section === 'spices' && item.in_stock) {
-        await supabase
-          .from('inventory')
-          .update({ in_stock: false, quantity: null, updated_at: new Date().toISOString() })
-          .eq('id', item.id)
+        await api.inventory.update(item.id, { in_stock: false, quantity: null, updated_at: new Date().toISOString() })
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: false, quantity: null } : i))
       }
     }
   }
 
   async function restockItem(item) {
-    // Move out-of-stock item back to in-stock, remove from shopping if linked
-    const { error } = await supabase
-      .from('inventory')
-      .update({ in_stock: true, quantity: null, updated_at: new Date().toISOString() })
-      .eq('id', item.id)
-    if (!error) {
+    try {
+      await api.inventory.update(item.id, { in_stock: true, quantity: null, updated_at: new Date().toISOString() })
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, in_stock: true, quantity: null } : i))
-      // Remove from shopping list if it was there
       if (inShopping[item.id]) {
-        await supabase.from('shopping_list').delete().eq('id', inShopping[item.id])
+        await api.shoppingList.delete(inShopping[item.id])
         setInShopping((prev) => { const n = { ...prev }; delete n[item.id]; return n })
       }
+    } catch (err) {
+      console.error('Restock error:', err)
     }
   }
 
   async function deleteItem(item) {
-    const { error } = await supabase.from('inventory').delete().eq('id', item.id)
-    if (!error) {
+    try {
+      await api.inventory.delete(item.id)
       setItems((prev) => prev.filter((i) => i.id !== item.id))
+    } catch (err) {
+      console.error('Delete item error:', err)
     }
   }
 
   async function resetTab() {
     const tabIds = items.filter((i) => i.section === activeTab).map((i) => i.id)
     if (tabIds.length === 0) return
-    const { error } = await supabase
-      .from('inventory')
-      .update({ in_stock: false, quantity: null, updated_at: new Date().toISOString() })
-      .in('id', tabIds)
-    if (!error) {
+    try {
+      await api.inventory.updateBatch(tabIds, { in_stock: false, quantity: null, updated_at: new Date().toISOString() })
       setItems((prev) => prev.map((i) => i.section === activeTab ? { ...i, in_stock: false, quantity: null } : i))
-      // Also remove any shopping list entries linked to these items
       const shoppingIdsToRemove = tabIds.map((id) => inShopping[id]).filter(Boolean)
       if (shoppingIdsToRemove.length > 0) {
-        await supabase.from('shopping_list').delete().in('id', shoppingIdsToRemove)
+        await api.shoppingList.deleteBatch(shoppingIdsToRemove)
         setInShopping((prev) => {
           const n = { ...prev }
           tabIds.forEach((id) => delete n[id])
           return n
         })
       }
+    } catch (err) {
+      console.error('Reset tab error:', err)
     }
     setShowFreshConfirm(false)
   }
@@ -193,7 +177,6 @@ export default function Inventory() {
             toUpdate.push({ id: match.id })
           } else {
             toInsert.push({
-              user_id: user.id,
               item_name: p.name,
               quantity: null,
               category: p.category || 'other',
@@ -205,17 +188,16 @@ export default function Inventory() {
 
         // Reactivate existing matches
         for (const u of toUpdate) {
-          await supabase
-            .from('inventory')
-            .update({ in_stock: true, quantity: null, updated_at: new Date().toISOString() })
-            .eq('id', u.id)
+          await api.inventory.update(u.id, { in_stock: true, quantity: null, updated_at: new Date().toISOString() })
         }
 
         // Insert new items
         let newData = []
         if (toInsert.length > 0) {
-          const { data } = await supabase.from('inventory').insert(toInsert).select()
-          newData = data || []
+          for (const item of toInsert) {
+            const data = await api.inventory.create(item)
+            if (data) newData.push(data)
+          }
         }
 
         // Refresh state

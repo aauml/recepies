@@ -1,10 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables. Check your .env file.')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// This file is deprecated — migrated to Neon + Clerk
+// All imports should use '../lib/api' instead
+throw new Error('supabase.js is deprecated. Use api.js instead.')

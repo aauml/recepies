@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function AddRecipe() {
@@ -136,27 +136,30 @@ export default function AddRecipe() {
       speed: s.speed ? Number(s.speed) : null,
     }))
 
-    const { data, error } = await supabase.from('recipes').insert({
-      title: recipe.title,
-      description: recipe.description || null,
-      servings_1bowl: recipe.servings_1bowl || null,
-      time_1bowl: recipe.time_1bowl || null,
-      servings_2bowl: recipe.servings_2bowl || null,
-      time_2bowl: recipe.time_2bowl || null,
-      tags: recipe.tags || [],
-      thumbnail_emoji: recipe.thumbnail_emoji || '\uD83C\uDF7D',
-      source_urls: (recipe.source_urls || []).filter((u) => u),
-      ingredients_1bowl: ingredients,
-      steps_1bowl: steps,
-      ingredients_2bowl: ingredients2.length > 0 ? ingredients2 : null,
-      steps_2bowl: steps2.length > 0 ? steps2 : null,
-      nutrition: recipe.nutrition || null,
-      insulin_load: recipe.insulin_load || null,
-      created_by: user?.id,
-    }).select().single()
-
-    setSaving(false)
-    if (!error && data) navigate(`/recipes/${data.id}`)
+    try {
+      const data = await api.recipes.create({
+        title: recipe.title,
+        description: recipe.description || null,
+        servings_1bowl: recipe.servings_1bowl || null,
+        time_1bowl: recipe.time_1bowl || null,
+        servings_2bowl: recipe.servings_2bowl || null,
+        time_2bowl: recipe.time_2bowl || null,
+        tags: recipe.tags || [],
+        thumbnail_emoji: recipe.thumbnail_emoji || '\uD83C\uDF7D',
+        source_urls: (recipe.source_urls || []).filter((u) => u),
+        ingredients_1bowl: ingredients,
+        steps_1bowl: steps,
+        ingredients_2bowl: ingredients2.length > 0 ? ingredients2 : null,
+        steps_2bowl: steps2.length > 0 ? steps2 : null,
+        nutrition: recipe.nutrition || null,
+        insulin_load: recipe.insulin_load || null,
+      })
+      setSaving(false)
+      if (data?.id) navigate(`/recipes/${data.id}`)
+    } catch (err) {
+      console.error('Save recipe error:', err)
+      setSaving(false)
+    }
   }
 
   const canGenerate = aiInput.trim() || images.length > 0
