@@ -10,7 +10,7 @@ export default createHandler({
       FROM shopping_list sl
       LEFT JOIN recipes r ON sl.recipe_id = r.id
       WHERE sl.user_id = ANY(${memberIds})
-      ORDER BY sl.checked ASC, sl.created_at DESC`
+      ORDER BY sl.checked ASC, sl.added_at DESC`
     return res.json(items)
   },
 
@@ -19,13 +19,15 @@ export default createHandler({
     const items = Array.isArray(data) ? data : [data]
     const inserted = []
     for (const item of items) {
+      const name = item.item_name || item.name
+      if (!name) continue
       const [row] = await sql`
         INSERT INTO shopping_list (
-          name, quantity, unit, recipe_id, source_inventory_id, checked, user_id
+          item_name, quantity, category, recipe_id, source_inventory_id, checked, user_id
         ) VALUES (
-          ${item.name},
+          ${name},
           ${item.quantity || null},
-          ${item.unit || null},
+          ${item.category || null},
           ${item.recipe_id || null},
           ${item.source_inventory_id || null},
           ${item.checked || false},
@@ -44,11 +46,10 @@ export default createHandler({
     const memberIds = await getHouseholdMemberIds(userId)
     const [updated] = await sql`
       UPDATE shopping_list SET
-        name = COALESCE(${fields.name ?? null}, name),
+        item_name = COALESCE(${fields.item_name ?? fields.name ?? null}, item_name),
         quantity = COALESCE(${fields.quantity ?? null}, quantity),
-        unit = COALESCE(${fields.unit ?? null}, unit),
-        checked = COALESCE(${fields.checked ?? null}, checked),
-        updated_at = NOW()
+        category = COALESCE(${fields.category ?? null}, category),
+        checked = COALESCE(${fields.checked ?? null}, checked)
       WHERE id = ${id} AND user_id = ANY(${memberIds})
       RETURNING *`
     if (!updated)

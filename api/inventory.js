@@ -7,12 +7,12 @@ export default createHandler({
     const memberIds = await getHouseholdMemberIds(userId)
     const items = await sql`
       SELECT i.*,
-        (SELECT json_agg(json_build_object('id', sl.id, 'name', sl.name, 'checked', sl.checked))
+        (SELECT json_agg(json_build_object('id', sl.id, 'item_name', sl.item_name, 'checked', sl.checked))
          FROM shopping_list sl WHERE sl.source_inventory_id = i.id
         ) AS shopping_links
       FROM inventory i
       WHERE i.user_id = ANY(${memberIds})
-      ORDER BY i.section ASC, i.name ASC`
+      ORDER BY i.section ASC, i.item_name ASC`
     return res.json(items)
   },
 
@@ -20,11 +20,10 @@ export default createHandler({
     const data = req.body
     const [item] = await sql`
       INSERT INTO inventory (
-        name, quantity, unit, category, section, in_stock, user_id
+        item_name, quantity, category, section, in_stock, user_id
       ) VALUES (
-        ${data.name},
+        ${data.item_name || data.name},
         ${data.quantity || null},
-        ${data.unit || null},
         ${data.category || null},
         ${data.section || 'fresh'},
         ${data.in_stock !== undefined ? data.in_stock : true},
@@ -44,10 +43,9 @@ export default createHandler({
         UPDATE inventory SET
           in_stock = COALESCE(${fields.in_stock ?? null}, in_stock),
           quantity = COALESCE(${fields.quantity ?? null}, quantity),
-          unit = COALESCE(${fields.unit ?? null}, unit),
           category = COALESCE(${fields.category ?? null}, category),
           section = COALESCE(${fields.section ?? null}, section),
-          name = COALESCE(${fields.name ?? null}, name),
+          item_name = COALESCE(${fields.item_name ?? fields.name ?? null}, item_name),
           updated_at = NOW()
         WHERE id = ANY(${ids}) AND user_id = ANY(${memberIds})
         RETURNING *`
@@ -60,10 +58,9 @@ export default createHandler({
       UPDATE inventory SET
         in_stock = COALESCE(${fields.in_stock ?? null}, in_stock),
         quantity = COALESCE(${fields.quantity ?? null}, quantity),
-        unit = COALESCE(${fields.unit ?? null}, unit),
         category = COALESCE(${fields.category ?? null}, category),
         section = COALESCE(${fields.section ?? null}, section),
-        name = COALESCE(${fields.name ?? null}, name),
+        item_name = COALESCE(${fields.item_name ?? fields.name ?? null}, item_name),
         updated_at = NOW()
       WHERE id = ${id} AND user_id = ANY(${memberIds})
       RETURNING *`

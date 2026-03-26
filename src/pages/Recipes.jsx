@@ -45,9 +45,9 @@ export default function Recipes() {
     const ingredients = recipe.ingredients_1bowl || []
     const items = ingredients.flatMap((group) =>
       (group.items || []).map((item) => ({
-        name: item.name,
-        quantity: item.qty ? String(item.qty) : null,
-        unit: item.unit || null,
+        item_name: item.name,
+        quantity: `${item.qty || ''}${item.unit || ''}`.trim() || null,
+        category: item.category || 'other',
         recipe_id: recipe.id,
       }))
     ).filter((i) => i.name?.trim())

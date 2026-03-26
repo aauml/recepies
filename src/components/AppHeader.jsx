@@ -20,6 +20,7 @@ export default function AppHeader({ title, subtitle, children }) {
         </div>
         {children}
       </div>
+      <div className="text-[0.5rem] text-white/30 text-right -mt-1 pr-1">v2.1</div>
     </header>
   )
 }

@@ -86,9 +86,9 @@ export default function RecipeDetail() {
       return
     }
     const rows = toAdd.map((item) => ({
-      name: item.name,
-      quantity: item.qty ? String(item.qty) : null,
-      unit: item.unit || null,
+      item_name: item.name,
+      quantity: `${item.qty || ''}${item.unit || ''}`.trim() || null,
+      category: item.category || 'other',
       recipe_id: recipe.id,
     }))
     await api.shoppingList.createBatch(rows)
