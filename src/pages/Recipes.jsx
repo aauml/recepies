@@ -25,6 +25,7 @@ export default function Recipes() {
   const [activeTag, setActiveTag] = useState(null)
   const [loading, setLoading] = useState(true)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [shopAdded, setShopAdded] = useState({})
 
   useEffect(() => {
     fetchRecipes()
@@ -44,15 +45,16 @@ export default function Recipes() {
     const ingredients = recipe.ingredients_1bowl || []
     const items = ingredients.flatMap((group) =>
       (group.items || []).map((item) => ({
-        item_name: item.name,
-        quantity: `${item.qty || ''}${item.unit || ''}`.trim(),
-        category: item.category || 'other',
+        name: item.name,
+        quantity: item.qty ? String(item.qty) : null,
+        unit: item.unit || null,
         recipe_id: recipe.id,
-        checked: false,
       }))
-    )
+    ).filter((i) => i.name?.trim())
     if (items.length > 0) {
       await api.shoppingList.createBatch(items)
+      setShopAdded((prev) => ({ ...prev, [recipe.id]: true }))
+      setTimeout(() => setShopAdded((prev) => ({ ...prev, [recipe.id]: false })), 3000)
     }
   }
 
