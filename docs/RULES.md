@@ -74,6 +74,12 @@ All recipes must follow this exact JSON structure:
 - Reverse mode: slower mixing, for delicate ingredients
 - Accessories: butterfly whisk, steaming basket, Varoma, spatula
 
+### Shopping List Add-to-Cart UX
+- **No modal/popup** when adding ingredients to shopping list — just add all items directly
+- Show a **green toast notification** ("Ingredients added to shopping list") for ~4 seconds
+- Users manage items (add/remove/check) in the **Shopping tab**, not from the recipe detail page
+- Button shows "Adding..." state while API call is in progress, then "✓ Added to shopping list!" on success
+
 ### Shopping List Copy Rules
 - Copied text must be WhatsApp-friendly: plain text, one item per line
 - Format: "quantity name" (e.g. "400g pasta"), not "name - quantity"

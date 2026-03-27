@@ -4,6 +4,19 @@ All notable changes, decisions, and work sessions documented here.
 
 ---
 
+## 2026-03-26
+
+### Neon migration: fix API column names + shopping UX
+- **Fixed**: `api/inventory.js` and `api/shopping-list.js` used `name` but DB column is `item_name` — caused 500 errors
+- **Fixed**: Shopping list API had wrong column refs (`created_at` → `added_at`, missing `source_inventory_id`)
+- **Changed**: "Add to shopping list" button now adds ingredients directly without opening comparison modal
+- **Added**: Green toast notification "Ingredients added to shopping list" appears for 4 seconds after adding
+- **Added**: Version indicator (v2.2) in top-right of app header for tracking deployments
+- **Decision**: User prefers no modal when adding to shopping — just add all items, manage in Shopping tab
+- **Commits**: `cbecef7`, `320f64b`
+
+---
+
 ## 2026-03-18
 
 ### Redesign out-of-stock inventory items with three action buttons

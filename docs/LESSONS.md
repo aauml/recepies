@@ -21,6 +21,18 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - **Workaround**: Use Chrome MCP (browser automation) to access the Supabase dashboard and SQL Editor for all database operations.
 - **The Supabase JS client works fine** from the browser and from Vercel functions — only CLI DNS is affected.
 
+### Neon DB column names mismatch with API routes
+- **Problem**: When migrating from Supabase to Neon, the DB tables kept old column names (`item_name`, `added_at`) but new API routes were written using `name`, `created_at`, `unit`.
+- **Root cause**: API routes were written assuming a new schema, but the actual Neon tables were created with the old Supabase schema.
+- **Fix**: Always check actual DB schema (`SELECT column_name FROM information_schema.columns WHERE table_name = 'X'`) before writing API routes.
+- **Lesson**: When migrating databases, verify column names in the actual DB match what the API expects.
+
+### Clerk "Client Trust" causes sign-in failures
+- **Problem**: Users get `needs_second_factor` error when signing in with email+password.
+- **Root cause**: Clerk's "Client Trust" feature (under Password tab) requires 2FA on new devices. Since there's no 2FA configured, sign-in fails silently.
+- **Fix**: Disable "Client Trust" in Clerk Dashboard → Configure → User & authentication → Password tab.
+- **Also**: Disable "Email verification code" under Sign-in with email tab to prevent email-code-based sign-in flow.
+
 ### Tailwind CSS v4 is different
 - **No `tailwind.config.js`** — Tailwind v4 uses `@theme` block inside CSS (`src/index.css`)
 - **Plugin**: `@tailwindcss/vite` is the correct plugin for Vite integration
