@@ -21,9 +21,7 @@ export default function RecipeDetail() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
   const [creator, setCreator] = useState(null)
-  const [showComparison, setShowComparison] = useState(false)
-  const [comparisonItems, setComparisonItems] = useState([]) // [{name, qty, unit, category, have, skip}]
-  const [inventory, setInventory] = useState([])
+  const [addingToShopping, setAddingToShopping] = useState(false)
 
   useEffect(() => {
     api.recipes.get(id)
@@ -40,61 +38,33 @@ export default function RecipeDetail() {
       })
   }, [id])
 
-  async function openComparison() {
-    // Fetch inventory
-    const invData = await api.inventory.list()
-    const invItems = invData?.items || invData || []
-    setInventory(invItems)
-
-    const ings = bowlMode === 1 ? recipe.ingredients_1bowl : recipe.ingredients_2bowl
-    if (!ings) return
-    const items = []
-    for (const group of ings) {
-      for (const item of (group.items || [])) {
-        if (!item.name?.trim()) continue
-        const normalized = item.name.toLowerCase().trim().replace(/s$/, '')
-        const match = invItems.find((i) =>
-          i.item_name.toLowerCase().trim().replace(/s$/, '') === normalized ||
-          normalized.includes(i.item_name.toLowerCase().trim()) ||
-          i.item_name.toLowerCase().trim().includes(normalized)
-        )
-        items.push({
-          name: item.name,
-          qty: item.qty || '',
-          unit: item.unit || '',
-          category: item.category || 'other',
-          have: match?.in_stock ? (match.quantity || 'yes') : null,
-          skip: match?.in_stock || false,
-          invMatch: match || null,
-        })
+  async function addToShopping() {
+    if (addingToShopping || addedToShopping) return
+    setAddingToShopping(true)
+    try {
+      const ings = bowlMode === 1 ? recipe.ingredients_1bowl : recipe.ingredients_2bowl
+      if (!ings) return
+      const rows = []
+      for (const group of ings) {
+        for (const item of (group.items || [])) {
+          if (!item.name?.trim()) continue
+          rows.push({
+            item_name: item.name,
+            quantity: `${item.qty || ''}${item.unit || ''}`.trim() || null,
+            category: item.category || 'other',
+            recipe_id: recipe.id,
+          })
+        }
       }
+      if (rows.length === 0) return
+      await api.shoppingList.createBatch(rows)
+      setAddedToShopping(true)
+      setTimeout(() => setAddedToShopping(false), 4000)
+    } catch (err) {
+      console.error('Add to shopping error:', err)
+    } finally {
+      setAddingToShopping(false)
     }
-    setComparisonItems(items)
-    setShowComparison(true)
-  }
-
-  function toggleComparisonSkip(index) {
-    setComparisonItems((prev) => prev.map((item, i) =>
-      i === index ? { ...item, skip: !item.skip } : item
-    ))
-  }
-
-  async function confirmAddToShopping() {
-    const toAdd = comparisonItems.filter((item) => !item.skip)
-    if (toAdd.length === 0) {
-      setShowComparison(false)
-      return
-    }
-    const rows = toAdd.map((item) => ({
-      item_name: item.name,
-      quantity: `${item.qty || ''}${item.unit || ''}`.trim() || null,
-      category: item.category || 'other',
-      recipe_id: recipe.id,
-    }))
-    await api.shoppingList.createBatch(rows)
-    setShowComparison(false)
-    setAddedToShopping(true)
-    setTimeout(() => setAddedToShopping(false), 3000)
   }
 
   const [deleteError, setDeleteError] = useState('')
@@ -393,79 +363,29 @@ export default function RecipeDetail() {
           &#128293; Cook this recipe
         </Link>
         <button
-          onClick={openComparison}
-          disabled={addedToShopping}
+          onClick={addToShopping}
+          disabled={addedToShopping || addingToShopping}
           className={`w-full py-3 rounded-xl font-semibold text-sm border transition-all ${
             addedToShopping
               ? 'bg-green-50 border-green-300 text-green-700'
+              : addingToShopping
+              ? 'bg-warm-card border-warm-border text-warm-text-dim'
               : 'bg-warm-card border-warm-border text-warm-text active:scale-[0.98]'
           }`}
         >
           {addedToShopping
-            ? `\u2713 Added ${bowlMode === 2 ? '2-bowl' : ''} ingredients to shopping`
-            : `\uD83D\uDED2 Add to shopping list${has2bowl ? ` (${bowlMode === 1 ? '1 Bowl' : '2 Bowls'})` : ''}`
+            ? `✓ Added to shopping list!`
+            : addingToShopping
+            ? 'Adding...'
+            : `🛒 Add to shopping list${has2bowl ? ` (${bowlMode === 1 ? '1 Bowl' : '2 Bowls'})` : ''}`
           }
         </button>
       </div>
 
-      {/* Shopping comparison modal */}
-      {showComparison && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
-          <div className="bg-warm-bg w-full max-h-[85dvh] rounded-t-2xl overflow-y-auto">
-            <div className="sticky top-0 bg-warm-bg px-5 pt-4 pb-2 border-b border-warm-border">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-base font-bold text-warm-text">Add to Shopping List</h2>
-                <button onClick={() => setShowComparison(false)} className="text-warm-text-dim text-lg min-h-0 bg-transparent">&#10005;</button>
-              </div>
-              <p className="text-xs text-warm-text-dim">Items in stock are skipped. Tap to toggle.</p>
-            </div>
-
-            <div className="px-5 py-3 flex flex-col gap-1.5">
-              {/* Header */}
-              <div className="flex text-[0.6rem] uppercase tracking-wide text-warm-text-dim font-bold px-1">
-                <span className="flex-1">Ingredient</span>
-                <span className="w-16 text-center">Need</span>
-                <span className="w-16 text-center">Have</span>
-                <span className="w-12 text-center">Add</span>
-              </div>
-
-              {comparisonItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => toggleComparisonSkip(idx)}
-                  className={`flex items-center rounded-xl px-3 py-2 cursor-pointer transition-all ${
-                    item.skip
-                      ? 'bg-warm-card/40 opacity-50'
-                      : 'bg-warm-card'
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <span className={`text-sm ${item.skip ? 'line-through text-warm-text-dim' : ''}`}>{item.name}</span>
-                  </div>
-                  <span className="w-16 text-center text-xs text-accent font-semibold">{item.qty}{item.unit}</span>
-                  <span className="w-16 text-center text-xs text-warm-text-dim">
-                    {item.have || '\u2014'}
-                  </span>
-                  <span className="w-12 text-center">
-                    {item.skip ? (
-                      <span className="text-xs text-warm-text-dim">Skip</span>
-                    ) : (
-                      <span className="text-xs text-accent font-bold">&#10003;</span>
-                    )}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="sticky bottom-0 bg-warm-bg px-5 py-3 border-t border-warm-border">
-              <button
-                onClick={confirmAddToShopping}
-                className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm active:scale-[0.98] transition-transform"
-              >
-                Add {comparisonItems.filter((i) => !i.skip).length} items to shopping list
-              </button>
-            </div>
-          </div>
+      {/* Toast notification for added to shopping */}
+      {addedToShopping && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-5 py-2.5 rounded-xl shadow-lg text-sm font-semibold animate-[fadeIn_0.2s_ease-out]">
+          ✓ Ingredients added to shopping list
         </div>
       )}
     </div>
