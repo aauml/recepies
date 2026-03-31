@@ -1,6 +1,20 @@
 import { sql } from './_lib/db.js'
 import { createHandler } from './_lib/handler.js'
 
+// Race-safe: get existing household or create a new one for this user
+async function getOrCreateHousehold(userId, name = 'My Household') {
+  const [existing] = await sql`SELECT household_id FROM household_members WHERE user_id = ${userId}`
+  if (existing) return existing.household_id
+
+  const [household] = await sql`INSERT INTO households (name, created_by) VALUES (${name}, ${userId}) RETURNING id`
+  const householdId = household.id
+  await sql`
+    INSERT INTO household_members (household_id, user_id, role)
+    VALUES (${householdId}, ${userId}, 'owner')
+    ON CONFLICT (household_id, user_id) DO NOTHING`
+  return householdId
+}
+
 export default createHandler({
   async GET(req, res, userId) {
     const [membership] = await sql`
@@ -44,20 +58,17 @@ export default createHandler({
       const { email } = req.body
       if (!email) return res.status(400).json({ error: 'Missing email' })
 
-      let [membership] = await sql`SELECT household_id FROM household_members WHERE user_id = ${userId}`
-      let householdId
-      if (membership) {
-        householdId = membership.household_id
-      } else {
-        const [household] = await sql`INSERT INTO households (name, created_by) VALUES ('My Household', ${userId}) RETURNING id`
-        householdId = household.id
-        await sql`INSERT INTO household_members (household_id, user_id, role) VALUES (${householdId}, ${userId}, 'owner')`
-      }
+      let householdId = await getOrCreateHousehold(userId)
 
-      const [existing] = await sql`SELECT id FROM household_invites WHERE household_id = ${householdId} AND email = ${email} AND status = 'pending'`
-      if (existing) return res.status(409).json({ error: 'Invite already pending' })
-
-      const [invite] = await sql`INSERT INTO household_invites (household_id, email, invited_by) VALUES (${householdId}, ${email}, ${userId}) RETURNING *`
+      // Upsert: if a previous invite exists (even declined), reset it to pending
+      const [invite] = await sql`
+        INSERT INTO household_invites (household_id, email, invited_by)
+        VALUES (${householdId}, ${email}, ${userId})
+        ON CONFLICT (household_id, email) DO UPDATE
+          SET status = 'pending', invited_by = ${userId}, created_at = now()
+          WHERE household_invites.status != 'pending'
+        RETURNING *`
+      if (!invite) return res.status(409).json({ error: 'Invite already pending for this email' })
       return res.json(invite)
     }
 
@@ -66,8 +77,8 @@ export default createHandler({
     if (!name) return res.status(400).json({ error: 'Missing household name' })
     const [existing] = await sql`SELECT household_id FROM household_members WHERE user_id = ${userId}`
     if (existing) return res.status(409).json({ error: 'User already in a household' })
-    const [household] = await sql`INSERT INTO households (name, created_by) VALUES (${name}, ${userId}) RETURNING *`
-    await sql`INSERT INTO household_members (household_id, user_id, role) VALUES (${household.id}, ${userId}, 'owner')`
+    const householdId = await getOrCreateHousehold(userId, name)
+    const [household] = await sql`SELECT * FROM households WHERE id = ${householdId}`
     return res.json(household)
   },
 
@@ -86,7 +97,10 @@ export default createHandler({
 
       if (inviteStatus === 'accepted') {
         await sql`DELETE FROM household_members WHERE user_id = ${userId}`
-        await sql`INSERT INTO household_members (household_id, user_id, role) VALUES (${invite.household_id}, ${userId}, 'member')`
+        await sql`
+          INSERT INTO household_members (household_id, user_id, role)
+          VALUES (${invite.household_id}, ${userId}, 'member')
+          ON CONFLICT (household_id, user_id) DO UPDATE SET role = 'member'`
       }
       return res.json({ updated: true })
     }

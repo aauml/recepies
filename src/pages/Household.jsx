@@ -71,7 +71,7 @@ export default function Household() {
           {pendingInvites.filter(inv => inv.email?.toLowerCase() === user?.email?.toLowerCase() && (!household || inv.household_id !== household.id)).map((inv) => (
             <div key={inv.id} className="bg-accent-light border border-accent/30 rounded-xl p-4 mb-2">
               <p className="text-sm font-semibold text-accent-dark">
-                &#127968; Join &ldquo;{inv.households?.name || 'Household'}&rdquo;
+                &#127968; Join &ldquo;{inv.household_name || 'Household'}&rdquo;
               </p>
               <div className="flex gap-2 mt-3">
                 <button
