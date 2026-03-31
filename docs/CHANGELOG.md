@@ -4,6 +4,21 @@ All notable changes, decisions, and work sessions documented here.
 
 ---
 
+## 2026-03-30
+
+### Fix household 500 error — race-safe upserts
+- **Fixed**: POST /api/households returned 500 (NeonDbError: duplicate key) when inviting someone
+- **Root cause**: UNIQUE(household_id, email) constraint on `household_invites` blocked re-inviting an email that had a stale 'accepted' invite (member was never actually added to `household_members`)
+- **Fixed**: Double-click on "Share" button could cause duplicate `household_members` rows
+- **Added**: `getOrCreateHousehold()` helper with `ON CONFLICT` for race-safe household+membership creation
+- **Changed**: Invite INSERT now uses `ON CONFLICT DO UPDATE` to reset declined/accepted invites back to pending
+- **Changed**: Accept-invite membership INSERT uses `ON CONFLICT DO UPDATE` to handle re-joins gracefully
+- **Fixed**: UI showed `inv.households?.name` but API returns `household_name` — invite banner showed "Household" instead of actual name
+- **Data fix**: Reset stale 'accepted' invite for l.nelsonayala@yahoo.com back to 'pending' in production DB
+- **Commit**: `3432a8b`
+
+---
+
 ## 2026-03-26
 
 ### Neon migration: fix API column names + shopping UX

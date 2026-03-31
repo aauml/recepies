@@ -101,6 +101,17 @@ Hard-won knowledge from debugging, failures, and surprises. Read this before sta
 - Always check for existing household membership before creating a new one.
 - Cleanup: DELETE from households and household_members for the duplicate.
 
+### Stale invite status blocks re-invite
+- **Problem**: Accepting an invite updates `household_invites.status = 'accepted'` BEFORE inserting the new `household_members` row. If the member insert fails, the invite is stuck as 'accepted' but the user was never added.
+- **Impact**: Re-inviting the same email hits `UNIQUE(household_id, email)` constraint → 500 error.
+- **Fix**: Use `ON CONFLICT (household_id, email) DO UPDATE SET status = 'pending'` so re-inviting always works.
+- **Lesson**: Multi-step operations (update invite + insert member) should use ON CONFLICT clauses on every INSERT to handle partial failures. Don't rely on sequential checks — race conditions and partial failures will corrupt state.
+
+### ON CONFLICT is essential for all household INSERTs
+- **Problem**: Double-clicks, retries, and network hiccups cause duplicate INSERT attempts that hit UNIQUE constraints.
+- **Fix**: Every INSERT into `household_members` and `household_invites` must have an `ON CONFLICT` clause.
+- **Pattern**: Use `ON CONFLICT DO NOTHING` when duplicates are acceptable, `ON CONFLICT DO UPDATE` when you need to reset state.
+
 ---
 
 ## YouTube / URL Recipe Generation
